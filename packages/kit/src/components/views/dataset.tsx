@@ -11,7 +11,10 @@ import { sectionDatasets } from '@terrafirmagreg-team/kit/lib/datasets';
 import { sectionUrl } from '@terrafirmagreg-team/sites/location';
 import { canonicalUrl } from '@terrafirmagreg-team/kit/lib/urls';
 import type { DatasetLanding, SectionKey } from '@terrafirmagreg-team/kit/types';
-import { localeLoader } from '@terrafirmagreg-team/kit/lib/locale/renderer';
+import {
+  localeLoader,
+  registerLocaleRenderer,
+} from '@terrafirmagreg-team/kit/lib/locale/renderer';
 import { langContent } from '@terrafirmagreg-team/translate/server';
 
 interface DatasetPageParams {
@@ -23,6 +26,12 @@ export function createDatasetLandingPage<S extends SectionKey>(
   section: S,
   render: (page: DatasetLanding) => ReactNode,
 ) {
+  registerLocaleRenderer(section, {
+    resolve: async (slug, lang) =>
+      resolveDatasetLanding(section, slug, lang, await sectionDatasets(section)),
+    render: (page) => render(page as DatasetLanding),
+  });
+
   async function Page({ params }: DatasetPageParams) {
     const { slug } = await params;
     const datasets = await sectionDatasets(section);
