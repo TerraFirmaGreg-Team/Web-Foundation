@@ -15,8 +15,7 @@
       "./src/lib/*/index.ts"
     ],
     "./types/*": "./src/types/*.ts",
-    "./types": "./src/types/index.ts",
-    "./locales": "./src/locales.ts"
+    "./types": "./src/types/index.ts"
   },
   "dependencies": {
     "@terrafirmagreg-team/kit": "workspace:*",

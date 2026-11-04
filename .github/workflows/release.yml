@@ -11,12 +11,14 @@ concurrency:
 
 permissions:
   contents: write
-  pull-requests: write
   id-token: write
 
 jobs:
-  release:
+  changes:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
+    outputs:
+      packages: ${{ steps.filter.outputs.changes }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -30,21 +32,91 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-          registry-url: https://registry.npmjs.org
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm check
 
-      - uses: changesets/action@v1
+      # matrix order = topological (deps first)
+      - uses: dorny/paths-filter@v3
+        id: filter
         with:
-          version: pnpm changeset version
-          publish: pnpm changeset publish
-          commit: 'chore(release): version packages'
-          title: 'chore(release): version packages'
+          filters: |
+            sites: 'packages/sites/**'
+            data: 'packages/data/**'
+            translate: 'packages/translate/**'
+            dump: 'packages/dump/**'
+            auth: 'packages/auth/**'
+            share: 'packages/share/**'
+            analytics: 'packages/analytics/**'
+            ui: 'packages/ui/**'
+            mdx: 'packages/mdx/**'
+            kit: 'packages/kit/**'
+            docs: 'packages/docs/**'
+            search: 'packages/search/**'
+            discussions: 'packages/discussions/**'
+            history: 'packages/history/**'
+            preview: 'packages/preview/**'
+            chat: 'packages/chat/**'
+            changelog: 'packages/changelog/**'
+            game: 'packages/game/**'
+            quest: 'packages/quest/**'
+            recipe: 'packages/recipe/**'
+            guide: 'packages/guide/**'
+
+  release:
+    needs: changes
+    if: needs.changes.outputs.packages != '[]'
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        package: ${{ fromJSON(needs.changes.outputs.packages) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - name: Bump version
+        id: bump
+        uses: phips28/gh-action-bump-version@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        with:
+          PACKAGEJSON_DIR: packages/${{ matrix.package }}
+          version-type: patch
+          tag-prefix: '${{ matrix.package }}@'
+          commit-message: 'chore(${{ matrix.package }}): release {{version}} [skip ci]'
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 12
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Pack
+        run: |
+          mkdir -p "$RUNNER_TEMP/packed"
+          pnpm --filter "@terrafirmagreg-team/${{ matrix.package }}" pack --pack-destination "$RUNNER_TEMP/packed"
+          mv "$RUNNER_TEMP"/packed/*.tgz "$RUNNER_TEMP/packed/pkg.tgz"
+
+      - name: Publish
+        uses: JS-DevTools/npm-publish@v3
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
+          package: ${{ runner.temp }}/packed/pkg.tgz
+          access: public
+          provenance: true
+          strategy: all
+
+      - name: GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.bump.outputs.newTag }}
+          generate_release_notes: true

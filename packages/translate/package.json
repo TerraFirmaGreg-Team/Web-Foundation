@@ -11,6 +11,7 @@
     "./create": "./src/create.ts",
     "./config": "./src/config.ts",
     "./server": "./src/server.ts",
+    "./locales": "./src/locales.ts",
     "./hooks": "./src/hooks/index.ts",
     "./hooks/*": [
       "./src/hooks/*.ts",

@@ -36,8 +36,7 @@
     "./components/mdx/*": [
       "./src/components/mdx/*.tsx",
       "./src/components/mdx/*/index.tsx"
-    ],
-    "./locales": "./src/locales.ts"
+    ]
   },
   "dependencies": {
     "@base-ui/react": "catalog:",

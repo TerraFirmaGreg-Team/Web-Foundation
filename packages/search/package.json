@@ -14,8 +14,7 @@
       "./src/components/*.tsx",
       "./src/components/*/index.tsx",
       "./src/components/*/index.ts"
-    ],
-    "./locales": "./src/locales.ts"
+    ]
   },
   "dependencies": {
     "@terrafirmagreg-team/kit": "workspace:*",

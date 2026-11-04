@@ -9,11 +9,9 @@
     "./lib/*": [
       "./src/lib/*.ts",
       "./src/lib/*/index.ts"
-    ],
-    "./locales": "./src/locales.ts"
+    ]
   },
   "dependencies": {
-    "@terrafirmagreg-team/translate": "workspace:*",
     "fumadocs-page-history": "0.4.2",
     "server-only": "catalog:"
   },

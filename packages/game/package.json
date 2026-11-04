@@ -22,8 +22,7 @@
       "./src/types/*.ts",
       "./src/types/*/index.ts"
     ],
-    "./styles.css": "./styles.css",
-    "./locales": "./src/locales.ts"
+    "./styles.css": "./styles.css"
   },
   "dependencies": {
     "@terrafirmagreg-team/data": "workspace:*",

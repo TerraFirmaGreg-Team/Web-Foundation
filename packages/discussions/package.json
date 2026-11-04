@@ -18,8 +18,7 @@
     "./hooks/*": [
       "./src/hooks/*.ts",
       "./src/hooks/*/index.ts"
-    ],
-    "./locales": "./src/locales.ts"
+    ]
   },
   "dependencies": {
     "@floating-ui/react-dom": "^2.1.9",
