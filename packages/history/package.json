@@ -1,6 +1,6 @@
 {
   "name": "@terrafirmagreg-team/history",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "type": "module",
   "description": "Git page history",
   "license": "LGPL-3.0-only",
@@ -9,9 +9,11 @@
     "./lib/*": [
       "./src/lib/*.ts",
       "./src/lib/*/index.ts"
-    ]
+    ],
+    "./locales": "./src/locales.ts"
   },
   "dependencies": {
+    "@terrafirmagreg-team/translate": "workspace:*",
     "fumadocs-page-history": "0.4.2",
     "server-only": "catalog:"
   },
