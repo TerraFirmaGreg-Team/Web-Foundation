@@ -98,10 +98,14 @@ jobs:
           strategy: all
 
       - name: Upload bumped manifest
-        uses: actions/upload-artifact@v7
+        run: |
+          mkdir -p "out/${{ matrix.package }}"
+          cp "packages/${{ matrix.package }}/package.json" "out/${{ matrix.package }}/package.json"
+
+      - uses: actions/upload-artifact@v7
         with:
           name: bump-${{ matrix.package }}
-          path: packages/${{ matrix.package }}/package.json
+          path: out/
           retention-days: 1
           if-no-files-found: error
 
@@ -119,13 +123,14 @@ jobs:
         with:
           pattern: bump-*
           path: bumped
+          merge-multiple: true
 
       - name: Overlay bumped manifests
         run: |
-          for dir in bumped/*/; do
-            pkg="${dir#bumped/bump-}"
-            pkg="${pkg%/}"
-            cp "$dir/package.json" "packages/$pkg/package.json"
+          find bumped -type f
+          for f in bumped/*/package.json; do
+            pkg=$(basename "$(dirname "$f")")
+            cp "$f" "packages/$pkg/package.json"
           done
 
       - name: Commit version bumps
