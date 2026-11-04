@@ -18,7 +18,7 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
     outputs:
-      packages: ${{ steps.filter.outputs.changes }}
+      packages: ${{ steps.changed.outputs.all_changed_files }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -37,38 +37,19 @@ jobs:
 
       - run: pnpm check
 
-      # matrix order = topological (deps first)
-      - uses: dorny/paths-filter@v3
-        id: filter
+      - id: changed
+        uses: tj-actions/changed-files@v47
         with:
-          filters: |
-            sites: 'packages/sites/**'
-            data: 'packages/data/**'
-            translate: 'packages/translate/**'
-            dump: 'packages/dump/**'
-            auth: 'packages/auth/**'
-            share: 'packages/share/**'
-            analytics: 'packages/analytics/**'
-            ui: 'packages/ui/**'
-            mdx: 'packages/mdx/**'
-            kit: 'packages/kit/**'
-            docs: 'packages/docs/**'
-            search: 'packages/search/**'
-            discussions: 'packages/discussions/**'
-            history: 'packages/history/**'
-            preview: 'packages/preview/**'
-            chat: 'packages/chat/**'
-            changelog: 'packages/changelog/**'
-            game: 'packages/game/**'
-            quest: 'packages/quest/**'
-            recipe: 'packages/recipe/**'
-            guide: 'packages/guide/**'
+          path: packages
+          dir_names: true
+          dir_names_max_depth: 1
+          json: true
+          escape_json: false
 
   release:
     needs: changes
     if: needs.changes.outputs.packages != '[]'
     strategy:
-      max-parallel: 1
       fail-fast: false
       matrix:
         package: ${{ fromJSON(needs.changes.outputs.packages) }}
@@ -91,8 +72,9 @@ jobs:
         with:
           PACKAGEJSON_DIR: packages/${{ matrix.package }}
           version-type: patch
-          tag-prefix: '${{ matrix.package }}@'
-          commit-message: 'chore(${{ matrix.package }}): release {{version}} [skip ci]'
+          skip-commit: 'true'
+          skip-tag: 'true'
+          skip-push: 'true'
 
       - uses: pnpm/action-setup@v6
         with:
@@ -115,8 +97,63 @@ jobs:
           provenance: true
           strategy: all
 
-      - name: GitHub release
-        uses: softprops/action-gh-release@v2
+      - name: Upload bumped manifest
+        uses: actions/upload-artifact@v7
         with:
-          tag_name: ${{ steps.bump.outputs.newTag }}
+          name: bump-${{ matrix.package }}
+          path: packages/${{ matrix.package }}/package.json
+          retention-days: 1
+          if-no-files-found: error
+
+  commit:
+    needs: release
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.commit.outputs.commit_hash }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: bump-*
+          path: bumped
+
+      - name: Overlay bumped manifests
+        run: |
+          for dir in bumped/*/; do
+            pkg="${dir#bumped/bump-}"
+            pkg="${pkg%/}"
+            cp "$dir/package.json" "packages/$pkg/package.json"
+          done
+
+      - name: Commit version bumps
+        id: commit
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: 'chore(release): bump versions [skip ci]'
+          file_pattern: 'packages/*/package.json'
+          branch: main
+
+  github-release:
+    needs: [changes, commit]
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJSON(needs.changes.outputs.packages) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.commit.outputs.sha }}
+
+      - name: Tag
+        id: ver
+        run: echo "tag=${{ matrix.package }}@$(node -p "require('./packages/${{ matrix.package }}/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.ver.outputs.tag }}
+          target_commitish: ${{ needs.commit.outputs.sha }}
           generate_release_notes: true

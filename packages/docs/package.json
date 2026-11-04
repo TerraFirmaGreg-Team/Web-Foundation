@@ -24,5 +24,10 @@
     "next": "catalog:",
     "react": "catalog:"
   },
-  "description": "Docs section"
+  "description": "Docs section",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TerraFirmaGreg-Team/Web-Foundation.git",
+    "directory": "packages/docs"
+  }
 }
