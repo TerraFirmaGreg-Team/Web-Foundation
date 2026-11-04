@@ -1,0 +1,65 @@
+{
+  "name": "@terrafirmagreg-team/recipe",
+  "version": "1.2.0",
+  "type": "module",
+  "description": "Recipe viewer and calculator",
+  "license": "LGPL-3.0-only",
+  "exports": {
+    "./components/*": [
+      "./src/components/*.tsx",
+      "./src/components/*/index.tsx",
+      "./src/components/*/index.ts"
+    ],
+    "./hooks/*": [
+      "./src/hooks/*.ts",
+      "./src/hooks/*/index.ts"
+    ],
+    "./lib/*": [
+      "./src/lib/*.ts",
+      "./src/lib/*/index.ts"
+    ],
+    "./types/*": "./src/types/*.ts",
+    "./types": "./src/types/index.ts",
+    "./styles.css": "./styles.css",
+    "./locales": "./src/locales.ts"
+  },
+  "dependencies": {
+    "@terrafirmagreg-team/data": "workspace:*",
+    "@terrafirmagreg-team/dump": "workspace:*",
+    "@terrafirmagreg-team/game": "workspace:*",
+    "@terrafirmagreg-team/kit": "workspace:*",
+    "@terrafirmagreg-team/mdx": "workspace:*",
+    "@terrafirmagreg-team/preview": "workspace:*",
+    "@terrafirmagreg-team/sites": "workspace:*",
+    "@terrafirmagreg-team/translate": "workspace:*",
+    "@terrafirmagreg-team/ui": "workspace:*",
+    "comlink": "^4.4.2",
+    "fflate": "0.8.3",
+    "fumadocs-core": "catalog:",
+    "lucide-react": "catalog:",
+    "pathfinding": "0.4.18"
+  },
+  "peerDependencies": {
+    "next": "catalog:",
+    "react": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/pathfinding": "^0.1.0",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TerraFirmaGreg-Team/Web-Foundation.git",
+    "directory": "packages/recipe"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "src",
+    "styles",
+    "styles.css"
+  ]
+}

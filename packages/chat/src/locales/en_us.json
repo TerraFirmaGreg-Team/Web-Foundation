@@ -1,0 +1,16 @@
+{
+  "A player joined the game(chat.anonymousJoin)": "A player joined the game",
+  "A player left the game(chat.anonymousQuit)": "A player left the game",
+  "Chat(chat.title)": "Chat",
+  "Close(common.close)": "Close",
+  "Log in(chat.login)": "Log in",
+  "Message(chat.placeholder)": "Message",
+  "Name(chat.nameLabel)": "Name",
+  "Name(chat.namePlaceholder)": "Name",
+  "No messages yet(chat.noMessages)": "No messages yet",
+  "Send(chat.send)": "Send",
+  "Servers offline(servers.offline)": "Servers offline",
+  "Unknown error(chat.errorUnknown)": "Unknown error",
+  "{playername} joined the game(chat.playerJoin)": "{playername} joined the game",
+  "{playername} left the game(chat.playerQuit)": "{playername} left the game"
+}

@@ -1,0 +1,7 @@
+{
+  "Failed to copy(ui.copy_error)": "Failed to copy",
+  "Select dataset(ui.select_dataset)": "Select dataset",
+  "Select section(ui.select_section)": "Select section",
+  "View as Markdown(ui.view_markdown)": "View as Markdown",
+  "latest(ui.version_latest)": "latest"
+}

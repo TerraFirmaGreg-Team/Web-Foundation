@@ -1,0 +1,16 @@
+{
+  "A player joined the game(chat.anonymousJoin)": "Игрок зашёл в игру",
+  "A player left the game(chat.anonymousQuit)": "Игрок вышел из игры",
+  "Chat(chat.title)": "Чат",
+  "Close(common.close)": "Закрыть",
+  "Log in(chat.login)": "Войти",
+  "Message(chat.placeholder)": "Сообщение",
+  "Name(chat.nameLabel)": "Имя",
+  "Name(chat.namePlaceholder)": "Имя",
+  "No messages yet(chat.noMessages)": "Пока нет сообщений",
+  "Send(chat.send)": "Отправить",
+  "Servers offline(servers.offline)": "Серверы недоступны",
+  "Unknown error(chat.errorUnknown)": "Неизвестная ошибка",
+  "{playername} joined the game(chat.playerJoin)": "{playername} зашёл в игру",
+  "{playername} left the game(chat.playerQuit)": "{playername} вышел из игры"
+}

@@ -1,0 +1,62 @@
+{
+  "name": "@terrafirmagreg-team/game",
+  "version": "1.2.0",
+  "type": "module",
+  "description": "Game-data components and catalogs",
+  "license": "LGPL-3.0-only",
+  "exports": {
+    "./components/*": [
+      "./src/components/*.tsx",
+      "./src/components/*/index.tsx",
+      "./src/components/*/index.ts"
+    ],
+    "./hooks/*": [
+      "./src/hooks/*.ts",
+      "./src/hooks/*/index.ts"
+    ],
+    "./lib/*": [
+      "./src/lib/*.ts",
+      "./src/lib/*/index.ts"
+    ],
+    "./types/*": [
+      "./src/types/*.ts",
+      "./src/types/*/index.ts"
+    ],
+    "./styles.css": "./styles.css",
+    "./locales": "./src/locales.ts"
+  },
+  "dependencies": {
+    "@terrafirmagreg-team/data": "workspace:*",
+    "@terrafirmagreg-team/dump": "workspace:*",
+    "@terrafirmagreg-team/kit": "workspace:*",
+    "@terrafirmagreg-team/search": "workspace:*",
+    "@terrafirmagreg-team/sites": "workspace:*",
+    "@terrafirmagreg-team/translate": "workspace:*",
+    "@terrafirmagreg-team/ui": "workspace:*",
+    "fumadocs-core": "catalog:",
+    "lucide-react": "catalog:",
+    "server-only": "catalog:"
+  },
+  "peerDependencies": {
+    "next": "catalog:",
+    "react": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TerraFirmaGreg-Team/Web-Foundation.git",
+    "directory": "packages/game"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "src",
+    "styles",
+    "styles.css"
+  ]
+}

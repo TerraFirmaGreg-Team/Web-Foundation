@@ -1,0 +1,48 @@
+{
+  "name": "@terrafirmagreg-team/search",
+  "version": "1.2.0",
+  "type": "module",
+  "description": "Section-aware search",
+  "license": "LGPL-3.0-only",
+  "exports": {
+    "./lib": "./src/lib/index.ts",
+    "./lib/*": [
+      "./src/lib/*.ts",
+      "./src/lib/*/index.ts"
+    ],
+    "./components/*": [
+      "./src/components/*.tsx",
+      "./src/components/*/index.tsx",
+      "./src/components/*/index.ts"
+    ],
+    "./locales": "./src/locales.ts"
+  },
+  "dependencies": {
+    "@terrafirmagreg-team/kit": "workspace:*",
+    "@terrafirmagreg-team/sites": "workspace:*",
+    "@terrafirmagreg-team/translate": "workspace:*",
+    "@terrafirmagreg-team/ui": "workspace:*",
+    "fumadocs-core": "catalog:",
+    "server-only": "catalog:"
+  },
+  "peerDependencies": {
+    "next": "catalog:",
+    "react": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TerraFirmaGreg-Team/Web-Foundation.git",
+    "directory": "packages/search"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "src"
+  ]
+}

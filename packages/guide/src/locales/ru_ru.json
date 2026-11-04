@@ -1,0 +1,14 @@
+{
+  "Entity preview unavailable(guide.entity_unavailable)": "Превью сущности недоступно",
+  "Entry not found(guide.entry_missing)": "Запись не найдена",
+  "Gameplay guide(sections.desc.guide)": "Игровой гайд",
+  "Guide(sections.guide)": "Гайды",
+  "No recipes(guide.recipe_empty)": "Нет рецептов",
+  "Objective(guide.objective)": "Задача",
+  "Open(guide.link)": "Открыть",
+  "Quest(guide.quest)": "Квест",
+  "Related(guide.related)": "Связанное",
+  "Select book(ui.select_book)": "Выберите книгу",
+  "{count} entries(guide.entry_count)": "Записей: {count}",
+  "{count} pages(guide.page_count)": "Страниц: {count}"
+}

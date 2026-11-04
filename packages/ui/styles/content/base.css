@@ -1,0 +1,198 @@
+:root {
+  --sidebar-drawer-offset: 100%;
+}
+
+[dir='rtl'] {
+  --sidebar-drawer-offset: -100%;
+}
+
+@theme {
+  --animate-fade-in: fade-in 300ms ease;
+  --animate-fade-out: fade-out 300ms ease;
+
+  --animate-roll-in: roll-in 320ms cubic-bezier(0.22, 1, 0.36, 1);
+
+  --animate-dialog-in: dialog-in 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-dialog-out: dialog-out 300ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  --animate-popover-in: popover-in 100ms ease;
+  --animate-popover-out: popover-out 100ms ease;
+
+  --animate-sidebar-in: sidebar-in 250ms ease;
+  --animate-sidebar-out: sidebar-out 250ms ease;
+
+  @keyframes sidebar-in {
+    from {
+      transform: translateX(var(--sidebar-drawer-offset));
+    }
+  }
+
+  @keyframes sidebar-out {
+    to {
+      transform: translateX(var(--sidebar-drawer-offset));
+    }
+  }
+
+  @keyframes dialog-in {
+    from {
+      transform: scale(1.06);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+    }
+  }
+
+  @keyframes dialog-out {
+    from {
+      transform: scale(1);
+    }
+    to {
+      transform: scale(1.04);
+      opacity: 0;
+    }
+  }
+
+  @keyframes popover-in {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+  }
+
+  @keyframes popover-out {
+    to {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes roll-in {
+    from {
+      opacity: 0;
+      translate: 0 calc(var(--roll, 1) * 0.6em);
+      filter: blur(2px);
+    }
+  }
+
+  @keyframes fade-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-border, currentColor);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
+}
+
+@utility scroll-container {
+  &::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+    background: var(--color-border);
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-corner {
+    display: none;
+  }
+}
+
+@utility fd-steps {
+  counter-reset: step;
+  position: relative;
+  @apply ps-6 ms-2 border-s sm:ms-4 sm:ps-7;
+}
+
+@utility fd-step {
+  position: relative;
+  @apply pb-6;
+  &:before {
+    background-color: var(--color-secondary);
+    color: var(--color-secondary-foreground);
+    content: counter(step);
+    counter-increment: step;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    display: flex;
+    position: absolute;
+    top: 0;
+    inset-inline-end: calc(100% + 0.5rem);
+    @media (min-width: 40rem) {
+      inset-inline-end: calc(100% + 0.75rem);
+    }
+    @apply size-8 rounded-full;
+  }
+}
+
+@utility prose-no-margin {
+  & > :first-child {
+    margin-top: 0;
+  }
+
+  & > :last-child {
+    margin-bottom: 0;
+  }
+}
+
+@variant dark (&:where(.dark, .dark *));
+
+@variant layout {
+  #docs-layout:has(&),
+  #notebook-layout:has(&),
+  #home-layout:has(&),
+  #flux-layout:has(&),
+  #glass-layout:has(&),
+  #spacious-layout:has(&) {
+    @slot;
+  }
+}
+
+@property --sidebar-col {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --ai-chat-col {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+.fd-page-tree-item-name {
+  @apply inline-flex items-center gap-1 w-full;
+}

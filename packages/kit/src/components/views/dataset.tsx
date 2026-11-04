@@ -1,0 +1,72 @@
+import type { ReactNode } from 'react';
+import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
+import { LangContentSwitch } from '@terrafirmagreg-team/ui/components/blocks/lang/content';
+import {
+  generateDatasetLandingParams,
+  getDatasetLanding,
+  resolveDatasetLanding,
+} from '@terrafirmagreg-team/kit/lib/landing';
+import { sectionDatasets } from '@terrafirmagreg-team/kit/lib/datasets';
+import { sectionUrl } from '@terrafirmagreg-team/sites/location';
+import { canonicalUrl } from '@terrafirmagreg-team/kit/lib/urls';
+import type { DatasetLanding, SectionKey } from '@terrafirmagreg-team/kit/types';
+import { localeLoader } from '@terrafirmagreg-team/kit/lib/locale/renderer';
+import { langContent } from '@terrafirmagreg-team/translate/server';
+
+interface DatasetPageParams {
+  params: Promise<{ slug?: string[] }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export function createDatasetLandingPage<S extends SectionKey>(
+  section: S,
+  render: (page: DatasetLanding) => ReactNode,
+) {
+  async function Page({ params }: DatasetPageParams) {
+    const { slug } = await params;
+    const datasets = await sectionDatasets(section);
+    const content = langContent(
+      slug,
+      (s, l) => resolveDatasetLanding(section, s, l, datasets),
+      render,
+    );
+    if (!content) notFound();
+    return (
+      <LangContentSwitch
+        key={[section, ...(slug ?? [])].join('/')}
+        content={content}
+        loadLang={localeLoader()?.bind(null, { section, slug })}
+      />
+    );
+  }
+
+  function generateStaticParams() {
+    return generateDatasetLandingParams(section);
+  }
+
+  async function generateMetadata({
+    params,
+  }: DatasetPageParams): Promise<Metadata> {
+    const { slug } = await params;
+    const page = getDatasetLanding(
+      section,
+      slug,
+      'en_us',
+      await sectionDatasets(section),
+    );
+    if (!page) notFound();
+    return {
+      title: page.title,
+      description: page.description,
+      alternates: {
+        canonical: canonicalUrl(
+          `${sectionUrl(section)}/${(slug ?? []).join('/')}`,
+        ),
+      },
+    };
+  }
+
+  return { Page, generateStaticParams, generateMetadata };
+}
+

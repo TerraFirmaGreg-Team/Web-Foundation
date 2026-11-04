@@ -1,0 +1,15 @@
+{
+  "Close(quest.close)": "Закрыть",
+  "No quests in this chapter.(quest.empty)": "В этой главе нет квестов.",
+  "None(quest.none)": "Нет",
+  "Open in guide(quest.guide)": "Открыть в гайде",
+  "Optional(quest.optional)": "Необязательно",
+  "Prerequisites are hidden.(quest.prerequisites_hidden)": "Требования скрыты.",
+  "Prerequisites(quest.prerequisites)": "Требования",
+  "Quest chapters and objectives(sections.desc.quest)": "Главы и задания квестбука",
+  "Quests(sections.quest)": "Квесты",
+  "Rewards(quest.rewards)": "Награды",
+  "Search quests(quest.search)": "Поиск квестов",
+  "Tasks(quest.tasks)": "Задания",
+  "Unlocks(quest.dependents)": "Открывает"
+}

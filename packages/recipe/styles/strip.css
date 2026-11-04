@@ -1,0 +1,7 @@
+.recipe-strip {
+  scrollbar-width: none;
+}
+
+.recipe-strip::-webkit-scrollbar {
+  display: none;
+}

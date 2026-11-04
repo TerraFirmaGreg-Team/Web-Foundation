@@ -1,0 +1,59 @@
+{
+  "name": "@terrafirmagreg-team/discussions",
+  "version": "1.2.0",
+  "type": "module",
+  "description": "GitHub Discussions comments and feedback",
+  "license": "LGPL-3.0-only",
+  "exports": {
+    "./lib": "./src/lib/index.ts",
+    "./lib/*": [
+      "./src/lib/*.ts",
+      "./src/lib/*/index.ts"
+    ],
+    "./components/*": [
+      "./src/components/*.tsx",
+      "./src/components/*/index.tsx",
+      "./src/components/*/index.ts"
+    ],
+    "./hooks/*": [
+      "./src/hooks/*.ts",
+      "./src/hooks/*/index.ts"
+    ],
+    "./locales": "./src/locales.ts"
+  },
+  "dependencies": {
+    "@floating-ui/react-dom": "^2.1.9",
+    "@fuma-comment/react": "1.6.0",
+    "@fuma-comment/server": "1.6.0",
+    "@terrafirmagreg-team/auth": "workspace:*",
+    "@terrafirmagreg-team/data": "workspace:*",
+    "@terrafirmagreg-team/translate": "workspace:*",
+    "@terrafirmagreg-team/ui": "workspace:*",
+    "class-variance-authority": "catalog:",
+    "fuma-comment-github-discussions": "1.1.1",
+    "lucide-react": "catalog:",
+    "server-only": "catalog:",
+    "swr": "catalog:",
+    "zod": "catalog:"
+  },
+  "peerDependencies": {
+    "next": "catalog:",
+    "react": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TerraFirmaGreg-Team/Web-Foundation.git",
+    "directory": "packages/discussions"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "src"
+  ]
+}

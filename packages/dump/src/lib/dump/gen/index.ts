@@ -1,0 +1,21 @@
+export type { ResourceId, ReferenceKind, DataGuidesBook, TaggedReference, JsonNode, GuideDisplay, DumpText } from './data/guides/book';
+export type { DataGuidesCategory } from './data/guides/category';
+export type { DataGuidesEntry, GuideEntry, GuidePage } from './data/guides/entry';
+export type { DataModelsModel } from './data/models/model';
+export type { DataQuestsChapter, ChapterImage, QuestLink, QuestEntry, QuestReward, QuestTask } from './data/quests/chapter';
+export type { DataQuestsChapterGroups, QuestChapterGroup } from './data/quests/chapter_groups';
+export type { DataQuestsData, QuestChapterSummary } from './data/quests/data';
+export type { DataRecipesRecipe, RecipeEntry, RecipeSlot, RecipeWidget } from './data/recipes/recipe';
+export type { Keybinds } from './keybinds';
+export type { Lang } from './lang';
+export type { Manifest, DumpIndexes, RecipeTypesIndex, RecipeTypeRow, NamespaceDisplay, Display, PackInfo, DumpProducer } from './manifest';
+export type { RegistryBlocks, BlockEntry, SpriteEntry } from './registry/blocks';
+export type { RegistryEntities, EntityEntry, VariantEntry } from './registry/entities';
+export type { RegistryFluids, FluidEntry } from './registry/fluids';
+export type { RegistryGroups, StackGroupValue } from './registry/groups';
+export type { RegistryItems, ItemEntry } from './registry/items';
+export type { RegistryRecipeCategories, RecipeCategory, RecipeCategoryLayout, RecipeLayoutSlot } from './registry/recipe_categories';
+export type { RegistryRecipes } from './registry/recipes';
+export type { RegistryTabs, TabEntry } from './registry/tabs';
+export type { RegistryTags, TagEntry } from './registry/tags';
+

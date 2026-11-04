@@ -1,0 +1,98 @@
+import 'server-only';
+import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
+import { createElement } from 'react';
+import type * as PageTree from 'fumadocs-core/page-tree';
+import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
+import { loadMergedLangMap, creativeTabName } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/load';
+import { loadClientManifest } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
+import { DUMP_POINTER_TTL } from '@terrafirmagreg-team/dump/lib/dump/json-reader';
+import { createAsyncCache } from '@terrafirmagreg-team/data/lib/async-cache';
+import { loadDatasetRecipeCategories } from '@terrafirmagreg-team/recipe/lib/data/category/load';
+import { keyTreeNode } from '@terrafirmagreg-team/translate/server';
+import { loadLocaleRegistry } from '@terrafirmagreg-team/translate/server';
+import { encodeQueryValue } from '@terrafirmagreg-team/translate/lib/url';
+import { recipeBasePath } from '@terrafirmagreg-team/recipe/lib/links';
+import { sectionDatasets } from '@terrafirmagreg-team/kit/lib/datasets';
+import type { DumpRecipeCategory } from '@terrafirmagreg-team/recipe/lib/data/category/dto';
+import type { SectionTrees } from '@terrafirmagreg-team/kit/types';
+
+function categoryIcon(
+  dataset: DatasetRef,
+  category: DumpRecipeCategory,
+): React.ReactNode {
+  if (!category.icon) return undefined;
+  return createElement(
+    'span',
+    { className: 'inline-flex size-4 shrink-0 items-center justify-center' },
+    createElement(Entry, {
+      dataset,
+      reference: category.icon,
+      name: category.id,
+      size: 'sm',
+      href: false,
+      tooltip: false,
+      missing: 'hide',
+    }),
+  );
+}
+
+function categoryLeaf(
+  dataset: DatasetRef,
+  category: DumpRecipeCategory,
+  map: Record<string, string>,
+): PageTree.Item {
+  return keyTreeNode({
+    type: 'page',
+    name: creativeTabName(map, category.display?.name),
+    url: `${recipeBasePath(dataset)}?type=${encodeQueryValue(category.id)}`,
+    icon: categoryIcon(dataset, category),
+    $id: `${dataset.id}/${dataset.version ?? ''}/type/${category.id}`,
+  }) as PageTree.Item;
+}
+
+const recipeTreesCache = createAsyncCache(
+  async (): Promise<SectionTrees> => buildRecipeTrees(),
+  () => 'recipe-trees',
+  DUMP_POINTER_TTL,
+);
+
+export function recipeTrees(): Promise<SectionTrees> {
+  return recipeTreesCache();
+}
+
+async function buildRecipeTrees(): Promise<SectionTrees> {
+  const { defaultLanguage } = loadLocaleRegistry();
+  const datasets = await sectionDatasets('recipe');
+  const trees: SectionTrees = {};
+  for (const { id, title: datasetTitle, languages } of datasets) {
+    for (const lang of languages ?? [defaultLanguage]) {
+      const ref = { id };
+      const map = await loadMergedLangMap(ref, lang);
+      const categories = await loadDatasetRecipeCategories(ref);
+      const types = (await loadClientManifest(ref))?.indexes.recipes.types;
+      const nonEmpty = types
+        ? new Set(
+            types
+              .filter((row) => (row.count ?? 0) > 0)
+              .map((row) => row.id),
+          )
+        : undefined;
+      const leaves = [...categories]
+        .filter((category) => !nonEmpty || nonEmpty.has(category.id))
+        .sort(
+          (a, b) =>
+            creativeTabName(map, a.display?.name).localeCompare(
+              creativeTabName(map, b.display?.name),
+            ) || a.id.localeCompare(b.id),
+        )
+        .map((category) => categoryLeaf(ref, category, map));
+      (trees[lang] ??= {})[id] = {
+        name: datasetTitle ?? id,
+        children: leaves,
+        $id: `recipe/${id}/${lang}`,
+      } satisfies PageTree.Root;
+    }
+  }
+  return trees;
+}
+

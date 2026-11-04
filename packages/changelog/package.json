@@ -1,0 +1,50 @@
+{
+  "name": "@terrafirmagreg-team/changelog",
+  "version": "1.2.0",
+  "type": "module",
+  "description": "Changelog section",
+  "license": "LGPL-3.0-only",
+  "exports": {
+    "./components/*": [
+      "./src/components/*.tsx",
+      "./src/components/*/index.tsx",
+      "./src/components/*/index.ts"
+    ],
+    "./lib/*": [
+      "./src/lib/*.ts",
+      "./src/lib/*/index.ts"
+    ],
+    "./types/*": "./src/types/*.ts",
+    "./types": "./src/types/index.ts",
+    "./locales": "./src/locales.ts"
+  },
+  "dependencies": {
+    "@terrafirmagreg-team/kit": "workspace:*",
+    "@terrafirmagreg-team/mdx": "workspace:*",
+    "@terrafirmagreg-team/translate": "workspace:*",
+    "@terrafirmagreg-team/ui": "workspace:*",
+    "fumadocs-core": "catalog:",
+    "lucide-react": "catalog:"
+  },
+  "peerDependencies": {
+    "next": "catalog:",
+    "react": "catalog:"
+  },
+  "devDependencies": {
+    "@types/mdx": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TerraFirmaGreg-Team/Web-Foundation.git",
+    "directory": "packages/changelog"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "src"
+  ]
+}

@@ -1,0 +1,5 @@
+@media (pointer: coarse) {
+  .quest-viewport .react-flow__node {
+    pointer-events: none;
+  }
+}

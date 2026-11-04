@@ -1,0 +1,48 @@
+{
+  "name": "@terrafirmagreg-team/translate",
+  "version": "1.2.0",
+  "type": "module",
+  "description": "Localization runtime and catalogs",
+  "license": "LGPL-3.0-only",
+  "exports": {
+    ".": "./src/components/runtime.tsx",
+    "./provider": "./src/components/provider.tsx",
+    "./lang": "./src/lang.ts",
+    "./create": "./src/create.ts",
+    "./config": "./src/config.ts",
+    "./server": "./src/server.ts",
+    "./hooks": "./src/hooks/index.ts",
+    "./hooks/*": [
+      "./src/hooks/*.ts",
+      "./src/hooks/*/index.ts"
+    ],
+    "./lib/*": [
+      "./src/lib/*.ts",
+      "./src/lib/*/index.ts"
+    ],
+    "./types/*": "./src/types/*.ts",
+    "./runtime": "./src/components/runtime.tsx"
+  },
+  "files": [
+    "src"
+  ],
+  "dependencies": {
+    "@fuma-translate/react": "1.0.2"
+  },
+  "peerDependencies": {
+    "react": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TerraFirmaGreg-Team/Web-Foundation.git",
+    "directory": "packages/translate"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

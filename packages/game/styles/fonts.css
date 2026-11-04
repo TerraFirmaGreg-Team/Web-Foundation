@@ -1,0 +1,31 @@
+@font-face {
+  font-family: 'Minecraft';
+  src:
+    url('https://cdn.jsdelivr.net/gh/IdreesInc/Minecraft-Font@master/Minecraft.otf')
+      format('opentype'),
+    url('https://cdn.jsdelivr.net/npm/@south-paw/typeface-minecraft@1.0.0/files/minecraft.woff2')
+      format('woff2'),
+    url('https://pub-491e074ddb0942ee9dfa8204a68f07a3.r2.dev/fonts/minecraft.otf')
+      format('opentype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Unifont';
+  src: url('https://edent.gitlab.io/unifont/unifont-12.0.01.woff2')
+    format('woff2');
+  font-display: swap;
+  unicode-range: U+0000-FFFF;
+}
+
+@font-face {
+  font-family: 'Unifont';
+  src: url('https://edent.gitlab.io/unifont/unifont_upper-12.0.01.woff2')
+    format('woff2');
+  font-display: swap;
+  unicode-range: U+10000-10FFFF;
+}
+
+.font-mc {
+  font-family: 'Unifont', 'Minecraft', 'Courier New', monospace;
+}

@@ -1,0 +1,30 @@
+{
+  "name": "@terrafirmagreg-team/docs",
+  "version": "1.2.0",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "files": [
+    "src"
+  ],
+  "exports": {
+    "./lib/*": [
+      "./src/lib/*.ts",
+      "./src/lib/*/index.ts"
+    ],
+    "./locales": "./src/locales.ts"
+  },
+  "dependencies": {
+    "@terrafirmagreg-team/kit": "workspace:*",
+    "@terrafirmagreg-team/sites": "workspace:*",
+    "@terrafirmagreg-team/translate": "workspace:*",
+    "fumadocs-core": "catalog:"
+  },
+  "peerDependencies": {
+    "next": "catalog:",
+    "react": "catalog:"
+  },
+  "description": "Docs section"
+}

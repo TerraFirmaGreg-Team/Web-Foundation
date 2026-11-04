@@ -1,0 +1,14 @@
+{
+  "Entity preview unavailable(guide.entity_unavailable)": "Entity preview unavailable",
+  "Entry not found(guide.entry_missing)": "Entry not found",
+  "Gameplay guide(sections.desc.guide)": "Gameplay guide",
+  "Guide(sections.guide)": "Guide",
+  "No recipes(guide.recipe_empty)": "No recipes",
+  "Objective(guide.objective)": "Objective",
+  "Open(guide.link)": "Open",
+  "Quest(guide.quest)": "Quest",
+  "Related(guide.related)": "Related",
+  "Select book(ui.select_book)": "Select book",
+  "{count} entries(guide.entry_count)": "{count} entries",
+  "{count} pages(guide.page_count)": "{count} pages"
+}

@@ -1,0 +1,28 @@
+@media (min-width: 768px) {
+  #spacious-layout {
+    width: 100%;
+    max-width: var(--layout-width, 97rem);
+    margin-inline: auto;
+  }
+
+  #page-panel {
+    --toc-width: 0px;
+    margin-inline-end: 0;
+  }
+}
+
+body:has(#spacious-layout) {
+  background-color: var(--color-card);
+}
+
+#page-panel > header [aria-controls='sidebar'][data-collapsed='true'] {
+  color: var(--color-primary);
+  background-color: color-mix(in oklab, var(--color-primary) 12%, transparent);
+  border: 1px solid color-mix(in oklab, var(--color-primary) 30%, transparent);
+  border-radius: 0.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+#page-panel > header [aria-controls='sidebar'][data-collapsed='true']:hover {
+  background-color: color-mix(in oklab, var(--color-primary) 20%, transparent);
+}

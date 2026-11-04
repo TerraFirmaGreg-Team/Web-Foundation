@@ -1,0 +1,64 @@
+{
+  "name": "@terrafirmagreg-team/mdx",
+  "version": "1.2.0",
+  "type": "module",
+  "description": "MDX/markdown pipeline",
+  "license": "LGPL-3.0-only",
+  "exports": {
+    "./lib": "./src/lib/index.ts",
+    "./lib/*": [
+      "./src/lib/*.ts",
+      "./src/lib/*/index.ts"
+    ],
+    "./components/*": [
+      "./src/components/*.tsx",
+      "./src/components/*/index.tsx",
+      "./src/components/*/index.ts"
+    ],
+    "./types/*": "./src/types/*.ts",
+    "./types": "./src/types/index.ts"
+  },
+  "dependencies": {
+    "@fumadocs/story": "^1.5.3",
+    "@fumari/stf": "^1.1.2",
+    "@terrafirmagreg-team/translate": "workspace:*",
+    "@terrafirmagreg-team/ui": "workspace:*",
+    "@types/turndown": "^5.0.6",
+    "fumadocs-core": "catalog:",
+    "fumadocs-docgen": "^3.2.0",
+    "fumadocs-twoslash": "^4.0.4",
+    "fumadocs-typescript": "5.6.0",
+    "lucide-react": "catalog:",
+    "rehype-katex": "^7.0.1",
+    "rehype-raw": "^7.0.0",
+    "remark-directive": "^4.0.0",
+    "remark-gfm": "catalog:",
+    "remark-math": "^6.0.0",
+    "remark-parse": "catalog:",
+    "turndown": "^7.2.5",
+    "turndown-plugin-gfm": "^1.0.2",
+    "unified": "catalog:",
+    "unist-util-visit": "^5.2.0"
+  },
+  "peerDependencies": {
+    "next": "catalog:",
+    "react": "catalog:"
+  },
+  "devDependencies": {
+    "@types/mdx": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TerraFirmaGreg-Team/Web-Foundation.git",
+    "directory": "packages/mdx"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "src"
+  ]
+}

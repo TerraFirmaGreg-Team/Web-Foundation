@@ -1,0 +1,15 @@
+{
+  "Close(quest.close)": "Close",
+  "No quests in this chapter.(quest.empty)": "No quests in this chapter.",
+  "None(quest.none)": "None",
+  "Open in guide(quest.guide)": "Open in guide",
+  "Optional(quest.optional)": "Optional",
+  "Prerequisites are hidden.(quest.prerequisites_hidden)": "Prerequisites are hidden.",
+  "Prerequisites(quest.prerequisites)": "Prerequisites",
+  "Quest chapters and objectives(sections.desc.quest)": "Quest chapters and objectives",
+  "Quests(sections.quest)": "Quests",
+  "Rewards(quest.rewards)": "Rewards",
+  "Search quests(quest.search)": "Search quests",
+  "Tasks(quest.tasks)": "Tasks",
+  "Unlocks(quest.dependents)": "Unlocks"
+}

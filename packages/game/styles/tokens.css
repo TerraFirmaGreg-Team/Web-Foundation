@@ -1,0 +1,15 @@
+@theme {
+  --color-mc-panel: #c6c6c6;
+  --color-mc-bright: #dcdcdc;
+  --color-mc-dim: #b5b5b5;
+  --color-mc-inset: #8b8b8b;
+  --color-mc-edge: #a0a0a0;
+  --color-mc-arrow: #3f3f3f;
+  --color-mc-arrow-dark: #1f1f1f;
+  --color-mc-bevel-dark: #363636;
+  --color-mc-bevel-light: #ffffff;
+  --color-mc-paper: #f6f6f6;
+  --color-mc-shadow: #101010;
+  --color-mc-done: #2f7d32;
+  --color-mc-enchant: #5555ff;
+}

@@ -1,0 +1,35 @@
+'use client';
+import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
+
+import type * as PageTree from 'fumadocs-core/page-tree';
+import { useAsyncValue } from '@terrafirmagreg-team/ui/hooks/use-async-value';
+import { loadClientGuideBook } from '@terrafirmagreg-team/guide/lib/client/guides';
+import { listGuideBooks } from '@terrafirmagreg-team/guide/lib/books';
+import { guideTreeChildren } from '@terrafirmagreg-team/guide/components/tree/children';
+import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
+
+export function useGuideTree(
+  dataset: DatasetRef | undefined,
+  lang: Lang,
+  bookId: string | undefined,
+): PageTree.Root | undefined {
+  return useAsyncValue(
+    dataset
+      ? async () => {
+          const summaries = await listGuideBooks(dataset, lang);
+          if (!summaries.length) return undefined;
+          const resolvedId = bookId ?? summaries[0]?.bookId;
+          const index = resolvedId
+            ? await loadClientGuideBook(dataset, lang, resolvedId)
+            : undefined;
+          return {
+            name: 'guide',
+            children: index ? guideTreeChildren(dataset, index) : [],
+            $id: `guide/${dataset.id}/${dataset.version ?? ''}/${resolvedId ?? 'none'}/${lang}`,
+          } satisfies PageTree.Root;
+        }
+      : undefined,
+    [dataset, lang, bookId],
+  );
+}
+

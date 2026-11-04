@@ -1,0 +1,7 @@
+{
+  "Failed to copy(ui.copy_error)": "Не удалось скопировать",
+  "Select dataset(ui.select_dataset)": "Выберите набор данных",
+  "Select section(ui.select_section)": "Выберите раздел",
+  "View as Markdown(ui.view_markdown)": "Просмотр Markdown",
+  "latest(ui.version_latest)": "последняя"
+}

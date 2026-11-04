@@ -1,0 +1,38 @@
+{
+  "name": "@terrafirmagreg-team/history",
+  "version": "1.2.0",
+  "type": "module",
+  "description": "Git page history",
+  "license": "LGPL-3.0-only",
+  "exports": {
+    "./lib": "./src/lib/index.ts",
+    "./lib/*": [
+      "./src/lib/*.ts",
+      "./src/lib/*/index.ts"
+    ]
+  },
+  "dependencies": {
+    "fumadocs-page-history": "0.4.2",
+    "server-only": "catalog:"
+  },
+  "peerDependencies": {
+    "next": "catalog:",
+    "react": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TerraFirmaGreg-Team/Web-Foundation.git",
+    "directory": "packages/history"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "src"
+  ]
+}

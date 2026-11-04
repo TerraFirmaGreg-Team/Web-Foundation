@@ -1,0 +1,13 @@
+{
+  "Bad(ui.feedback.bad)": "Bad",
+  "Close(ui.feedback.close)": "Close",
+  "Context(ui.feedback.context)": "Context",
+  "Feedback(ui.feedback.tooltip)": "Feedback",
+  "Good(ui.feedback.good)": "Good",
+  "How is this page?(ui.feedback.question)": "How is this page?",
+  "Leave your feedback…(ui.feedback.placeholder)": "Leave your feedback…",
+  "Submit Again(ui.feedback.submit_again)": "Submit Again",
+  "Submit(ui.feedback.submit)": "Submit",
+  "Thank you for your feedback!(ui.feedback.thanks)": "Thank you for your feedback!",
+  "View on GitHub(ui.feedback.view_on_github)": "View on GitHub"
+}

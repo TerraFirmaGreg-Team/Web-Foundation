@@ -1,0 +1,13 @@
+@keyframes quest-outline-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.94;
+  }
+}
+
+.quest-outline-pulse {
+  animation: quest-outline-pulse 2s ease-in-out infinite;
+}

@@ -1,0 +1,14 @@
+{
+  "A player joined the game(chat.anonymousJoin)": "Гравець зайшов у гру",
+  "A player left the game(chat.anonymousQuit)": "Гравець вийшов з гри",
+  "Chat(chat.title)": "Чат",
+  "Log in(chat.login)": "Увійти",
+  "Message(chat.placeholder)": "Повідомлення",
+  "Name(chat.nameLabel)": "Ім'я",
+  "Name(chat.namePlaceholder)": "Ім'я",
+  "No messages yet(chat.noMessages)": "Поки немає повідомлень",
+  "Send(chat.send)": "Надіслати",
+  "Unknown error(chat.errorUnknown)": "Невідома помилка",
+  "{playername} joined the game(chat.playerJoin)": "{playername} зайшов у гру",
+  "{playername} left the game(chat.playerQuit)": "{playername} вийшов з гри"
+}

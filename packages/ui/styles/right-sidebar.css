@@ -1,0 +1,6 @@
+@media (min-width: 1024px) {
+  [data-slot='right-sidebar']:empty {
+    width: 0;
+    padding-inline: 0;
+  }
+}

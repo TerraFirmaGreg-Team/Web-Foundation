@@ -1,0 +1,96 @@
+{
+  "name": "@terrafirmagreg-team/ui",
+  "version": "1.2.0",
+  "type": "module",
+  "description": "Shared UI kit",
+  "license": "LGPL-3.0-only",
+  "exports": {
+    "./styles.css": "./styles.css",
+    "./styles/*": "./styles/*",
+    "./provider": "./src/components/provider.tsx",
+    "./components/ui/*": [
+      "./src/components/ui/*.tsx",
+      "./src/components/ui/*/index.tsx"
+    ],
+    "./components/blocks/*": [
+      "./src/components/blocks/*.tsx",
+      "./src/components/blocks/*/index.tsx"
+    ],
+    "./components/layouts/*": [
+      "./src/components/layouts/*.tsx",
+      "./src/components/layouts/*/index.tsx",
+      "./src/components/layouts/*/index.ts"
+    ],
+    "./hooks/*": [
+      "./src/hooks/*.ts",
+      "./src/hooks/*/index.ts"
+    ],
+    "./lib/*": [
+      "./src/lib/*.ts",
+      "./src/lib/*/index.ts"
+    ],
+    "./types/*": [
+      "./src/types/*.ts",
+      "./src/types/*/index.ts"
+    ],
+    "./components/mdx/*": [
+      "./src/components/mdx/*.tsx",
+      "./src/components/mdx/*/index.tsx"
+    ],
+    "./locales": "./src/locales.ts"
+  },
+  "dependencies": {
+    "@base-ui/react": "catalog:",
+    "@icons-pack/react-simple-icons": "catalog:",
+    "@react-three/drei": "10.7.9",
+    "@react-three/fiber": "9.8.2",
+    "@shadcn/react": "^0.3.1",
+    "@terrafirmagreg-team/translate": "workspace:*",
+    "@xyflow/react": "12.12.0",
+    "beautiful-mermaid": "^1.1.3",
+    "class-variance-authority": "catalog:",
+    "cmdk": "^1.1.1",
+    "cn": "catalog:",
+    "embla-carousel-react": "^8.6.0",
+    "flag-icons": "^7.6.0",
+    "hast-util-to-jsx-runtime": "^2.3.6",
+    "input-otp": "^1.5.0",
+    "katex": "^0.19.1",
+    "lucide-react": "catalog:",
+    "next-themes": "^0.4.6",
+    "react-day-picker": "^10.0.2",
+    "react-medium-image-zoom": "^5.4.9",
+    "react-resizable-panels": "^4.18.0",
+    "recharts": "3.10.1",
+    "scroll-into-view-if-needed": "^3.1.0",
+    "tailwindcss": "^4.3.4",
+    "three": "^0.186.1",
+    "three-stdlib": "2.36.1",
+    "@terrafirmagreg-team/data": "workspace:*"
+  },
+  "peerDependencies": {
+    "next": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@types/hast": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@types/three": "^0.187.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TerraFirmaGreg-Team/Web-Foundation.git",
+    "directory": "packages/ui"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "src",
+    "styles",
+    "styles.css"
+  ]
+}

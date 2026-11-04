@@ -1,0 +1,308 @@
+.calc-edge--link .chevron-edge__base {
+  stroke-dasharray: 5 4;
+  stroke: color-mix(
+    in oklab,
+    var(--color-primary) 65%,
+    var(--color-muted-foreground)
+  );
+}
+
+.calc-flow .react-flow__node {
+  cursor: default;
+}
+
+.calc-flow .react-flow__node.dragging {
+  cursor: grabbing;
+}
+
+.calc-rail {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: 2px;
+  overflow: hidden;
+  width: 20px;
+  pointer-events: none;
+}
+
+.calc-rail .calc-port {
+  pointer-events: auto;
+}
+
+.calc-rail--in {
+  right: calc(100% - 10px);
+  align-items: flex-start;
+}
+
+.calc-rail--out {
+  left: calc(100% - 10px);
+  align-items: flex-end;
+}
+
+.calc-port {
+  position: absolute;
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border-radius: 3px;
+  border: 1px solid;
+  background: var(--color-card);
+  padding: 0;
+  z-index: 25;
+  cursor: default;
+}
+
+.calc-rail .calc-port {
+  position: relative;
+  flex: none;
+  inset: auto;
+  transform: none;
+}
+
+.calc-port--ghost {
+  opacity: 0;
+  pointer-events: none;
+  border-color: transparent;
+  background: transparent;
+}
+
+.calc-port-inner {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.calc-port.connectionindicator {
+  cursor: default;
+}
+
+.calc-port--in.connectionindicator {
+  cursor: pointer;
+}
+
+.calc-port--out.connectionindicator {
+  cursor: pointer;
+}
+
+.calc-port--out {
+  border-color: var(--color-red-400, #f87171);
+  background: color-mix(in oklab, var(--color-red-400, #f87171) 14%, var(--color-card));
+  cursor: pointer;
+}
+
+.calc-port--out:hover,
+.calc-port--out.connectablestart {
+  background: color-mix(in oklab, var(--color-red-400, #f87171) 30%, var(--color-card));
+}
+
+.calc-port--over {
+  border-color: var(--color-red-500, #ef4444);
+  box-shadow: 0 0 0 1.5px color-mix(in oklab, var(--color-red-500, #ef4444) 55%, transparent);
+}
+
+.calc-port--in {
+  border-color: var(--color-emerald-500, #10b981);
+  background: color-mix(in oklab, var(--color-emerald-500, #10b981) 10%, var(--color-card));
+  cursor: pointer;
+}
+
+.calc-port--in:hover,
+.calc-port--in.connectableend:hover {
+  background: color-mix(in oklab, var(--color-emerald-500, #10b981) 28%, var(--color-card));
+}
+
+.calc-port--open {
+  border-style: dashed;
+}
+
+.calc-port--open .calc-port-inner {
+  opacity: 0.55;
+}
+
+.calc-port--partial {
+  border-color: var(--color-amber-400, #fbbf24);
+  background: color-mix(in oklab, var(--color-amber-400, #fbbf24) 12%, var(--color-card));
+}
+
+.calc-port--full {
+  border-color: var(--color-emerald-500, #10b981);
+  background: color-mix(in oklab, var(--color-emerald-500, #10b981) 16%, var(--color-card));
+}
+
+.calc-port--cat {
+  border-style: dotted;
+}
+
+.calc-port--more {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  height: 20px;
+  border: 1px dashed color-mix(in oklab, var(--color-muted-foreground) 45%, transparent);
+  background: var(--color-card);
+  color: var(--color-muted-foreground);
+  font-size: 7px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.calc-port--more:hover {
+  color: var(--color-foreground);
+  border-color: var(--color-muted-foreground);
+}
+
+.calc-port-count {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  z-index: 1;
+  pointer-events: none;
+  white-space: nowrap;
+  font-size: 8px;
+  font-weight: 600;
+  line-height: 1;
+  padding-bottom: 0.5px;
+  color: var(--color-foreground);
+  text-shadow:
+    0 0 2px var(--color-card),
+    0 1px 1px var(--color-card),
+    1px 0 1px var(--color-card),
+    -1px 0 1px var(--color-card),
+    0 -1px 1px var(--color-card);
+}
+
+.calc-port-count[data-len='l'] {
+  font-size: 7px;
+}
+
+.calc-port-count[data-len='xl'] {
+  font-size: 6px;
+}
+
+.calc-edge--wire.selected .chevron-edge__base,
+.react-flow__edge.selected .chevron-edge__base {
+  stroke: var(--color-primary);
+}
+
+.calc-flow .react-flow__node:not(.dragging) {
+  transition: transform 240ms ease;
+}
+
+.calc-flow .react-flow__node-calcMaterial[style*='--calc-delay'] {
+  animation: calc-node-in 200ms ease-out both;
+  animation-delay: var(--calc-delay, 0ms);
+}
+
+.calc-flow
+  .react-flow__node-calcMaterial[style*='--calc-delay']
+  [data-calc-card] {
+  animation: calc-card-in 200ms ease-out both;
+  animation-delay: var(--calc-delay, 0ms);
+}
+
+@keyframes calc-node-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes calc-card-in {
+  from {
+    transform: translateY(6px) scale(0.92);
+  }
+}
+
+.react-flow__node.calc-node--focus [data-calc-card] {
+  box-shadow: 0 0 0 2px var(--color-primary);
+}
+
+.calc-flow--dots .react-flow__edges {
+  display: none;
+}
+
+.calc-edge-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  background: var(--color-card);
+  padding: 1px 4px;
+  font-size: 9px;
+  line-height: 1.3;
+  color: var(--color-muted-foreground);
+  cursor: pointer;
+  pointer-events: all;
+}
+
+.calc-edge-label > span:first-child {
+  line-height: 0;
+}
+
+.calc-edge-label:hover {
+  color: var(--color-foreground);
+  border-color: var(--color-muted-foreground);
+}
+
+.calc-edge-label__name {
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-foreground);
+}
+
+.calc-edge-label__cut {
+  display: none;
+  color: var(--color-red-500, #ef4444);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.calc-edge-label__input {
+  width: 56px;
+  border-radius: 4px;
+  border: 1px solid var(--color-primary);
+  background: var(--color-card);
+  padding: 1px 4px;
+  font-size: 10px;
+  outline: none;
+}
+
+.calc-flow--shift .react-flow__edge {
+  cursor: pointer;
+}
+
+.calc-flow--shift
+  .react-flow__edge:hover
+  .calc-edge-label
+  .calc-edge-label__amount {
+  display: none;
+}
+
+.calc-flow--shift .react-flow__edge:hover .calc-edge-label .calc-edge-label__cut {
+  display: inline;
+}
+
+.calc-flow--shift .react-flow__edge:hover .chevron-edge__base {
+  stroke: var(--color-red-500, #ef4444);
+}
+
+.react-flow__node.calc-node--dim {
+  opacity: 0.35;
+  transition: opacity 160ms ease;
+}
+
+.react-flow__node.calc-node--chain [data-calc-card] {
+  box-shadow: 0 0 0 1.5px color-mix(in oklab, var(--color-primary) 65%, transparent);
+}

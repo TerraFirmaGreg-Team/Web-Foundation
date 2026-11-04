@@ -1,0 +1,59 @@
+{
+  "name": "@terrafirmagreg-team/kit",
+  "version": "1.2.0",
+  "type": "module",
+  "description": "Fumadocs content engine",
+  "license": "LGPL-3.0-only",
+  "exports": {
+    "./lib/*": [
+      "./src/lib/*.ts",
+      "./src/lib/*/index.ts"
+    ],
+    "./types/*": "./src/types/*.ts",
+    "./hooks/*": [
+      "./src/hooks/*.ts",
+      "./src/hooks/*/index.ts"
+    ],
+    "./types": "./src/types/index.ts",
+    "./components/*": [
+      "./src/components/*.tsx",
+      "./src/components/*/index.tsx",
+      "./src/components/*/index.ts"
+    ],
+    "./locales": "./src/locales.ts"
+  },
+  "dependencies": {
+    "@base-ui/react": "catalog:",
+    "@icons-pack/react-simple-icons": "catalog:",
+    "@terrafirmagreg-team/data": "workspace:*",
+    "@terrafirmagreg-team/mdx": "workspace:*",
+    "@terrafirmagreg-team/sites": "workspace:*",
+    "@terrafirmagreg-team/translate": "workspace:*",
+    "@terrafirmagreg-team/ui": "workspace:*",
+    "fumadocs-core": "catalog:",
+    "lucide-react": "catalog:",
+    "server-only": "catalog:",
+    "zod": "catalog:"
+  },
+  "peerDependencies": {
+    "next": "catalog:",
+    "react": "catalog:"
+  },
+  "devDependencies": {
+    "@types/mdx": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TerraFirmaGreg-Team/Web-Foundation.git",
+    "directory": "packages/kit"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "src"
+  ]
+}
