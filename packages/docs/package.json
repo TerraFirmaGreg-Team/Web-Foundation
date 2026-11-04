@@ -1,6 +1,6 @@
 {
   "name": "@terrafirmagreg-team/docs",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "private": false,
   "publishConfig": {
     "access": "public"
@@ -10,6 +10,11 @@
     "src"
   ],
   "exports": {
+    "./components/*": [
+      "./src/components/*.tsx",
+      "./src/components/*/index.tsx",
+      "./src/components/*/index.ts"
+    ],
     "./lib/*": [
       "./src/lib/*.ts",
       "./src/lib/*/index.ts"
@@ -17,12 +22,21 @@
   },
   "dependencies": {
     "@terrafirmagreg-team/kit": "workspace:*",
+    "@terrafirmagreg-team/mdx": "workspace:*",
     "@terrafirmagreg-team/sites": "workspace:*",
+    "@terrafirmagreg-team/translate": "workspace:*",
+    "@terrafirmagreg-team/ui": "workspace:*",
     "fumadocs-core": "catalog:"
   },
   "peerDependencies": {
     "next": "catalog:",
     "react": "catalog:"
+  },
+  "devDependencies": {
+    "@types/mdx": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:"
   },
   "description": "Docs section",
   "repository": {
