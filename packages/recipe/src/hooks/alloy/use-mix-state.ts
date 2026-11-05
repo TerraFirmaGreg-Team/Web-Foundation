@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
+import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { replaceUrlState } from '@terrafirmagreg-team/ui/lib/utils/history';
 import { recipeItemName } from '@terrafirmagreg-team/recipe/lib/client-index';
 import { useFluidColors } from '@terrafirmagreg-team/recipe/hooks/alloy/use-fluid-colors';
@@ -92,10 +93,11 @@ export function useMixState(recipe: AlloyRecipe, session: RecipeSession) {
     }
   }
 
+  const resolved = useResolvedLang();
   useEffect(() => {
     const mix = amounts.map((value) => trim(value)).join(';');
     replaceUrlState(
-      recipeHref(session.dataset, session.lang, {
+      recipeHref(session.dataset, resolved, {
         tool: 'alloy',
         id: recipe.recipe.id,
         tab: session.tab,
@@ -108,7 +110,7 @@ export function useMixState(recipe: AlloyRecipe, session: RecipeSession) {
     amounts,
     recipe.recipe.id,
     session.dataset,
-    session.lang,
+    resolved,
     session.tab,
   ]);
   const mix = useMemo(

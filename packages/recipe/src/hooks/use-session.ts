@@ -5,6 +5,7 @@ import { useVersionedDataset } from '@terrafirmagreg-team/kit/hooks/use-versione
 import { useRecipeIndex } from '@terrafirmagreg-team/recipe/hooks/use-index';
 import { useRecipeQuery } from '@terrafirmagreg-team/recipe/hooks/use-query';
 import { useAsyncValue } from '@terrafirmagreg-team/ui/hooks/use-async-value';
+import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { clientDumpLang } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import { useRecipeIndexNames } from '@terrafirmagreg-team/recipe/lib/index-store';
 import {
@@ -24,7 +25,7 @@ export function useRecipeSession(page: RecipePageData): RecipeSession {
   const { dataset: id, lang } = page;
   const dataset =
     useVersionedDataset(id.id, { versions: page.versions }) ?? id;
-  const query = useRecipeQuery(dataset, lang);
+  const query = useRecipeQuery(dataset);
   const { index, indexLoading } = useRecipeIndex(dataset, lang);
   const placeOpts = recipePlaceOpts(query.place);
 
@@ -65,11 +66,14 @@ export function useRecipeSession(page: RecipePageData): RecipeSession {
     query.place.id === RECIPE_ALL_TYPE &&
     !query.item &&
     !query.fluid;
+  const resolved = useResolvedLang();
   useEffect(() => {
     if (!bareIndex || !firstType) return;
-    replaceUrlState(recipeHref(dataset, lang, { ...nav, type: firstType }));
+    replaceUrlState(
+      recipeHref(dataset, resolved, { ...nav, type: firstType }),
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps -- nav rebuilds per render
-  }, [bareIndex, firstType, dataset, lang]);
+  }, [bareIndex, firstType, dataset, resolved]);
 
   return {
     page,

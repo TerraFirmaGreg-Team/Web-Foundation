@@ -80,11 +80,25 @@ export function sectionConfig(): SectionConfigInput {
   return config;
 }
 
+export interface LayoutDeps {
+  trackView?: (pathname: string) => void;
+  commentsMenuItem?: () => unknown;
+}
+
+export function registerLayoutDeps(input: LayoutDeps): void {
+  registry.set('layoutDeps', input);
+}
+
+export function layoutDeps(): LayoutDeps {
+  return (registry.get('layoutDeps') as LayoutDeps | undefined) ?? {};
+}
+
 export type ClientDumpLoader = {
   loadDump(dataset: DatasetRef): Promise<SectionDump | null | undefined>;
   loadVersions(
     datasetId: string,
   ): Promise<{ latest?: string; versions: string[] } | null>;
+  warm?(dataset: DatasetRef): void;
 };
 
 export const {

@@ -10,20 +10,18 @@ import {
 } from '@terrafirmagreg-team/ui/components/ui/input-group';
 import { Pager } from '@terrafirmagreg-team/ui/components/blocks/page/pager';
 import { recipeHref } from '@terrafirmagreg-team/recipe/lib/links';
+import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { replaceUrlState } from '@terrafirmagreg-team/ui/lib/utils/history';
 import { cn } from '@terrafirmagreg-team/ui/lib/utils/cn';
-import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import type { RecipeHrefOpts } from '@terrafirmagreg-team/recipe/types';
 
 type QueryNav = {
   dataset: DatasetRef;
-  lang: Lang;
   params?: RecipeHrefOpts;
 };
 
 export function QuerySearch({
   dataset,
-  lang,
   params,
   query,
   onQuery,
@@ -35,6 +33,7 @@ export function QuerySearch({
   placeholder?: string;
   className?: string;
 }) {
+  const resolved = useResolvedLang();
   return (
     <InputGroup className={cn('w-full', className)}>
       <InputGroupAddon>
@@ -48,7 +47,7 @@ export function QuerySearch({
           const next = event.target.value;
           onQuery(next);
           replaceUrlState(
-            recipeHref(dataset, lang, {
+            recipeHref(dataset, resolved, {
               ...params,
               search: next || undefined,
             }),
@@ -61,7 +60,6 @@ export function QuerySearch({
 
 export function QueryPager({
   dataset,
-  lang,
   params,
   query,
   list,
@@ -81,6 +79,7 @@ export function QueryPager({
   leading?: ReactNode;
   className?: string;
 }) {
+  const resolved = useResolvedLang();
   return (
     <Pager
       page={list.page}
@@ -92,7 +91,7 @@ export function QueryPager({
       className={className}
       onPage={(next) =>
         replaceUrlState(
-          recipeHref(dataset, lang, {
+          recipeHref(dataset, resolved, {
             ...params,
             search: query || undefined,
             rpage: next + 1,

@@ -18,12 +18,12 @@ export function RelationPage(props: PageRendererProps) {
   if (!ids.length) return null;
   return (
     <ul className="space-y-1">
-      {ids.map((id) => {
+      {ids.map((id, index) => {
         const resolved = referenceHref(props, id);
         const ref = entryRef(props.entryRefs, id);
         const name = entryLabel(props.entryRefs, props.langMap, id);
         return (
-          <li key={id} className="flex items-center gap-2">
+          <li key={`${id}:${index}`} className="flex items-center gap-2">
             {ref?.icon ? (
               <Entry
                 id={ref.icon.id}

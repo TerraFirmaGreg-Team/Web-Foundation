@@ -1,14 +1,22 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { displayOf } from '@terrafirmagreg-team/dump/lib/dump/data/registry/parse';
-import { parseStackId } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
+import {
+  parseStackId,
+  tagKindOf,
+  type ReferenceKind,
+} from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 import { clientDumpLang } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import {
   clientRegistryKindFor,
   loadClientRegistry,
 } from '@terrafirmagreg-team/dump/lib/dump/client/registry';
 import type { DumpDisplay } from '@terrafirmagreg-team/dump/lib/dump/contract/text';
-import { dumpTextLines } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names';
+import {
+  dumpTextLines,
+  stackDisplayName,
+} from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names';
 import { createDatasetCache } from '@terrafirmagreg-team/dump/lib/dump/reader';
+import { fetchTagMembers } from '@terrafirmagreg-team/game/lib/entry/icon-load';
 
 export const loadStackDisplay = createDatasetCache(
   async (
@@ -43,11 +51,28 @@ export async function stackTooltip(
   id: string,
   lang: string | undefined,
   langMap: Record<string, string> | undefined,
-  kind: 'item' | 'fluid' | 'entity' | undefined,
+  kind: ReferenceKind | undefined,
 ): Promise<StackTooltip> {
-  const display = await loadStackDisplay(dataset, id, kind);
   const map =
     langMap ?? (lang ? await clientDumpLang(dataset, lang) : undefined);
+  if (id.startsWith('#')) {
+    if (!map) return { lines: [], mods: {} };
+    const members = await fetchTagMembers(
+      dataset,
+      id.slice(1),
+      tagKindOf(kind) ?? 'item',
+    );
+    return {
+      lines: members.map((member) => stackDisplayName(map, member)),
+      mods: {},
+    };
+  }
+  const memberKind = tagKindOf(kind) ?? kind;
+  const loadKind =
+    memberKind === 'fluid' || memberKind === 'entity'
+      ? memberKind
+      : 'item';
+  const display = await loadStackDisplay(dataset, id, loadKind);
   if (!display || !map) return { lines: [], mods: {} };
   const mods: Record<string, string[]> = {};
   for (const [mod, raw] of Object.entries(display.tooltipMods ?? {})) {

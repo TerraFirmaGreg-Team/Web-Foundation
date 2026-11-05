@@ -4,8 +4,9 @@ import {
   ScrollProvider,
   type AnchorProviderProps,
 } from 'fumadocs-core/toc';
-import { useRef, type ComponentProps } from 'react';
+import { useMemo, useRef, type ComponentProps } from 'react';
 import { TOCContext } from '@terrafirmagreg-team/kit/hooks/use-toc';
+import { tocTitle } from '@terrafirmagreg-team/kit/lib/toc-title';
 import { cn } from '@terrafirmagreg-team/ui/lib/utils/cn';
 import { mergeRefs } from '@terrafirmagreg-team/ui/lib/utils/merge-refs';
 
@@ -32,9 +33,13 @@ export type {
 export type TOCProviderProps = AnchorProviderProps;
 
 export function TOCProvider({ toc, children, ...props }: TOCProviderProps) {
+  const items = useMemo(
+    () => toc?.map((item) => ({ ...item, title: tocTitle(item) })),
+    [toc],
+  );
   return (
-    <TOCContext value={toc}>
-      <AnchorProvider toc={toc} {...props}>
+    <TOCContext value={items}>
+      <AnchorProvider toc={items} {...props}>
         {children}
       </AnchorProvider>
     </TOCContext>

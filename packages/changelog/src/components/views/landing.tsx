@@ -1,30 +1,43 @@
 import { sectionConfig } from '@terrafirmagreg-team/kit/lib/config';
-import type { SectionLandingView } from '@terrafirmagreg-team/kit/components/views/routes';
-import type { DatasetLanding, SectionSource } from '@terrafirmagreg-team/kit/types';
+import type {
+  SectionLandingProps,
+  SectionLandingView,
+} from '@terrafirmagreg-team/kit/components/views/routes';
+import type { SectionSource } from '@terrafirmagreg-team/kit/types';
+import { Suspense } from 'react';
 import { timelineEntries } from '@terrafirmagreg-team/changelog/components/entries';
 import {
-  ChangelogTimeline,
+  ChangelogBrowser,
+  ChangelogBrowserFallback,
+} from '@terrafirmagreg-team/changelog/components/views/browser';
+import {
   groupByMonth,
   monthAnchor,
 } from '@terrafirmagreg-team/changelog/components/timeline';
 import { ChangelogMonthLabel } from '@terrafirmagreg-team/changelog/components/month-label';
 
-export async function changelogLanding(
-  page: DatasetLanding,
-  { source, route }: { source: SectionSource; route: string },
-): Promise<SectionLandingView> {
+export async function changelogLanding({
+  page,
+  lang,
+  source,
+  route,
+}: SectionLandingProps<SectionSource>): Promise<SectionLandingView> {
   const dataset = page.dataset.id;
   const entries = await timelineEntries(
     source,
     route,
     dataset,
-    page.lang,
+    lang,
     sectionConfig().datasetConfig[dataset]?.repo,
   );
   return {
-    node: <ChangelogTimeline entries={entries} lang={page.lang} />,
+    node: (
+      <Suspense fallback={<ChangelogBrowserFallback />}>
+        <ChangelogBrowser entries={entries} lang={lang} />
+      </Suspense>
+    ),
     workspace: {
-      toc: groupByMonth(entries, page.lang).map((month) => ({
+      toc: groupByMonth(entries, lang).map((month) => ({
         title: <ChangelogMonthLabel monthKey={month.key} />,
         url: `#${monthAnchor(month.key)}`,
         depth: 2,

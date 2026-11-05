@@ -2,6 +2,7 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
+import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { EmptyState } from '@terrafirmagreg-team/ui/components/blocks/page/empty-state';
 import { LinkPreview } from '@terrafirmagreg-team/ui/components/blocks/link/link-preview';
 import { recipeItemName } from '@terrafirmagreg-team/recipe/lib/client-index';
@@ -27,6 +28,7 @@ export function ItemTagGroups({
   nav: RecipeHrefOpts;
 }) {
   const t = useTranslations();
+  const resolved = useResolvedLang();
   if (!groups.length) {
     return <EmptyState variant="empty">{t('No tags for this item.', { note: 'recipe.empty_tags' })}</EmptyState>;
   }
@@ -47,7 +49,7 @@ export function ItemTagGroups({
               return (
                 <LinkPreview
                   key={`${tagKind}:${id}`}
-                  href={recipeHref(dataset, lang, {
+                  href={recipeHref(dataset, resolved, {
                     type: 'emi:tag',
                     id: tagPseudoId(id, tagKind),
                     search: query || undefined,
@@ -65,7 +67,7 @@ export function ItemTagGroups({
                         ? text || token
                         : `${text} ${token}`;
                     replaceUrlState(
-                      recipeHref(dataset, lang, {
+                      recipeHref(dataset, resolved, {
                         type: 'emi:tag',
                         search,
                       }),

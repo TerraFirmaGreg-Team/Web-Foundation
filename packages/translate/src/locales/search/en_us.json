@@ -1,3 +1,6 @@
 {
-  "Everywhere(ui.search_everywhere)": "Everywhere"
+  "Everywhere(ui.search_everywhere)": "Everywhere",
+  "Sections(ui.search_sections)": "Sections",
+  "Datasets(ui.search_datasets)": "Datasets",
+  "All(ui.search_all)": "All"
 }

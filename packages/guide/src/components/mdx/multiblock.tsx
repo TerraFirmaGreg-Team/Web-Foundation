@@ -22,7 +22,7 @@ export type MdxMultiblockProps = {
   name?: string;
   spec?: string;
   label?: string;
-  dataset?: DatasetRef;
+  dataset?: DatasetRef | string;
   title?: string;
 };
 
@@ -36,10 +36,17 @@ export function MdxMultiblock({
 }: MdxMultiblockProps) {
   const pathname = usePathname();
   const locId = parseSectionLocation(pathname).dataset;
-  const dataset = useMemo<DatasetRef>(
-    () => datasetProp ?? { id: locId ?? '' },
-    [datasetProp, locId],
-  );
+  const dataset = useMemo<DatasetRef>(() => {
+    if (typeof datasetProp === 'string') {
+      const trimmed = datasetProp.trim();
+      try {
+        return JSON.parse(trimmed) as DatasetRef;
+      } catch {
+        return { id: trimmed };
+      }
+    }
+    return datasetProp ?? { id: locId ?? '' };
+  }, [datasetProp, locId]);
   const lang = useContext(ResolvedLangContext)?.lang;
   const dumpLoc = useDumpLocation(dataset);
   const resolveResource = useMemo(

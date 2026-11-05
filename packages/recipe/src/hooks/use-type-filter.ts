@@ -4,6 +4,7 @@ import { useEffect, useMemo } from 'react';
 import { groupByCategory } from '@terrafirmagreg-team/recipe/lib/group';
 import { TAG_RECIPE_TYPE } from '@terrafirmagreg-team/recipe/lib/client-index';
 import { RECIPE_ALL_TYPE, recipeHref } from '@terrafirmagreg-team/recipe/lib/links';
+import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { replaceUrlState } from '@terrafirmagreg-team/ui/lib/utils/history';
 import type {
   RecipeCompactRow,
@@ -14,7 +15,6 @@ export function useTypeFilter(
   session: Pick<
     RecipeSession,
     | 'dataset'
-    | 'lang'
     | 'index'
     | 'nav'
     | 'place'
@@ -24,7 +24,8 @@ export function useTypeFilter(
   >,
   rows: RecipeCompactRow[],
 ) {
-  const { dataset, lang, index, nav, place, recipeId } = session;
+  const { dataset, index, nav, place, recipeId } = session;
+  const resolved = useResolvedLang();
   const groups = useMemo(
     () => groupByCategory(rows, index?.types ?? [], index?.categories),
     [rows, index],
@@ -51,15 +52,15 @@ export function useTypeFilter(
   useEffect(() => {
     if (!primary || valid) return;
     replaceUrlState(
-      recipeHref(dataset, lang, { ...nav, type: primary, rpage: undefined }),
+      recipeHref(dataset, resolved, { ...nav, type: primary, rpage: undefined }),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps -- nav rebuilds per render
-  }, [primary, valid, dataset, lang]);
+  }, [primary, valid, dataset, resolved]);
 
   const setActive = (next: string) => {
     if (next === active || next === urlType) return;
     replaceUrlState(
-      recipeHref(dataset, lang, { ...nav, type: next, rpage: undefined }),
+      recipeHref(dataset, resolved, { ...nav, type: next, rpage: undefined }),
     );
   };
 

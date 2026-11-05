@@ -118,13 +118,9 @@ export function createDumpAssetResolver(
     const base =
       typeof window === 'undefined' ? 'http://x.invalid' : location.origin;
     prefix ??= new URL(dumpStorageUrl(''), base).href;
-    let resourcePath: string;
     let modelAbs: URL;
     try {
       modelAbs = new URL(modelUrl, base);
-      const resource = new URL(resourceUrl, modelAbs);
-      if (resource.origin !== modelAbs.origin) return undefined;
-      resourcePath = resource.pathname;
     } catch {
       return undefined;
     }
@@ -135,7 +131,19 @@ export function createDumpAssetResolver(
       modelHref.slice(prefix.length),
     );
     if (!modelRel) return undefined;
-    const rel = relativePath(pathDir(modelAbs.pathname), resourcePath);
+    const modelDirHref = pathDir(modelHref);
+    let rel: string | undefined;
+    if (resourceUrl.startsWith(modelDirHref)) {
+      rel = resourceUrl.slice(modelDirHref.length);
+    } else {
+      try {
+        const resource = new URL(resourceUrl, modelAbs);
+        if (resource.origin !== modelAbs.origin) return undefined;
+        rel = relativePath(pathDir(modelAbs.pathname), resource.pathname);
+      } catch {
+        return undefined;
+      }
+    }
     if (!rel || !rel.includes('/')) return undefined;
     const dumpRel = resolveAssetRel(pathDir(modelRel), rel);
     if (!dumpRel) return undefined;

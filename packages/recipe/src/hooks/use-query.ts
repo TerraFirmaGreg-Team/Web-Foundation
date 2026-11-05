@@ -3,6 +3,7 @@ import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 
 import { useEffect, useState } from 'react';
 import { useLocationSearchParams } from '@terrafirmagreg-team/ui/hooks/page/use-location-search';
+import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { replaceUrlState } from '@terrafirmagreg-team/ui/lib/utils/history';
 import {
   recipeCalcHref,
@@ -10,7 +11,6 @@ import {
   recipePlaceFromParams,
 } from '@terrafirmagreg-team/recipe/lib/links';
 import { canonicalStackId } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
-import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import type { RecipeRelation } from '@terrafirmagreg-team/recipe/types';
 
 function urlPage(params: URLSearchParams, key: string) {
@@ -25,8 +25,9 @@ function urlRelation(
   return value === 'uses' || value === 'tags' ? value : undefined;
 }
 
-export function useRecipeQuery(dataset: DatasetRef, lang: Lang) {
+export function useRecipeQuery(dataset: DatasetRef) {
   const params = useLocationSearchParams();
+  const resolved = useResolvedLang();
 
   const place = recipePlaceFromParams(params);
   const isCalc = place.kind === 'calc';
@@ -79,8 +80,8 @@ export function useRecipeQuery(dataset: DatasetRef, lang: Lang) {
     if (!stray) return;
     replaceUrlState(
       isCalc
-        ? recipeCalcHref(dataset, lang, tree || undefined)
-        : recipeHref(dataset, lang, {
+        ? recipeCalcHref(dataset, resolved, tree || undefined)
+        : recipeHref(dataset, resolved, {
             tool: place.kind,
             id: recipeId,
             unit: alloyUnit,
@@ -92,7 +93,7 @@ export function useRecipeQuery(dataset: DatasetRef, lang: Lang) {
     isTool,
     isCalc,
     place.kind,
-    lang,
+    resolved,
     dataset,
     params,
     tree,
@@ -107,7 +108,7 @@ export function useRecipeQuery(dataset: DatasetRef, lang: Lang) {
     if (isTool) return;
     if (rawItem && rawFluid) {
       replaceUrlState(
-        recipeHref(dataset, lang, {
+        recipeHref(dataset, resolved, {
           type: params.get('type') ?? undefined,
           item: rawItem,
           id: recipeId,
@@ -121,7 +122,7 @@ export function useRecipeQuery(dataset: DatasetRef, lang: Lang) {
     }
   }, [
     isTool,
-    lang,
+    resolved,
     dataset,
     params,
     rawItem,
@@ -140,7 +141,7 @@ export function useRecipeQuery(dataset: DatasetRef, lang: Lang) {
     const canonFluid = rawFluid ? canonicalStackId(rawFluid) : undefined;
     if (canonItem === rawItem && canonFluid === rawFluid) return;
     replaceUrlState(
-      recipeHref(dataset, lang, {
+      recipeHref(dataset, resolved, {
         type: params.get('type') ?? undefined,
         item: canonItem,
         fluid: canonFluid,
@@ -154,7 +155,7 @@ export function useRecipeQuery(dataset: DatasetRef, lang: Lang) {
     );
   }, [
     isTool,
-    lang,
+    resolved,
     dataset,
     params,
     rawItem,

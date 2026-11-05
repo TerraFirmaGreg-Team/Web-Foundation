@@ -1,0 +1,32 @@
+import { Suspense } from 'react';
+import { WorkspaceBody } from '@terrafirmagreg-team/ui/components/layouts/workspace';
+import type {
+  SectionLandingProps,
+  SectionLandingView,
+} from '@terrafirmagreg-team/kit/components/views/routes';
+import type { GuideSource } from '@terrafirmagreg-team/guide/lib/source';
+import {
+  GuideBrowser,
+  GuideBrowserFallback,
+} from '@terrafirmagreg-team/guide/components/views/browser';
+
+export function guideLanding({
+  page,
+  lang,
+}: SectionLandingProps<GuideSource>): SectionLandingView {
+  return {
+    node: (
+      <WorkspaceBody className="viewport-body">
+        <Suspense fallback={<GuideBrowserFallback />}>
+          <GuideBrowser
+            dataset={page.dataset.id}
+            datasetTitle={page.datasetTitle ?? page.dataset.id}
+            lang={lang}
+            versions={page.versions}
+          />
+        </Suspense>
+      </WorkspaceBody>
+    ),
+    workspace: { pagination: false },
+  };
+}

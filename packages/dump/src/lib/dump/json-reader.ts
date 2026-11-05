@@ -208,7 +208,12 @@ export class JsonDumpReader implements DumpReader {
   private async objectsIndex(
     root: string,
   ): Promise<Record<string, string> | undefined> {
-    const raw = await fetchJson(dumpStorageUrl(`${root}/objects.json`), false);
+    const raw =
+      (await fetchJsonGz(
+        dumpStorageUrl(`${root}/objects.json.gz`),
+        false,
+      )) ??
+      (await fetchJson(dumpStorageUrl(`${root}/objects.json`), false));
     const files =
       raw && typeof raw === 'object' && !Array.isArray(raw)
         ? (raw as Record<string, unknown>).files

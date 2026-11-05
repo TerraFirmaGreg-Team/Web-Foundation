@@ -1,7 +1,5 @@
 import { createRelativeLink } from '@terrafirmagreg-team/kit/components/relative-link';
 import type { LoaderConfig, LoaderOutput, Page } from 'fumadocs-core/source';
-import { notFound } from 'next/navigation';
-import { LangContentSwitch } from '@terrafirmagreg-team/ui/components/blocks/lang/content';
 import { LinkPreview } from '@terrafirmagreg-team/ui/components/blocks/link/link-preview';
 import { lookupPagePreview } from '@terrafirmagreg-team/kit/lib/preview/lookup';
 import {
@@ -9,26 +7,24 @@ import {
   sectionBreadcrumbPreviews,
   type SectionCrumb,
 } from '@terrafirmagreg-team/kit/lib/breadcrumb';
-import { langContent } from '@terrafirmagreg-team/translate/server';
 import { loadLocaleRegistry } from '@terrafirmagreg-team/translate/server';
 import { readPageSource, translationState } from '@terrafirmagreg-team/translate/server';
 import { resolvePage, type SectionSource } from '@terrafirmagreg-team/kit/lib/page';
-import { localeLoader } from '@terrafirmagreg-team/kit/lib/locale/renderer';
 import { findNeighbour } from 'fumadocs-core/page-tree';
+import { stripLangFromUrl } from '@terrafirmagreg-team/translate/lib/slug';
+import { sectionConfig } from '@terrafirmagreg-team/kit/lib/config';
 import type {
   DatasetCatalog,
-  SectionKey,
   SectionPage,
   SectionTrees,
 } from '@terrafirmagreg-team/kit/types';
-import type { WorkspacePaginationItems } from '@terrafirmagreg-team/kit/components/workspace';
+import { PageFrame } from '@terrafirmagreg-team/kit/components/views/frame';
+import type { WorkspaceViewProps } from '@terrafirmagreg-team/kit/components/views/frame';
+import type { WorkspacePaginationItems } from '@terrafirmagreg-team/ui/components/layouts/workspace';
+import type { SectionFeatures } from '@terrafirmagreg-team/kit/types/features';
 import type { PagePreviewData } from '@terrafirmagreg-team/ui/types/preview';
 import type { TranslationState } from '@terrafirmagreg-team/translate/server';
-import type {
-  ComponentProps,
-  ComponentType,
-  ReactNode,
-} from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 
 export interface SectionWorkspaceProps {
@@ -40,16 +36,31 @@ export interface SectionWorkspaceProps {
   previews?: Record<string, PagePreviewData>;
   footer?: WorkspacePaginationItems;
   history?: boolean;
+  features?: SectionFeatures;
 }
 
-export function renderSectionWorkspace({
+export interface SectionPageView {
+  node: ReactNode;
+  workspace?: WorkspaceViewProps;
+}
+
+export function renderSectionView(view: SectionPageView) {
+  return <PageFrame {...view.workspace}>{view.node}</PageFrame>;
+}
+
+export type SectionPageViewFn = (
+  props: SectionWorkspaceProps,
+) => SectionPageView | Promise<SectionPageView>;
+
+export async function renderSectionWorkspace({
   source,
   slug,
   contentDir,
   trees,
   catalog,
   history,
-  workspace: Workspace,
+  features,
+  workspace: pageView,
   page,
   lang,
 }: {
@@ -59,7 +70,8 @@ export function renderSectionWorkspace({
   trees?: SectionTrees;
   catalog: DatasetCatalog;
   history?: boolean;
-  workspace: ComponentType<SectionWorkspaceProps>;
+  features?: SectionFeatures;
+  workspace: SectionPageViewFn;
   page: SectionPage;
   lang: Lang;
 }) {
@@ -81,72 +93,30 @@ export function renderSectionWorkspace({
   const crumbs = sectionBreadcrumbItems(source, page, lang);
   const datasetId = page.url.split('/').filter(Boolean)[1];
   const tree = datasetId ? trees?.[lang]?.[datasetId] : undefined;
-  const neighbours = tree ? findNeighbour(tree, page.url) : undefined;
-  return (
-    <Workspace
-      page={page}
-      crumbs={crumbs}
-      footer={neighbours}
-      previews={sectionBreadcrumbPreviews(crumbs, lang, catalog)}
-      link={createRelativeLink(
-        source as LoaderOutput<LoaderConfig>,
-        page as unknown as Page,
-        (props) => (
-          <LinkPreview
-            preview={lookupPagePreview(catalog, props.href, lang)}
-            {...props}
-          />
-        ),
-      )}
-      contentDir={contentDir}
-      copied={copied}
-      history={history}
-    />
-  );
-}
-
-export async function SectionView({
-  section,
-  getSource,
-  slug,
-  contentDir,
-  trees,
-  catalog,
-  history,
-  workspace,
-}: {
-  section: SectionKey;
-  getSource: () => Promise<SectionSource>;
-  slug: string[] | undefined;
-  contentDir: string;
-  trees?: SectionTrees;
-  catalog: DatasetCatalog;
-  history?: boolean;
-  workspace: ComponentType<SectionWorkspaceProps>;
-}) {
-  const source = await getSource();
-  const content = langContent(
-    slug,
-    (s, l) => resolvePage(source, s, l),
-    (page, lang) =>
-      renderSectionWorkspace({
-        source,
-        slug,
-        contentDir,
-        trees,
-        catalog,
-        history,
-        workspace,
-        page: page as SectionPage,
-        lang,
-      }),
-  );
-  if (!content) notFound();
-  return (
-    <LangContentSwitch
-      content={content}
-      loadLang={localeLoader()?.bind(null, { section, slug })}
-    />
-  );
+  const pageUrl = stripLangFromUrl(page.url, [
+    ...sectionConfig().knownLanguages,
+  ]);
+  const neighbours = tree ? findNeighbour(tree, pageUrl) : undefined;
+  const view = await pageView({
+    page,
+    crumbs,
+    footer: neighbours,
+    previews: sectionBreadcrumbPreviews(crumbs, lang, catalog),
+    link: createRelativeLink(
+      source as LoaderOutput<LoaderConfig>,
+      page as unknown as Page,
+      (props) => (
+        <LinkPreview
+          preview={lookupPagePreview(catalog, props.href, lang)}
+          {...props}
+        />
+      ),
+    ),
+    contentDir,
+    copied,
+    history,
+    features,
+  });
+  return renderSectionView(view);
 }
 

@@ -9,21 +9,20 @@ import {
 } from '@terrafirmagreg-team/recipe/lib/calc/storage';
 import { requestCalcFocus } from '@terrafirmagreg-team/recipe/lib/calc/focus';
 import { recipeHref } from '@terrafirmagreg-team/recipe/lib/links';
+import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { replaceUrlState } from '@terrafirmagreg-team/ui/lib/utils/history';
-import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import type { RecipeHrefOpts } from '@terrafirmagreg-team/recipe/types';
 
 export function useItemPress({
   dataset,
-  lang,
   nav,
   isCalc,
 }: {
   dataset: DatasetRef;
-  lang: Lang;
   nav: RecipeHrefOpts;
   isCalc: boolean;
 }) {
+  const resolved = useResolvedLang();
   const pressRef = useRef<(id: string, ref?: 'item' | 'fluid') => void>(
     () => {},
   );
@@ -67,7 +66,7 @@ export function useItemPress({
           return;
         }
         replaceUrlState(
-          recipeHref(dataset, lang, {
+          recipeHref(dataset, resolved, {
             ...nav,
             type: undefined,
             tool: undefined,

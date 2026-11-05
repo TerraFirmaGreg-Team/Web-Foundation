@@ -2,6 +2,7 @@
 
 import { useMemo, useRef } from 'react';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
+import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { RecipeFrame } from '@terrafirmagreg-team/recipe/components/views/browser/frame';
 import { ItemViewHeader } from '@terrafirmagreg-team/recipe/components/views/browser/item-view-header';
 import {
@@ -35,6 +36,7 @@ import type {
 
 export function ItemView({ session }: { session: RecipeSession }) {
   const t = useTranslations();
+  const resolved = useResolvedLang();
   const {
     dataset,
     lang,
@@ -63,7 +65,6 @@ export function ItemView({ session }: { session: RecipeSession }) {
   const tags = useItemTagGroups({ dataset, index, item, kind });
   const pane = useItemPane({
     dataset,
-    lang,
     nav,
     relation,
     recipeId,
@@ -110,13 +111,13 @@ export function ItemView({ session }: { session: RecipeSession }) {
       const row = typeFilter.rows[focusIndex + dir];
       if (focusIndex < 0 || !row) return;
       replaceUrlState(
-        recipeHref(dataset, lang, { ...nav, id: row.id, rpage: undefined }),
+        recipeHref(dataset, resolved, { ...nav, id: row.id, rpage: undefined }),
       );
       return;
     }
     if (list.pages <= 1) return;
     replaceUrlState(
-      recipeHref(dataset, lang, {
+      recipeHref(dataset, resolved, {
         ...nav,
         rpage: (list.page + dir + list.pages) % list.pages,
       }),

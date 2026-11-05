@@ -3,6 +3,7 @@
 import { useEffect, useState, type ReactNode, type RefObject } from 'react';
 import { useAsyncValue } from '@terrafirmagreg-team/ui/hooks/use-async-value';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
+import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { PagedCard } from '@terrafirmagreg-team/recipe/components/cards/paged-card';
 import { RecipeDefaultMenuItem } from '@terrafirmagreg-team/recipe/components/cards/default-item';
 import { CopyIdMenu } from '@terrafirmagreg-team/game/components/entry/copy-id-menu';
@@ -67,6 +68,7 @@ function RecipeGridCard({
   defaultMaterial?: string;
 }) {
   const t = useTranslations();
+  const resolved = useResolvedLang();
   const { dataset, lang, langMap, names, nav, index } = session;
   const recipe = useAsyncValue(
     () => loadClientRecipe(dataset, row.id, row.bucket),
@@ -89,17 +91,17 @@ function RecipeGridCard({
 
   const focus = () =>
     pushUrlState(
-      recipeHref(dataset, lang, { ...nav, id: row.id, solo: undefined }),
+      recipeHref(dataset, resolved, { ...nav, id: row.id, solo: undefined }),
     );
 
   const isolate = () =>
     pushUrlState(
-      recipeHref(dataset, lang, { ...nav, id: row.id, solo: '1' }),
+      recipeHref(dataset, resolved, { ...nav, id: row.id, solo: '1' }),
     );
 
   const openNewTab = () =>
     window.open(
-      recipeHref(dataset, lang, { ...nav, id: row.id, solo: '1' }),
+      recipeHref(dataset, resolved, { ...nav, id: row.id, solo: '1' }),
       '_blank',
       'noopener',
     );

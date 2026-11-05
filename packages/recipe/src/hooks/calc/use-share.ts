@@ -8,18 +8,17 @@ import {
   writeCalcTabs,
 } from '@terrafirmagreg-team/recipe/lib/calc/storage';
 import { recipeCalcHref } from '@terrafirmagreg-team/recipe/lib/links';
+import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { replaceUrlState } from '@terrafirmagreg-team/ui/lib/utils/history';
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 
 export function useCalcShare({
   storageKey,
   dataset,
-  lang,
   incoming,
 }: {
   storageKey: string;
   dataset: DatasetRef;
-  lang: string;
   incoming: string;
 }): boolean {
   const isShareId = incoming.startsWith('s');
@@ -44,6 +43,7 @@ export function useCalcShare({
     };
   }, [isShareId, incoming, dataset]);
   const transport = isShareId ? sharedTree : incoming || null;
+  const resolved = useResolvedLang();
 
   useEffect(() => {
     if (transport === null) return;
@@ -56,8 +56,8 @@ export function useCalcShare({
         entry.id,
       );
     }
-    if (incoming) replaceUrlState(recipeCalcHref(dataset, lang));
-  }, [transport, storageKey, dataset, lang, incoming]);
+    if (incoming) replaceUrlState(recipeCalcHref(dataset, resolved));
+  }, [transport, storageKey, dataset, resolved, incoming]);
 
   return isShareId && sharedTree === null;
 }

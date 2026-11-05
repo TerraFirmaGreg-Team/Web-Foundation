@@ -21,13 +21,12 @@ import { useCalcResolver } from './use-resolver';
 import { useRecipeDefaults } from './use-defaults';
 
 export function useCalcData(session: RecipeSession) {
-  const { dataset, lang } = session;
+  const { dataset } = session;
   const catalog = session.index;
   const storageKey = calcStorageKey('recipe', dataset);
   const sharePending = useCalcShare({
     storageKey,
     dataset,
-    lang,
     incoming: session.tree ?? '',
   });
   const {

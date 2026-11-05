@@ -107,16 +107,29 @@ export function dumpTextureUrl(
   return texturePublicUrl(dataset, textureId);
 }
 
+export async function multiblockModelIndex(
+  dataset: DatasetRef,
+  namespace: string,
+): Promise<unknown | undefined> {
+  return (
+    (await clientDumpJson(
+      dataset,
+      `assets/${namespace}/models/multiblock.json`,
+    )) ??
+    (await clientDumpJson(
+      dataset,
+      `data/${namespace}/models/multiblock.json`,
+    ))
+  );
+}
+
 export async function dumpModelUrl(
   dataset: DatasetRef,
   modelId: string,
 ): Promise<string | undefined> {
   const parts = splitDumpId(modelId.trim());
   if (!parts) return undefined;
-  const index = await clientDumpJson(
-    dataset,
-    `data/${parts.ns}/models/multiblock.json`,
-  );
+  const index = await multiblockModelIndex(dataset, parts.ns);
   const rel =
     index && typeof index === 'object' && !Array.isArray(index)
       ? (index as Record<string, unknown>)[modelId]

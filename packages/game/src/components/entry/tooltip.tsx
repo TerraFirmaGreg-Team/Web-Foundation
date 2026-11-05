@@ -2,6 +2,7 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 
 import { useState, type ReactElement, type ReactNode } from 'react';
+import type { ReferenceKind } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 import { useModifierKeys } from '@terrafirmagreg-team/ui/hooks/use-modifier-keys';
 import { LazyTooltip } from '@terrafirmagreg-team/ui/components/blocks/tooltip/lazy';
 import { stackTooltip } from '@terrafirmagreg-team/game/lib/entry/tooltip';
@@ -50,7 +51,7 @@ export function EntryTooltip({
   dataset: DatasetRef;
   id: string;
   name: string;
-  kind?: 'item' | 'fluid' | 'entity';
+  kind?: ReferenceKind;
 
   lang?: string;
   langMap?: Record<string, string>;

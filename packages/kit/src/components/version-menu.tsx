@@ -1,8 +1,9 @@
 'use client';
 
 import { CheckIcon, ChevronDown } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useLocationSearchParams } from '@terrafirmagreg-team/ui/hooks/page/use-location-search';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +13,7 @@ import {
 import { useUiComponents } from '@terrafirmagreg-team/ui/provider';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
 import { type DatasetRef, sectionUrl } from '@terrafirmagreg-team/sites/location';
+import { clientDumpLoader } from '@terrafirmagreg-team/kit/lib/config';
 
 import type { SectionKey } from '@terrafirmagreg-team/kit/types';
 
@@ -88,29 +90,47 @@ function VersionMenuItems({
 }) {
   const { Link } = useUiComponents();
   const t = useTranslations();
+  const router = useRouter();
 
   const current = useLocationSearchParams();
-  return ordered.map((version) => {
+  const hrefs = useMemo(
+    () =>
+      ordered.map((version) => {
+        const params = new URLSearchParams(current);
+        if (version === latest) params.delete('version');
+        else params.set('version', version);
+        const q = params.toString();
+        return section
+          ? `${sectionUrl(section, datasetId)}${q ? `?${q}` : ''}`
+          : undefined;
+      }),
+    [ordered, current, latest, section, datasetId],
+  );
+  useEffect(() => {
+    if (!section) return;
+    for (const href of hrefs) {
+      if (href) router.prefetch(href);
+    }
+  }, [hrefs, section, router]);
+  return ordered.map((version, index) => {
     const isLatest = version === latest;
     const selected = currentRef.id === datasetId &&
       currentRef.version === (isLatest ? undefined : version);
-    const params = new URLSearchParams(current);
-    if (isLatest) params.delete('version');
-    else params.set('version', version);
-    const q = params.toString();
+    const href = hrefs[index];
     return (
       <DropdownMenuItem
         key={version}
         closeOnClick
         render={
-          section ? (
-            <Link
-              href={`${sectionUrl(section, datasetId)}${q ? `?${q}` : ''}`}
-            />
-          ) : undefined
+          section && href ? <Link href={href} /> : undefined
         }
         onClick={
           onSelect ? () => onSelect(isLatest ? undefined : version) : undefined
+        }
+        onPointerEnter={() =>
+          clientDumpLoader().warm?.(
+            isLatest ? { id: datasetId } : { id: datasetId, version },
+          )
         }
         className="gap-2 px-2.5 py-1.5 text-xs"
       >

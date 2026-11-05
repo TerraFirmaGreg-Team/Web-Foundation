@@ -9,6 +9,7 @@ import {
   useState,
 } from 'react';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
+import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { useFavorites } from '@terrafirmagreg-team/recipe/hooks/use-favorites';
 import { useFavoriteHotkey } from '@terrafirmagreg-team/recipe/hooks/use-favorite-hotkey';
 import { useHideUnused } from '@terrafirmagreg-team/recipe/hooks/use-hide-unused';
@@ -111,12 +112,13 @@ export const ItemPanel = memo(function ItemPanel({
     });
   }, []);
 
-  const onPress = useItemPress({ dataset, lang, nav, isCalc });
+  const resolved = useResolvedLang();
+  const onPress = useItemPress({ dataset, nav, isCalc });
 
   const setTab = (next: string) => {
     setPanelPage(0);
     replaceUrlState(
-      recipeHref(dataset, lang, {
+      recipeHref(dataset, resolved, {
         ...nav,
         tab: next || undefined,
       }),
@@ -212,7 +214,6 @@ export const ItemPanel = memo(function ItemPanel({
         <RecipeSettings />
         <QuerySearch
           dataset={dataset}
-          lang={lang}
           params={nav}
           query={query}
           onQuery={(next) => {

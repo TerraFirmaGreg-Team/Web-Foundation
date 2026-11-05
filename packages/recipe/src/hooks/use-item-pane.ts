@@ -4,12 +4,12 @@ import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { createElement, useMemo } from 'react';
 import { ArrowDownToLine, ArrowUpFromLine, Tag } from 'lucide-react';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
+import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { usePaneKeys } from '@terrafirmagreg-team/ui/hooks/use-pane-keys';
 import { recipeHref } from '@terrafirmagreg-team/recipe/lib/links';
 import { replaceUrlState } from '@terrafirmagreg-team/ui/lib/utils/history';
 import { EMPTY_ROWS } from '@terrafirmagreg-team/recipe/hooks/use-item-feeds';
 import type { PaneTabOption } from '@terrafirmagreg-team/recipe/components/views/browser/pane-tabs';
-import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import type {
   RecipeCompactRow,
   RecipeHrefOpts,
@@ -23,7 +23,6 @@ const inFeed = (id: string | undefined, rows: RecipeCompactRow[] | undefined) =>
 
 export function useItemPane({
   dataset,
-  lang,
   nav,
   relation,
   recipeId,
@@ -33,7 +32,6 @@ export function useItemPane({
   feedsPending,
 }: {
   dataset: DatasetRef;
-  lang: Lang;
   nav: RecipeHrefOpts;
   relation?: RecipeRelation;
   recipeId?: string;
@@ -43,6 +41,7 @@ export function useItemPane({
   feedsPending: boolean;
 }) {
   const t = useTranslations();
+  const resolved = useResolvedLang();
   const available = {
     recipes: (recipes ?? EMPTY_ROWS).length > 0,
     uses: (uses ?? EMPTY_ROWS).length > 0,
@@ -60,7 +59,7 @@ export function useItemPane({
     relation && (feedsPending || available[relation]) ? relation : fallback;
   const select = (next: ItemPane) => {
     replaceUrlState(
-      recipeHref(dataset, lang, {
+      recipeHref(dataset, resolved, {
         ...nav,
         relation: next === 'recipes' ? undefined : next,
         rpage: undefined,

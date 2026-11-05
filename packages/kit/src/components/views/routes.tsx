@@ -6,9 +6,11 @@ import { flattenTree } from 'fumadocs-core/page-tree';
 import { LangRedirect } from '@terrafirmagreg-team/ui/components/blocks/lang/redirect';
 import { LangContentSwitch } from '@terrafirmagreg-team/ui/components/blocks/lang/content';
 import {
-  Workspace,
-  type WorkspaceProps,
-} from '@terrafirmagreg-team/kit/components/workspace';
+  renderSectionView,
+  renderSectionWorkspace,
+  type SectionPageView,
+  type SectionPageViewFn,
+} from '@terrafirmagreg-team/kit/components/views/section';
 import { baseOptions } from '@terrafirmagreg-team/kit/lib/layout';
 import {
   datasetCatalog,
@@ -31,10 +33,6 @@ import {
   registerLocaleRenderer,
 } from '@terrafirmagreg-team/kit/lib/locale/renderer';
 import { canonicalUrl } from '@terrafirmagreg-team/kit/lib/urls';
-import {
-  renderSectionWorkspace,
-  type SectionWorkspaceProps,
-} from '@terrafirmagreg-team/kit/components/views/section';
 import { sectionUrl } from '@terrafirmagreg-team/sites/location';
 import { langContent, loadLocaleRegistry } from '@terrafirmagreg-team/translate/server';
 import type {
@@ -46,6 +44,7 @@ import type {
   SectionSource,
   SectionTrees,
 } from '@terrafirmagreg-team/kit/types';
+import type { SectionFeatures } from '@terrafirmagreg-team/kit/types/features';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 
 export interface SectionLayoutViewProps {
@@ -58,29 +57,37 @@ export interface SectionLayoutViewProps {
   children?: ReactNode;
 }
 
-export interface SectionLandingView {
-  node: ReactNode;
-  workspace?: WorkspaceProps;
+export type SectionLandingView = SectionPageView;
+
+export interface SectionLandingProps<TSource = unknown> {
+  page: DatasetLanding;
+  lang: Lang;
+  route: string;
+  source: TSource;
+  trees?: SectionTrees;
+  catalog: DatasetCatalog;
+  contentDir: string;
+  history?: boolean;
+  features?: SectionFeatures;
 }
 
-export interface SectionRoutesOptions<S extends SectionKey> {
+export interface SectionRoutesOptions<
+  S extends SectionKey,
+  TSource = SectionSource,
+> {
   section: S;
   trees?: () => Promise<SectionTrees>;
-  source?: {
-    getSource: () => Promise<SectionSource>;
-    contentDir: string;
+  source: {
+    getSource: () => TSource | Promise<TSource>;
+    contentDir?: string;
     history?: boolean;
   };
-  sidebar?: {
-    feature?: ComponentType;
-    useTree?: (tree: PageTree.Root) => PageTree.Root;
-  };
+  features?: SectionFeatures;
   layout: ComponentType<SectionLayoutViewProps>;
   landing?: (
-    page: DatasetLanding,
-    lang: Lang,
+    props: SectionLandingProps<TSource>,
   ) => SectionLandingView | Promise<SectionLandingView>;
-  page?: ComponentType<SectionWorkspaceProps>;
+  page?: SectionPageViewFn;
 }
 
 interface RouteParams {
@@ -97,25 +104,28 @@ export function createSectionRedirect(section: SectionKey) {
   };
 }
 
-export function createSectionRoutes<S extends SectionKey>({
+export function createSectionRoutes<
+  S extends SectionKey,
+  TSource = SectionSource,
+>({
   section,
   trees,
   source,
-  sidebar,
+  features,
   layout: LayoutView,
   landing,
   page: PageView,
-}: SectionRoutesOptions<S>) {
+}: SectionRoutesOptions<S, TSource>) {
   const resolve =
-    (src: SectionSource | undefined, datasets: readonly SectionDataset[]) =>
+    (src: TSource, datasets: readonly SectionDataset[]) =>
     (slug: string[] | undefined, lang: Lang): Resolved => {
       if (slug?.length === 1) {
         if (!findDataset(datasets, { id: slug[0] })) return undefined;
         if (landing) {
           const page = getDatasetLanding(section, slug, lang, datasets);
           if (!page) return undefined;
-          if (!src) return { page, isFallback: false };
-          const own = src
+          if (!PageView) return { page, isFallback: false };
+          const own = (src as SectionSource)
             .getPages()
             .some(
               (p) =>
@@ -125,11 +135,11 @@ export function createSectionRoutes<S extends SectionKey>({
           return { page, isFallback: !own };
         }
       }
-      return src ? resolvePage(src, slug, lang) : undefined;
+      return PageView ? resolvePage(src as SectionSource, slug, lang) : undefined;
     };
 
   const render = async (
-    src: SectionSource | undefined,
+    src: TSource,
     slug: string[] | undefined,
     resolvedTrees: SectionTrees | undefined,
     catalog: DatasetCatalog,
@@ -137,17 +147,28 @@ export function createSectionRoutes<S extends SectionKey>({
     lang: Lang,
   ): Promise<ReactNode> => {
     if (slug?.length === 1 && landing) {
-      const view = await landing(page as DatasetLanding, lang);
-      return <Workspace {...view.workspace}>{view.node}</Workspace>;
+      const view = await landing({
+        page: page as DatasetLanding,
+        lang,
+        route: sectionUrl(section),
+        source: src,
+        trees: resolvedTrees,
+        catalog,
+        contentDir: source.contentDir ?? `content/${section}`,
+        history: source.history,
+        features,
+      });
+      return renderSectionView(view);
     }
-    if (!src || !PageView) return null;
+    if (!PageView) return null;
     return renderSectionWorkspace({
-      source: src,
+      source: src as SectionSource,
       slug,
-      contentDir: source?.contentDir ?? `content/${section}`,
+      contentDir: source.contentDir ?? `content/${section}`,
       trees: resolvedTrees,
       catalog,
-      history: source?.history,
+      history: source.history,
+      features,
       workspace: PageView,
       page: page as SectionPage,
       lang,
@@ -156,13 +177,13 @@ export function createSectionRoutes<S extends SectionKey>({
 
   registerLocaleRenderer(section, {
     resolve: async (slug, lang) =>
-      resolve(await source?.getSource(), await sectionDatasets(section))(
+      resolve(await source.getSource(), await sectionDatasets(section))(
         slug,
         lang,
       ),
     render: async (page, slug, lang) =>
       render(
-        await source?.getSource(),
+        await source.getSource(),
         slug,
         await trees?.(),
         await datasetCatalog(),
@@ -182,8 +203,6 @@ export function createSectionRoutes<S extends SectionKey>({
         section={section}
         trees={resolvedTrees}
         catalog={catalog}
-        useTree={sidebar?.useTree}
-        sidebar={{ feature: sidebar?.feature }}
         navTitle={slots?.navTitle}
       >
         {children}
@@ -194,13 +213,13 @@ export function createSectionRoutes<S extends SectionKey>({
   async function Page({ params }: RouteParams) {
     const { slug } = await params;
     const [src, datasets] = await Promise.all([
-      source?.getSource(),
+      source.getSource(),
       sectionDatasets(section),
     ]);
 
-    if (slug?.length === 1 && src && !landing) {
+    if (slug?.length === 1 && !landing && PageView) {
       const { defaultLanguage } = loadLocaleRegistry();
-      if (!getPage(src, slug, defaultLanguage)) {
+      if (!getPage(src as SectionSource, slug, defaultLanguage)) {
         const resolvedTrees = trees ? await trees() : undefined;
         const first = flattenTree(
           resolvedTrees?.[defaultLanguage]?.[slug[0]]?.children ?? [],
@@ -236,9 +255,9 @@ export function createSectionRoutes<S extends SectionKey>({
   }
 
   function generateStaticParams() {
-    if (source) {
-      return source.getSource().then((src) =>
-        generateDatasetParams(section, src),
+    if (PageView) {
+      return Promise.resolve(source.getSource()).then((src) =>
+        generateDatasetParams(section, src as SectionSource),
       );
     }
     return generateDatasetLandingParams(section);
@@ -262,7 +281,8 @@ export function createSectionRoutes<S extends SectionKey>({
         },
       };
     }
-    const src = await source?.getSource();
+    if (!PageView) return {};
+    const src = (await source.getSource()) as SectionSource | undefined;
     if (src) {
       const { defaultLanguage } = loadLocaleRegistry();
       if (slug?.length === 1 && !landing && !getPage(src, slug, defaultLanguage))

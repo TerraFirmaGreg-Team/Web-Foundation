@@ -21,15 +21,21 @@ import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolv
 import { usePathname } from 'next/navigation';
 import { useLocationSearchParams } from '@terrafirmagreg-team/ui/hooks/page/use-location-search';
 import { useMemo, useState } from 'react';
+import { ChevronDown } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@terrafirmagreg-team/ui/components/ui/dropdown-menu';
 import { Skeleton } from '@terrafirmagreg-team/ui/components/ui/skeleton';
 import { cn } from '@terrafirmagreg-team/ui/lib/utils/cn';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
 import { useSectionCatalog } from '@terrafirmagreg-team/kit/hooks/use-catalog';
 import { useSectionNames } from '@terrafirmagreg-team/kit/hooks/use-section-names';
-import {
-  dumpSectionKeys,
-  parseSectionLocation,
-} from '@terrafirmagreg-team/sites/location';
+import { parseSectionLocation } from '@terrafirmagreg-team/sites/location';
 import { searchHitFilter, mergeClients } from '../lib';
 import { getSearchClientSources } from '../lib/sources';
 
@@ -37,7 +43,76 @@ const chip =
   'rounded-md border px-2 py-0.5 text-xs font-medium transition-colors cursor-pointer';
 const chipOn = 'bg-accent text-accent-foreground border-transparent';
 const chipOff = 'text-muted-foreground hover:text-foreground';
-const chipMixed = cn(chipOff, 'border-dashed');
+
+type ScopeSel = { secs: Set<string>; dss: Set<string> };
+const EMPTY_SEL: ScopeSel = { secs: new Set(), dss: new Set() };
+
+function toggled(set: Set<string>, id: string): Set<string> {
+  const next = new Set(set);
+  if (next.has(id)) next.delete(id);
+  else next.add(id);
+  return next;
+}
+
+function ScopeDropdown({
+  label,
+  allLabel,
+  items,
+  picked,
+  onToggle,
+  onAll,
+}: {
+  label: string;
+  allLabel: string;
+  items: { id: string; title: string }[];
+  picked: Set<string>;
+  onToggle: (id: string) => void;
+  onAll: () => void;
+}) {
+  const active = picked.size > 0;
+  const text =
+    picked.size === 0
+      ? label
+      : picked.size === 1
+        ? (items.find((item) => picked.has(item.id))?.title ??
+          [...picked][0])
+        : `${label}: ${picked.size}`;
+  return (
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger
+        aria-pressed={active}
+        className={cn(
+          chip,
+          'inline-flex items-center gap-1',
+          active ? chipOn : chipOff,
+        )}
+      >
+        {text}
+        <ChevronDown className="size-3" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent side="top" align="start" className="max-h-64 min-w-40">
+        <DropdownMenuItem
+          onClick={onAll}
+          className="gap-2 px-2.5 py-1.5 text-xs font-medium"
+        >
+          {allLabel}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        {items.map(({ id, title }) => (
+          <DropdownMenuCheckboxItem
+            key={id}
+            checked={!active || picked.has(id)}
+            onCheckedChange={() => onToggle(id)}
+            closeOnClick={false}
+            className="text-xs"
+          >
+            {title}
+          </DropdownMenuCheckboxItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 export function SearchDialog(props: SharedProps & { api: string }) {
   const locale = useResolvedLang();
@@ -58,58 +133,69 @@ export function SearchDialog(props: SharedProps & { api: string }) {
       ),
     [catalog],
   );
-  const defaultSel = useMemo((): Set<string> => {
-    if (section && dataset) return new Set([`${section}:${dataset}`]);
-    if (section)
-      return new Set(
-        (catalog[section] ?? []).map(({ id }) => `${section}:${id}`),
-      );
-    return new Set();
-  }, [section, dataset, catalog]);
-  const [picked, setPicked] = useState<{ key: string; sel: Set<string> }>();
+  const defaultSel = useMemo((): ScopeSel => {
+    if (section && dataset)
+      return { secs: new Set([section]), dss: new Set([dataset]) };
+    if (section) return { secs: new Set([section]), dss: new Set() };
+    return { secs: new Set(), dss: new Set() };
+  }, [section, dataset]);
+  const [picked, setPicked] = useState<{ key: string; sel: ScopeSel }>();
   const sel = picked?.key === scopeKey ? picked.sel : defaultSel;
-  const setSel = (value: Set<string>) =>
+  const setSel = (value: ScopeSel) =>
     setPicked({ key: scopeKey, sel: value });
-  const toggle = (ids: readonly string[]) => {
-    const next = new Set(sel);
-    const allOn = ids.every((id) => next.has(id));
-    for (const id of ids) {
-      if (allOn) next.delete(id);
-      else next.add(id);
+  const everywhere = sel.secs.size === 0 && sel.dss.size === 0;
+  const scopePairs = useMemo(() => {
+    const out = new Set<string>();
+    for (const [sec, datasets] of sections) {
+      if (sel.secs.size && !sel.secs.has(sec)) continue;
+      for (const { id } of datasets) {
+        if (sel.dss.size && !sel.dss.has(id)) continue;
+        out.add(`${sec}:${id}`);
+      }
     }
-    setSel(next);
-  };
+    return out;
+  }, [sections, sel]);
+  const datasetOptions = useMemo(() => {
+    const map = new Map<string, string | undefined>();
+    for (const [sec, datasets] of sections) {
+      if (sel.secs.size && !sel.secs.has(sec)) continue;
+      for (const { id, title } of datasets) {
+        if (!map.has(id)) map.set(id, title);
+      }
+    }
+    return [...map.entries()].map(([id, title]) => ({ id, title }));
+  }, [sections, sel.secs]);
 
   const client = useMemo((): SearchClient => {
     const from = `${props.api}/${locale}.json`;
     const content = staticClient({ locale, from });
-    const selSecs = new Set([...sel].map((entry) => entry.split(':')[0]!));
-    const scopedSections =
-      sel.size === 0
-        ? dumpSectionKeys()
-        : dumpSectionKeys().filter((sec) => selSecs.has(sec));
-    const refs = scopedSections.flatMap((sec) =>
-      (catalog[sec] ?? []).map(({ id }) =>
-        sec === section && id === dataset && locationDataset
-          ? { id, version }
-          : { id },
-      ),
-    );
+    const refsById = new Map<string, { id: string; version?: string }>();
+    for (const entry of scopePairs) {
+      const [sec, id] = entry.split(':');
+      if (!refsById.has(id)) {
+        refsById.set(
+          id,
+          sec === section && id === dataset && locationDataset
+            ? { id, version }
+            : { id },
+        );
+      }
+    }
     const extra = getSearchClientSources().map((make) =>
-      make({ refs, locale, tag: undefined }),
+      make({ refs: [...refsById.values()], locale, tag: undefined }),
     );
     return mergeClients(content, ...extra);
-  }, [locale, sel, section, dataset, locationDataset, version, catalog, props.api]);
+  }, [locale, scopePairs, section, dataset, locationDataset, version, props.api]);
   const { search, setSearch, query } = useDocsSearch({ client });
   const showBadges =
-    sel.size === 0 ||
-    new Set([...sel].map((entry) => entry.split(':')[0]!)).size > 1;
+    everywhere ||
+    new Set([...scopePairs].map((entry) => entry.split(':')[0]!)).size > 1;
   const items = useMemo(() => {
     const list = query.data !== 'empty' ? (query.data ?? []) : [];
     const inScope = (item: (typeof list)[number]) =>
-      sel.size === 0 ||
+      everywhere ||
       !('url' in item) ||
-      [...sel].some((entry) =>
+      [...scopePairs].some((entry) =>
         item.url.startsWith(`/${entry.replace(':', '/')}`),
       );
     const hitFilter =
@@ -122,7 +208,7 @@ export function SearchDialog(props: SharedProps & { api: string }) {
     return list.filter(
       (item) => inScope(item) && (hitFilter?.(item) ?? true),
     );
-  }, [query.data, section, sel]);
+  }, [query.data, section, everywhere, scopePairs]);
 
   return (
     <SearchDialogRoot search={search} onSearchChange={setSearch} isLoading={query.isLoading} {...props}>
@@ -156,67 +242,40 @@ export function SearchDialog(props: SharedProps & { api: string }) {
         )}
         <SearchDialogFooter>
           <div className="flex flex-wrap items-center gap-1">
+            <ScopeDropdown
+              label={t('Sections', { note: 'ui.search_sections' })}
+              allLabel={t('All', { note: 'ui.search_all' })}
+              items={sections.map(([sec]) => ({
+                id: sec,
+                title: sectionNames[sec]?.title ?? sec,
+              }))}
+              picked={sel.secs}
+              onToggle={(id) =>
+                setSel({ ...sel, secs: toggled(sel.secs, id) })
+              }
+              onAll={() => setSel({ ...sel, secs: new Set() })}
+            />
+            <ScopeDropdown
+              label={t('Datasets', { note: 'ui.search_datasets' })}
+              allLabel={t('All', { note: 'ui.search_all' })}
+              items={datasetOptions.map(({ id, title }) => ({
+                id,
+                title: title ?? id,
+              }))}
+              picked={sel.dss}
+              onToggle={(id) =>
+                setSel({ ...sel, dss: toggled(sel.dss, id) })
+              }
+              onAll={() => setSel({ ...sel, dss: new Set() })}
+            />
             <button
               type="button"
-              aria-pressed={sel.size === 0}
-              className={cn(chip, sel.size === 0 ? chipOn : chipOff)}
-              onClick={() => setSel(new Set())}
+              aria-pressed={everywhere}
+              className={cn(chip, everywhere ? chipOn : chipOff)}
+              onClick={() => setSel(EMPTY_SEL)}
             >
               {t('Everywhere', { note: 'ui.search_everywhere' })}
             </button>
-            <span aria-hidden className="mx-0.5 h-4 w-px bg-border" />
-            {sections.map(([sec, datasets]) => {
-              const ids = datasets.map(({ id }) => `${sec}:${id}`);
-              if (ids.length === 1) {
-                const id = ids[0]!;
-                const on = sel.has(id);
-                return (
-                  <button
-                    key={sec}
-                    type="button"
-                    aria-pressed={on}
-                    className={cn(chip, on ? chipOn : chipOff)}
-                    onClick={() => toggle(ids)}
-                  >
-                    {sectionNames[sec]?.title ?? sec}
-                  </button>
-                );
-              }
-              const onCount = ids.filter((id) => sel.has(id)).length;
-              return [
-                <button
-                  key={sec}
-                  type="button"
-                  aria-pressed={onCount > 0}
-                  className={cn(
-                    chip,
-                    onCount === ids.length
-                      ? chipOn
-                      : onCount > 0
-                        ? chipMixed
-                        : chipOff,
-                  )}
-                  onClick={() => toggle(ids)}
-                >
-                  {sectionNames[sec]?.title ?? sec}
-                </button>,
-                ...datasets.map(({ id, title }) => {
-                  const entry = `${sec}:${id}`;
-                  const on = sel.has(entry);
-                  return (
-                    <button
-                      key={entry}
-                      type="button"
-                      aria-pressed={on}
-                      className={cn(chip, on ? chipOn : chipOff)}
-                      onClick={() => toggle([entry])}
-                    >
-                      {title ?? id}
-                    </button>
-                  );
-                }),
-              ];
-            })}
           </div>
         </SearchDialogFooter>
       </SearchDialogContent>

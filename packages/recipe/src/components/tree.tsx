@@ -4,10 +4,9 @@ import { createElement } from 'react';
 import type * as PageTree from 'fumadocs-core/page-tree';
 import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
 import { loadMergedLangMap, creativeTabName } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/load';
-import { loadClientManifest } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import { DUMP_POINTER_TTL } from '@terrafirmagreg-team/dump/lib/dump/json-reader';
 import { createAsyncCache } from '@terrafirmagreg-team/data/lib/async-cache';
-import { loadDatasetRecipeCategories } from '@terrafirmagreg-team/recipe/lib/data/category/load';
+import { getRecipeSource } from '@terrafirmagreg-team/recipe/lib/source';
 import { keyTreeNode } from '@terrafirmagreg-team/translate/server';
 import { loadLocaleRegistry } from '@terrafirmagreg-team/translate/server';
 import { encodeQueryValue } from '@terrafirmagreg-team/translate/lib/url';
@@ -68,8 +67,9 @@ async function buildRecipeTrees(): Promise<SectionTrees> {
     for (const lang of languages ?? [defaultLanguage]) {
       const ref = { id };
       const map = await loadMergedLangMap(ref, lang);
-      const categories = await loadDatasetRecipeCategories(ref);
-      const types = (await loadClientManifest(ref))?.indexes.recipes.types;
+      const source = getRecipeSource();
+      const categories = await source.categories(ref);
+      const types = (await source.manifest(ref))?.indexes.recipes.types;
       const nonEmpty = types
         ? new Set(
             types

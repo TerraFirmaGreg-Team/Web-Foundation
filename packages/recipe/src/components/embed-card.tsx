@@ -37,6 +37,7 @@ export function RecipeEmbedCard({
           title={title}
           src={src}
           onFail={() => setFailed(true)}
+          interactive={false}
         />
       </FitBox>
     </Link>

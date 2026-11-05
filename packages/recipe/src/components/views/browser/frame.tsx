@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
+import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { QueryPager } from '@terrafirmagreg-team/recipe/components/views/browser/query-controls';
 import { Pager } from '@terrafirmagreg-team/ui/components/blocks/page/pager';
 import { RecipeToolbar } from '@terrafirmagreg-team/recipe/components/views/browser/toolbar';
@@ -38,6 +39,7 @@ export function RecipeFrame({
   children: ReactNode;
 }) {
   const t = useTranslations();
+  const resolved = useResolvedLang();
   const goPage = (dir: number) => {
     if (!list || list.pages <= 1) return;
     const next = (list.page + dir + list.pages) % list.pages;
@@ -46,7 +48,7 @@ export function RecipeFrame({
       return;
     }
     replaceUrlState(
-      recipeHref(session.dataset, session.lang, {
+      recipeHref(session.dataset, resolved, {
         ...session.nav,
         id: undefined,
         rpage: next > 0 ? next + 1 : undefined,
@@ -88,7 +90,6 @@ export function RecipeFrame({
         ) : (
           <QueryPager
             dataset={session.dataset}
-            lang={session.lang}
             params={{ ...session.nav, id: undefined }}
             query={session.query}
             list={list}

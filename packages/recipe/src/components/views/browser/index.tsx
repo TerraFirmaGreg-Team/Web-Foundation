@@ -21,6 +21,27 @@ import { cn } from '@terrafirmagreg-team/ui/lib/utils/cn';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import type { RecipePageData } from '@terrafirmagreg-team/recipe/types';
 
+export function RecipeBrowserFallback() {
+  return (
+    <div className="viewport-shell recipe-viewport not-prose flex w-full flex-col gap-3">
+      <div className="flex min-h-0 flex-1 gap-4">
+        <main className="flex min-w-0 flex-1 flex-col">
+          <Skeleton className="mb-3 h-9 w-full rounded-md" />
+          <div className="flex min-h-0 flex-1 flex-col items-center justify-start gap-2 pt-2">
+            {Array.from({ length: 6 }, (_, i) => (
+              <Skeleton
+                key={i}
+                className="h-24 rounded-md"
+                style={{ width: 240 + (i % 3) * 70 }}
+              />
+            ))}
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
+
 export function RecipeBrowser({
   dataset: id,
   datasetTitle,

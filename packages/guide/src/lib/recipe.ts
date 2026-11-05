@@ -3,9 +3,13 @@ import type { EmbedRecipe } from '@terrafirmagreg-team/guide/lib/embeds';
 import { stackDisplayName } from '@terrafirmagreg-team/game/lib/entry/display';
 
 export function recipeIds(page: GuidePage): string[] {
-  return (page.recipes ?? []).filter(
-    (id): id is string => typeof id === 'string' && Boolean(id),
-  );
+  return [
+    ...new Set(
+      (page.recipes ?? []).filter(
+        (id): id is string => typeof id === 'string' && Boolean(id),
+      ),
+    ),
+  ];
 }
 
 export function recipeNameScope(

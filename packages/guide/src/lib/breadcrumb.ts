@@ -50,7 +50,7 @@ export function guideBreadcrumbItems({
           : undefined,
     });
   }
-  items.push({ name: title });
+  if (kind !== 'category' || !cat) items.push({ name: title });
   return items;
 }
 

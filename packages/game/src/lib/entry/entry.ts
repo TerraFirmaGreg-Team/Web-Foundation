@@ -1,6 +1,9 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { entryHref } from '@terrafirmagreg-team/game/lib/entry/href';
-import { tagKindOf } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
+import {
+  isTagKind,
+  tagKindOf,
+} from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 import type { ReferenceKind } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 import type { EntryProps } from '@terrafirmagreg-team/game/types/entry';
 
@@ -20,7 +23,8 @@ export function usesStackTooltip(kind: ReferenceKind | undefined): boolean {
 
 export function tooltipLoadKind(
   kind: ReferenceKind | undefined,
-): 'item' | 'fluid' | 'entity' | undefined {
+): ReferenceKind | undefined {
+  if (isTagKind(kind)) return kind;
   const member = tagKindOf(kind) ?? kind;
   if (member === 'fluid') return 'fluid';
   if (member === 'entity') return 'entity';

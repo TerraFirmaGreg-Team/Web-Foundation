@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
+import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { useAsyncResult, useAsyncValue } from '@terrafirmagreg-team/ui/hooks/use-async-value';
 import { RecipeFrame } from '@terrafirmagreg-team/recipe/components/views/browser/frame';
 import {
@@ -29,9 +30,9 @@ const EMPTY_ROWS: RecipeCompactRow[] = [];
 
 export function TypeView({ session }: { session: RecipeSession }) {
   const t = useTranslations();
+  const resolved = useResolvedLang();
   const {
     dataset,
-    lang,
     index,
     indexLoading,
     place,
@@ -82,14 +83,14 @@ export function TypeView({ session }: { session: RecipeSession }) {
     const row = focusRes.value?.[0];
     const category = row ? index.types[row.type] : undefined;
     replaceUrlState(
-      recipeHref(dataset, lang, {
+      recipeHref(dataset, resolved, {
         ...nav,
         ...(category && category !== shown ? { type: category } : {}),
         ...(category ? {} : { id: undefined }),
         rpage: undefined,
       }),
     );
-  }, [focusIndex, focusRes.pending, focusRes.value, index, nav, dataset, lang, recipeId, rows, shown]);
+  }, [focusIndex, focusRes.pending, focusRes.value, index, nav, dataset, resolved, recipeId, rows, shown]);
   const list = useFitPages(
     boxRef,
     feedRows,
@@ -109,13 +110,13 @@ export function TypeView({ session }: { session: RecipeSession }) {
       const row = allRows[next];
       if (focusIndex < 0 || !row) return;
       replaceUrlState(
-        recipeHref(dataset, lang, { ...nav, id: row.id, rpage: undefined }),
+        recipeHref(dataset, resolved, { ...nav, id: row.id, rpage: undefined }),
       );
       return;
     }
     if (list.pages <= 1) return;
     replaceUrlState(
-      recipeHref(dataset, lang, {
+      recipeHref(dataset, resolved, {
         ...nav,
         rpage: (list.page + dir + list.pages) % list.pages,
       }),
@@ -154,7 +155,7 @@ export function TypeView({ session }: { session: RecipeSession }) {
           onChange={(id) => {
             if (id === shown) return;
             replaceUrlState(
-              recipeHref(dataset, lang, {
+              recipeHref(dataset, resolved, {
                 ...nav,
                 type: id,
                 id: undefined,

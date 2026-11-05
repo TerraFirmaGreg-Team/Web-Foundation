@@ -6,11 +6,13 @@ import {
   encodeCalcState,
 } from '@terrafirmagreg-team/recipe/lib/calc/tree';
 import { recipeCalcHref } from '@terrafirmagreg-team/recipe/lib/links';
+import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { replaceUrlState } from '@terrafirmagreg-team/ui/lib/utils/history';
 import type { RecipeSession } from '@terrafirmagreg-team/recipe/types';
 
 export function useAddToCalc(session: RecipeSession) {
-  const { dataset, lang, tree } = session;
+  const { dataset, tree } = session;
+  const resolved = useResolvedLang();
   return useCallback(
     (item: string, kind: 'item' | 'fluid') => {
       const state = decodeCalcState(tree ?? '') ?? {
@@ -40,12 +42,12 @@ export function useAddToCalc(session: RecipeSession) {
       replaceUrlState(
         recipeCalcHref(
           dataset,
-          lang,
+          resolved,
           encodeCalcState({ ...state, cards }),
         ),
       );
     },
-    [tree, dataset, lang],
+    [tree, dataset, resolved],
   );
 }
 

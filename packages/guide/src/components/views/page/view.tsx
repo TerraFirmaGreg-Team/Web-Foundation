@@ -1,11 +1,16 @@
+'use client';
+import { useMemo } from 'react';
 import { EntryProvider } from '@terrafirmagreg-team/game/hooks/use-entry-context';
 import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
 import {
-  Workspace,
+  useWorkspaceSlots,
+  type WorkspaceSlots,
+} from '@terrafirmagreg-team/kit/components/views/frame';
+import {
   WorkspaceBody,
   WorkspaceDescription,
   WorkspaceTitle,
-} from '@terrafirmagreg-team/kit/components/workspace';
+} from '@terrafirmagreg-team/ui/components/layouts/workspace';
 import { guideConfig } from '@terrafirmagreg-team/guide/lib/config';
 import { GithubInfo } from '@terrafirmagreg-team/ui/components/blocks/git/github-info';
 import { sectionConfig } from '@terrafirmagreg-team/kit/lib/config';
@@ -203,14 +208,21 @@ export function GuidePageView({
     UntranslatedCallout,
   } = guideConfig().components;
 
+  const slots = useMemo<WorkspaceSlots>(
+    () => ({
+      toc: toc ?? [],
+      breadcrumb: { items: crumbs, previews: payload.previews },
+      pagination: { items: nav },
+      full: false,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [payload, langMap],
+  );
+  useWorkspaceSlots(slots, [slots]);
+
   return (
     <EntryProvider dataset={dataset} lang={lang} langMap={langMap}>
-      <Workspace
-        toc={toc ?? []}
-        className="min-h-full"
-        breadcrumb={{ items: crumbs, previews: payload.previews }}
-        pagination={{ items: nav }}
-      >
+      <div className="flex flex-col gap-4 min-h-full">
         <UntranslatedCallout copied={copied} />
         <WorkspaceTitle>
           {kind === 'entry' && payload.previewIcon ? (
@@ -272,7 +284,7 @@ export function GuidePageView({
         <CommentsSlot
           page={`guide:${dataset.id}:${payload.modId}:${payload.bookPath}:${payload.entry?.id ?? payload.categoryId ?? 'book'}#${lang}`}
         />
-      </Workspace>
+      </div>
     </EntryProvider>
   );
 }

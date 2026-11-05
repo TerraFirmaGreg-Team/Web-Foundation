@@ -56,6 +56,7 @@ export const mdOptions = (
   datasetConfig: Record<string, { repo?: string }> = {},
 ) => ({
   mdOptions: {
+    remarkImageOptions: { onError: 'ignore' },
     remarkPlugins: [
       remarkDirective,
       remarkPreview,

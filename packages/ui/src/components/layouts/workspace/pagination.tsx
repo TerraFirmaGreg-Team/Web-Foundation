@@ -19,7 +19,7 @@ export function WorkspacePagination({
   const pathname = usePathname();
   const search = useLocationSearch();
   const { previous, next } = useMemo(() => {
-    if (items) return items;
+    if (items && (items.previous || items.next)) return items;
     const idx = footerList.findIndex((item) =>
       isNavItemActive(item.url, pathname, search),
     );
@@ -71,4 +71,3 @@ function WorkspacePaginationItem({
     </Link>
   );
 }
-

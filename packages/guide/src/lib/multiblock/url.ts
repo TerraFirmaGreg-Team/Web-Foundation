@@ -3,8 +3,8 @@ import { asRecord, asString } from '@terrafirmagreg-team/dump/lib/dump/contract/
 import { splitDumpId } from '@terrafirmagreg-team/dump/lib/dump/paths';
 import { modelPublicUrl } from '@terrafirmagreg-team/dump/lib/dump/assets/urls';
 import {
-  clientDumpJson,
   dumpModelUrl,
+  multiblockModelIndex,
 } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import { loadDatasetDump } from '@terrafirmagreg-team/dump/lib/dump/mods/load';
 import { createDatasetCache } from '@terrafirmagreg-team/dump/lib/dump/reader';
@@ -29,10 +29,7 @@ const multiblockIndex = createDatasetCache(async (dataset: DatasetRef) => {
   const entries = await Promise.all(
     (dump?.mods ?? []).map(async (ns) => {
       const index = asRecord(
-        await clientDumpJson(
-          dataset,
-          `data/${ns.namespace}/models/multiblock.json`,
-        ),
+        await multiblockModelIndex(dataset, ns.namespace),
       );
       return Object.entries(index ?? {}).map(
         ([id, rel]) => [id, { ns: ns.namespace, rel: asString(rel) }] as const,

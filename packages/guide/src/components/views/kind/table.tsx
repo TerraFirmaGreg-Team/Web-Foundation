@@ -90,10 +90,10 @@ export function TablePage(props: PageRendererProps) {
                     style={{ backgroundColor: cssColor(value?.fill) }}
                   >
                     <span className="inline-flex flex-wrap items-center gap-1">
-                      {items.map((id) => (
+                      {items.map((id, index) => (
                         <Entry
                           kind="item"
-                          key={id}
+                          key={`${id}:${index}`}
                           id={id}
                           name={id}
                           size="sm"

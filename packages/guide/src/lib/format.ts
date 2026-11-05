@@ -191,6 +191,23 @@ export function formatGuide(
   return out;
 }
 
+export function guidePlainText(
+  raw: string,
+  options: GuideFormatOptions = {},
+): string {
+  return formatGuide(raw, options)
+    .map((node) =>
+      node.type === 'break'
+        ? ' '
+        : 'value' in node
+          ? node.value
+          : '',
+    )
+    .join('')
+    .replace(/[ \t]+/g, ' ')
+    .trim();
+}
+
 export function guideFormatOpts(props: PageRendererProps) {
   return {
     dataset: props.dataset,

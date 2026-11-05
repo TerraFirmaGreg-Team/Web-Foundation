@@ -25,14 +25,19 @@ export function Heading({
   return (
     <As
       {...props}
+      onClick={(event) => {
+        props.onClick?.(event);
+        if (event.defaultPrevented) return;
+        if ((event.target as HTMLElement).closest('a,button,input,select,textarea,[role="button"],[role="link"]'))
+          return;
+        window.location.hash = props.id!;
+      }}
       className={cn(
-        'group/heading flex scroll-m-28 flex-row items-center gap-1',
+        'group/heading flex cursor-pointer scroll-m-28 flex-row items-center gap-1',
         props.className,
       )}
     >
-      <a data-card href={`#${props.id}`}>
-        {props.children}
-      </a>
+      {props.children}
       <button
         aria-live="polite"
         className={cn(

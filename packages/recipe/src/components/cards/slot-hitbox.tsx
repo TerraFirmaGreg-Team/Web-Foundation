@@ -156,7 +156,7 @@ export function SlotHitbox({
         dataset={dataset}
         id={widget.id}
         name={name}
-        kind={kind === 'tag' ? 'item' : kind}
+        kind={widgetRefKind(widget)}
         lang={lang}
         langMap={langMap}
         level={tooltipLevel}
@@ -177,7 +177,7 @@ export function SlotHitbox({
       dataset={dataset}
       id={widget.id}
       name={name}
-      kind={kind === 'tag' ? 'item' : kind}
+      kind={widgetRefKind(widget)}
       lang={lang}
       langMap={langMap}
       level={tooltipLevel}

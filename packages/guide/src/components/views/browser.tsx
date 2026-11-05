@@ -5,24 +5,39 @@ import { useLocationSearchParams } from '@terrafirmagreg-team/ui/hooks/page/use-
 import { useAsyncValue } from '@terrafirmagreg-team/ui/hooks/use-async-value';
 import { useVersionedDataset } from '@terrafirmagreg-team/kit/hooks/use-versioned-dataset';
 import { useLangMap } from '@terrafirmagreg-team/game/hooks/use-lang-map';
+import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
 import { Skeleton } from '@terrafirmagreg-team/ui/components/ui/skeleton';
-import {
-  Workspace,
-  WorkspaceBody,
-} from '@terrafirmagreg-team/kit/components/workspace';
+import { WorkspaceBody } from '@terrafirmagreg-team/ui/components/layouts/workspace';
 import { GuidePageView } from '@terrafirmagreg-team/guide/components/views/page/view';
 import {
   firstGuideEntryId,
   guideQueryFromParams,
 } from '@terrafirmagreg-team/guide/lib/query';
-import { loadClientGuidePayload } from '@terrafirmagreg-team/guide/lib/client-payload';
-import { listGuideBooks } from '@terrafirmagreg-team/guide/lib/books';
-import { loadClientGuideBook } from '@terrafirmagreg-team/guide/lib/client/guides';
+import { getGuideSource } from '@terrafirmagreg-team/guide/lib/source';
 import { guideHref } from '@terrafirmagreg-team/guide/lib/links';
 import { guideConfig } from '@terrafirmagreg-team/guide/lib/config';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import type { GuideMessages } from '@terrafirmagreg-team/guide/types';
+
+export function GuideBrowserFallback() {
+  return (
+    <WorkspaceBody className="flex flex-col gap-3">
+      <Skeleton className="h-3.5 w-44" />
+      <Skeleton className="mt-1 h-8 w-2/3 max-w-sm" />
+      <Skeleton className="h-4 w-full max-w-md" />
+      <Skeleton className="h-4 w-4/5 max-w-sm" />
+      <div className="mt-6 flex flex-col gap-2.5">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-[92%]" />
+        <Skeleton className="h-4 w-[96%]" />
+        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-4 w-[88%]" />
+        <Skeleton className="h-4 w-3/4" />
+      </div>
+    </WorkspaceBody>
+  );
+}
 
 export function GuideBrowser({
   dataset: id,
@@ -43,8 +58,9 @@ export function GuideBrowser({
     () => guideQueryFromParams(params),
     [params],
   );
+  const source = getGuideSource();
   const books = useAsyncValue(
-    () => listGuideBooks(dataset, lang),
+    () => source.books(dataset, lang),
     [dataset, lang],
   );
   const langMap = useLangMap(dataset, lang);
@@ -69,17 +85,18 @@ export function GuideBrowser({
     [t],
   );
 
+  const resolved = useResolvedLang();
   const canonical = useAsyncValue(
     books && !bookId
       ? async () => {
           const book = books[0];
           if (!book) return undefined;
-          const index = await loadClientGuideBook(dataset, lang, book.bookId);
+          const index = await source.book(dataset, lang, book.bookId);
           const first = index ? firstGuideEntryId(index) : undefined;
-          return guideHref(dataset, lang, book.bookId, first);
+          return guideHref(dataset, resolved, book.bookId, first);
         }
       : undefined,
-    [books, bookId, dataset, lang],
+    [books, bookId, dataset, lang, resolved],
   );
 
   useEffect(() => {
@@ -89,7 +106,7 @@ export function GuideBrowser({
   const payload = useAsyncValue(
     langMap && bookId
       ? () =>
-          loadClientGuidePayload(
+          source.payload(
             dataset,
             lang,
             bookId,
@@ -109,24 +126,7 @@ export function GuideBrowser({
   }, [payload?.title, datasetTitle]);
 
   if (!bookId || !payload || !langMap) {
-    return (
-      <Workspace toc={[]}>
-        <WorkspaceBody className="flex flex-col gap-3">
-          <Skeleton className="h-3.5 w-44" />
-          <Skeleton className="mt-1 h-8 w-2/3 max-w-sm" />
-          <Skeleton className="h-4 w-full max-w-md" />
-          <Skeleton className="h-4 w-4/5 max-w-sm" />
-          <div className="mt-6 flex flex-col gap-2.5">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-[92%]" />
-            <Skeleton className="h-4 w-[96%]" />
-            <Skeleton className="h-32 w-full" />
-            <Skeleton className="h-4 w-[88%]" />
-            <Skeleton className="h-4 w-3/4" />
-          </div>
-        </WorkspaceBody>
-      </Workspace>
-    );
+    return <GuideBrowserFallback />;
   }
   return <GuidePageView payload={payload} langMap={langMap} />;
 }

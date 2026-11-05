@@ -3,6 +3,7 @@ import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 
 import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
 import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
 import { CommandSearch } from '@terrafirmagreg-team/ui/components/blocks/search/command';
@@ -18,7 +19,6 @@ import type {
   QuestCompactRow,
 } from '@terrafirmagreg-team/quest/lib/data/dto';
 import { filterCompactQuests } from '@terrafirmagreg-team/quest/lib/search';
-import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 
 export function SearchOverlay({
   open,
@@ -26,7 +26,6 @@ export function SearchOverlay({
   onQuery,
   onClose,
   dataset,
-  lang,
   langMap,
   index,
 }: {
@@ -35,12 +34,12 @@ export function SearchOverlay({
   onQuery: (value: string) => void;
   onClose: () => void;
   dataset: DatasetRef;
-  lang: Lang;
   langMap: Record<string, string>;
   index: QuestCompactIndex | null;
 }) {
   const t = useTranslations();
   const router = useRouter();
+  const resolved = useResolvedLang();
   const results = useMemo(
     () => (index ? filterCompactQuests(index, query) : []),
     [index, query],
@@ -88,7 +87,7 @@ export function SearchOverlay({
         const row = item.data;
         if (!row) return;
         router.push(
-          questHref(dataset, lang, { category: row.filename, id: row.id }),
+          questHref(dataset, resolved, { category: row.filename, id: row.id }),
         );
       }}
     />

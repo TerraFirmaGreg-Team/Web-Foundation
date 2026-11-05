@@ -1,5 +1,6 @@
 import { registerPreviewResolver } from '@terrafirmagreg-team/preview/lib';
 import { loadClientGuideBook } from '@terrafirmagreg-team/guide/lib/client/guides';
+import { guidePlainText } from '@terrafirmagreg-team/guide/lib/format';
 import { entryPreviewIcon } from '@terrafirmagreg-team/game/lib/preview';
 import type { PreviewResolverCtx } from '@terrafirmagreg-team/preview/lib';
 import type { PagePreviewData } from '@terrafirmagreg-team/ui/types/preview';
@@ -8,6 +9,7 @@ export async function guideLinkPreview({
   parts,
   query,
   lang,
+  langMap,
 }: PreviewResolverCtx): Promise<PagePreviewData | undefined> {
   const dataset = {
     id: parts[1] ?? '',
@@ -28,7 +30,12 @@ export async function guideLinkPreview({
   }
   return {
     title: index.book?.name ?? bookId,
-    description: index.book?.landingText,
+    description: index.book?.landingText
+      ? guidePlainText(index.book.landingText, {
+          macros: index.book?.macros,
+          langMap,
+        })
+      : undefined,
     icon: entryPreviewIcon(index.book?.cover ?? undefined, dataset),
   };
 }

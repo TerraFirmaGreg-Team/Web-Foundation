@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import {
   useReactFlow,
+  useStore,
   useStoreApi,
 } from '@terrafirmagreg-team/ui/lib/canvas/xyflow';
 import { readStoredViewport } from '@terrafirmagreg-team/ui/lib/canvas/viewport';
@@ -46,6 +47,7 @@ export function FlowViewport({
 }) {
   const { setCenter, setViewport, getZoom } = useReactFlow();
   const storeApi = useStoreApi();
+  const paneReady = useStore((s) => s.width > 0 && s.height > 0);
   const initRef = useRef<string | null>(null);
   const preInitRef = useRef<string | null>(null);
   const nodesRef = useRef(nodes);
@@ -66,6 +68,7 @@ export function FlowViewport({
 
   useEffect(() => {
     if (viewSize.w < 1 || viewSize.h < 1) return;
+    if (!paneReady) return;
     if (!ready) {
 
       initRef.current = null;
@@ -170,6 +173,7 @@ export function FlowViewport({
     initFocusId,
     nodes,
     onReady,
+    paneReady,
     ready,
     resetKey,
     restoreViewport,
@@ -229,7 +233,7 @@ export function FlowViewport({
   useEffect(() => {
     if (selectedId === lastSelectedRef.current) return;
     lastSelectedRef.current = selectedId ?? null;
-    if (initRef.current !== resetKey || !selectedId) return;
+    if (initRef.current !== initKey || !selectedId) return;
     if (selectedId === suppressPanRef?.current) return;
     const node = nodesRef.current.find((entry) => entry.id === selectedId);
     if (!node) return;
@@ -237,7 +241,7 @@ export function FlowViewport({
       zoom: getZoom() || focusZoom,
       duration: 300,
     });
-  }, [focusZoom, getZoom, resetKey, selectedId, suppressPanRef, setCenter]);
+  }, [focusZoom, getZoom, initKey, selectedId, suppressPanRef, setCenter]);
 
   return null;
 }

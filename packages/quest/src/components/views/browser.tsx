@@ -7,6 +7,7 @@ import { questConfig } from '@terrafirmagreg-team/quest/lib/config';
 import { useAsyncValue } from '@terrafirmagreg-team/ui/hooks/use-async-value';
 import { useVersionedDataset } from '@terrafirmagreg-team/kit/hooks/use-versioned-dataset';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
+import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { useDocumentTitle } from '@terrafirmagreg-team/ui/hooks/use-document-title';
 import {
   DEFAULT_GRID_SCALE,
@@ -16,11 +17,7 @@ import { questHref } from '@terrafirmagreg-team/quest/lib/links';
 import { questFromCompact } from '@terrafirmagreg-team/quest/lib/data/parse';
 import { chapterEntryQuestId } from '@terrafirmagreg-team/quest/lib/data/entry';
 import { groupQuestChapters } from '@terrafirmagreg-team/quest/lib/data/groups';
-import {
-  loadQuestChapter,
-  loadQuestCompactIndex,
-  loadQuestLangMap,
-} from '@terrafirmagreg-team/quest/lib/client/quest';
+import { getQuestSource } from '@terrafirmagreg-team/quest/lib/source';
 import { questDisplayTitle } from '@terrafirmagreg-team/quest/lib/display';
 import { plainQuestText } from '@terrafirmagreg-team/quest/lib/rich-text';
 import { Skeleton } from '@terrafirmagreg-team/ui/components/ui/skeleton';
@@ -60,6 +57,27 @@ const QUEST_SKELETON_EDGES = [
   { x: '48%', y: '78%', w: '14%' },
 ];
 
+export function QuestBrowserFallback() {
+  return (
+    <div aria-hidden className="viewport-body relative min-h-0 flex-1 overflow-hidden">
+      {QUEST_SKELETON_NODES.map((node, i) => (
+        <Skeleton
+          key={i}
+          className="absolute size-10 rounded-sm"
+          style={{ left: node.x, top: node.y }}
+        />
+      ))}
+      {QUEST_SKELETON_EDGES.map((edge, i) => (
+        <Skeleton
+          key={`e${i}`}
+          className="absolute h-px -translate-y-1/2 rotate-45 opacity-60"
+          style={{ left: edge.x, top: edge.y, width: edge.w }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export function QuestBrowser({
   dataset: id,
   datasetTitle,
@@ -81,12 +99,13 @@ export function QuestBrowser({
   const [query, setQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
 
+  const source = getQuestSource();
   const index = useAsyncValue(
-    () => loadQuestCompactIndex(dataset, lang),
+    () => source.index(dataset, lang),
     [dataset, lang],
   );
   const langMap =
-    useAsyncValue(() => loadQuestLangMap(dataset, lang), [dataset, lang]) ?? {};
+    useAsyncValue(() => source.langMap(dataset, lang), [dataset, lang]) ?? {};
 
   const row = useMemo(() => {
     if (!index) return undefined;
@@ -96,20 +115,21 @@ export function QuestBrowser({
     return all.find((chapter) => chapter.filename === category) ?? all[0];
   }, [index, category]);
 
+  const resolved = useResolvedLang();
   useEffect(() => {
     if (!row || row.filename === category) return;
     router.replace(
-      questHref(dataset, lang, {
+      questHref(dataset, resolved, {
         category: row.filename,
         id: selectedId,
         item,
       }),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps -- params change per render
-  }, [row?.filename, category, dataset, lang]);
+  }, [row?.filename, category, dataset, resolved]);
 
   const chapter = useAsyncValue(
-    () => loadQuestChapter(dataset, row, index?.book?.defaultQuestShape),
+    () => source.chapter(dataset, row, index?.book?.defaultQuestShape),
     [dataset, row?.file, index],
   );
 
@@ -126,14 +146,14 @@ export function QuestBrowser({
     if (!entryId) return;
     autoOpenedRef.current = entryId;
     router.replace(
-      questHref(dataset, lang, {
+      questHref(dataset, resolved, {
         category: filename,
         id: entryId,
         item,
       }),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps -- params change per render
-  }, [chapter, selectedId, dataset, lang]);
+  }, [chapter, selectedId, dataset, resolved]);
 
   const chapterTitle = chapter
     ? plainQuestText(chapter.title ?? chapter.filename, langMap)
@@ -162,7 +182,7 @@ export function QuestBrowser({
 
   const replaceQuest = (opts?: { category?: string; id?: string }) => {
     router.replace(
-      questHref(dataset, lang, {
+      questHref(dataset, resolved, {
         category: opts?.category ?? row?.filename,
         id: opts?.id,
         item,
@@ -259,7 +279,6 @@ export function QuestBrowser({
             setQuery('');
           }}
           dataset={dataset}
-          lang={lang}
           langMap={langMap}
           index={index ?? null}
         />
