@@ -257,7 +257,7 @@ export function GlbScene({
               label: t('Viewer settings', { note: 'ui.viewer.settings' }),
               sliders: [
                 {
-                  icon: <MoveHorizontal />,
+                  icon: <MoveHorizontal className="size-3.5" />,
                   label: t('Width', { note: 'ui.viewer.width' }),
                   min: SCENE_WIDTH_MIN,
                   max: SCENE_WIDTH_MAX,
@@ -267,7 +267,7 @@ export function GlbScene({
                   onChange: setSceneWidth,
                 },
                 {
-                  icon: <MoveVertical />,
+                  icon: <MoveVertical className="size-3.5" />,
                   label: t('Height', { note: 'ui.viewer.height' }),
                   min: SCENE_HEIGHT_MIN,
                   max: SCENE_HEIGHT_MAX,
@@ -277,7 +277,7 @@ export function GlbScene({
                   onChange: setSceneHeight,
                 },
                 {
-                  icon: <Gauge />,
+                  icon: <Gauge className="size-3.5" />,
                   label: t('Rotate speed', { note: 'ui.viewer.rotate_speed' }),
                   min: ROTATE_MIN,
                   max: ROTATE_MAX,
@@ -289,7 +289,7 @@ export function GlbScene({
                 ...(multi
                   ? [
                       {
-                        icon: <Timer />,
+                        icon: <Timer className="size-3.5" />,
                         label: t('Autoplay speed', { note: 'ui.viewer.autoplay_speed' }),
                         min: AUTOPLAY_SPEED_MIN,
                         max: AUTOPLAY_SPEED_MAX,
@@ -304,7 +304,7 @@ export function GlbScene({
               ],
               toggles: [
                 {
-                  icon: <RotateCw />,
+                  icon: <RotateCw className="size-4" />,
                   label: t('Spin', { note: 'ui.viewer.spin' }),
                   checked: autoRotate,
                   onChange: setAutoRotate,
@@ -312,7 +312,7 @@ export function GlbScene({
                 ...(multi
                   ? [
                       {
-                        icon: <Play />,
+                        icon: <Play className="size-4" />,
                         label: t('Autoplay', { note: 'ui.viewer.autoplay' }),
                         checked: autoplay,
                         onChange: setAutoplay,
@@ -320,7 +320,7 @@ export function GlbScene({
                     ]
                   : []),
                 {
-                  icon: <Grid3x3 />,
+                  icon: <Grid3x3 className="size-4" />,
                   label: t('Grid', { note: 'ui.viewer.grid' }),
                   checked: dotGrid,
                   onChange: setDotGrid,

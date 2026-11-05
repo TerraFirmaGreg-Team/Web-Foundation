@@ -1,4 +1,5 @@
 import { sectionConfig } from '@terrafirmagreg-team/kit/lib/config';
+import { WorkspaceBody } from '@terrafirmagreg-team/ui/components/layouts/workspace';
 import type {
   SectionLandingProps,
   SectionLandingView,
@@ -32,9 +33,11 @@ export async function changelogLanding({
   );
   return {
     node: (
-      <Suspense fallback={<ChangelogBrowserFallback />}>
-        <ChangelogBrowser entries={entries} lang={lang} />
-      </Suspense>
+      <WorkspaceBody>
+        <Suspense fallback={<ChangelogBrowserFallback />}>
+          <ChangelogBrowser entries={entries} lang={lang} />
+        </Suspense>
+      </WorkspaceBody>
     ),
     workspace: {
       toc: groupByMonth(entries, lang).map((month) => ({

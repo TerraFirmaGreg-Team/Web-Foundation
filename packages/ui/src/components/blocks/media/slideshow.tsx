@@ -141,7 +141,7 @@ export function Slideshow({
               sliders: multi
                 ? [
                     {
-                      icon: <Timer />,
+                      icon: <Timer className="size-3.5" />,
                       label: t('Autoplay speed', { note: 'ui.viewer.autoplay_speed' }),
                       min: AUTOPLAY_SPEED_MIN,
                       max: AUTOPLAY_SPEED_MAX,
@@ -156,7 +156,7 @@ export function Slideshow({
               toggles: multi
                 ? [
                     {
-                      icon: <Play />,
+                      icon: <Play className="size-4" />,
                       label: t('Autoplay', { note: 'ui.viewer.autoplay' }),
                       checked: autoplay,
                       onChange: setAutoplay,
