@@ -93,9 +93,7 @@ export async function loadClientGuidePayload(
     title: entry?.name ?? category?.name ?? overview.book?.name ?? bookId,
     modId: bookModId,
     bookPath,
-    description: entry
-      ? undefined
-      : (category?.description ?? overview.book?.landingText),
+    description: entry ? undefined : category?.description,
     previewIcon:
       entry?.icon?.id ?? category?.icon?.id ?? overview.book?.cover?.id,
     previewKind: entry?.icon?.kind ?? category?.icon?.kind,
