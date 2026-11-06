@@ -54,8 +54,9 @@ function bookLeaf(
   slug: string,
   raw: GuideBookJson | undefined,
   map: Record<string, string>,
-): PageTree.Item {
+): PageTree.Item | undefined {
   const book = toBook(raw, ref, slug, map);
+  if (!book.name.trim()) return undefined;
   const bookId = bookOptionId(ref.modId, ref.bookPath);
   return keyTreeNode({
     type: 'page',
@@ -73,6 +74,7 @@ async function datasetBookLeaves(
   const dump = await loadDatasetDump(dataset);
   if (!dump) return [];
   const taken = new Set<string>();
+  const seen = new Set<string>();
   const leaves: PageTree.Node[] = [];
   for (const mod of dump.mods) {
     const raws = await Promise.all(
@@ -85,14 +87,19 @@ async function datasetBookLeaves(
     for (const [i, ref] of mod.books.entries()) {
       const raw = raws[i];
       if (!raw) continue;
+      const bookId = bookOptionId(ref.modId, ref.bookPath);
+      if (seen.has(bookId)) continue;
       let slug = bookSlug(raw, ref);
       if (taken.has(slug)) {
         let n = 2;
         while (taken.has(`${slug}-${n}`)) n += 1;
         slug = `${slug}-${n}`;
       }
+      const leaf = bookLeaf(dataset, ref, slug, raw, langMap);
+      if (!leaf) continue;
       taken.add(slug);
-      leaves.push(bookLeaf(dataset, ref, slug, raw, langMap));
+      seen.add(bookId);
+      leaves.push(leaf);
     }
   }
   return leaves;

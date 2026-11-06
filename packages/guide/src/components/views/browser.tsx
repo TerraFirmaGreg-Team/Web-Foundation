@@ -2,12 +2,16 @@
 import { useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocationSearchParams } from '@terrafirmagreg-team/ui/hooks/page/use-location-search';
-import { useAsyncValue } from '@terrafirmagreg-team/ui/hooks/use-async-value';
+import {
+  useAsyncResult,
+  useAsyncValue,
+} from '@terrafirmagreg-team/ui/hooks/use-async-value';
 import { useVersionedDataset } from '@terrafirmagreg-team/kit/hooks/use-versioned-dataset';
 import { useLangMap } from '@terrafirmagreg-team/game/hooks/use-lang-map';
 import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
 import { Skeleton } from '@terrafirmagreg-team/ui/components/ui/skeleton';
+import { EmptyState } from '@terrafirmagreg-team/ui/components/blocks/page/empty-state';
 import { WorkspaceBody } from '@terrafirmagreg-team/ui/components/layouts/workspace';
 import { GuidePageView } from '@terrafirmagreg-team/guide/components/views/page/view';
 import {
@@ -59,7 +63,7 @@ export function GuideBrowser({
     [params],
   );
   const source = getGuideSource();
-  const books = useAsyncValue(
+  const books = useAsyncResult(
     () => source.books(dataset, lang),
     [dataset, lang],
   );
@@ -87,23 +91,23 @@ export function GuideBrowser({
 
   const resolved = useResolvedLang();
   const canonical = useAsyncValue(
-    books && !bookId
+    books.value && !bookId
       ? async () => {
-          const book = books[0];
+          const book = books.value?.[0];
           if (!book) return undefined;
           const index = await source.book(dataset, lang, book.bookId);
           const first = index ? firstGuideEntryId(index) : undefined;
           return guideHref(dataset, resolved, book.bookId, first);
         }
       : undefined,
-    [books, bookId, dataset, lang, resolved],
+    [books.value, bookId, dataset, lang, resolved],
   );
 
   useEffect(() => {
     if (canonical) router.replace(canonical);
   }, [canonical, router]);
 
-  const payload = useAsyncValue(
+  const payload = useAsyncResult(
     langMap && bookId
       ? () =>
           source.payload(
@@ -120,14 +124,38 @@ export function GuideBrowser({
   );
 
   useEffect(() => {
-    if (payload?.title) {
-      document.title = `${payload.title} · ${datasetTitle} | ${guideConfig().appName}`;
+    if (payload.value?.title) {
+      document.title = `${payload.value.title} · ${datasetTitle} | ${guideConfig().appName}`;
     }
-  }, [payload?.title, datasetTitle]);
+  }, [payload.value?.title, datasetTitle]);
 
-  if (!bookId || !payload || !langMap) {
+  const unavailable = (
+    <WorkspaceBody>
+      <EmptyState variant="missing">
+        {t('Guide data is temporarily unavailable. Try again later.', {
+          note: 'guide.unavailable',
+        })}
+      </EmptyState>
+    </WorkspaceBody>
+  );
+
+  if (books.error || (!books.pending && !books.value?.length)) {
+    return unavailable;
+  }
+  if (!bookId || !langMap || payload.pending) {
     return <GuideBrowserFallback />;
   }
-  return <GuidePageView payload={payload} langMap={langMap} />;
+  if (!payload.value) {
+    return payload.error ? (
+      unavailable
+    ) : (
+      <WorkspaceBody>
+        <EmptyState variant="missing">
+          {t('Entry not found', { note: 'guide.entry_missing' })}
+        </EmptyState>
+      </WorkspaceBody>
+    );
+  }
+  return <GuidePageView payload={payload.value} langMap={langMap} />;
 }
 

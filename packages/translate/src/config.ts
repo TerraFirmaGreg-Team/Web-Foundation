@@ -3,13 +3,14 @@ export type TranslateConfig = {
   locales?: Record<string, unknown> | Record<string, unknown>[];
 };
 
-let config: TranslateConfig = {};
+const store = globalThis as Record<symbol, TranslateConfig | undefined>;
+const CONFIG_KEY = Symbol.for('terrafirmagreg.config.translate');
 
 export function registerTranslateConfig(next: TranslateConfig): void {
-  config = { ...config, ...next };
+  store[CONFIG_KEY] = { ...store[CONFIG_KEY], ...next };
 }
 
 export function translateConfig(): TranslateConfig {
-  return config;
+  return store[CONFIG_KEY] ?? {};
 }
 

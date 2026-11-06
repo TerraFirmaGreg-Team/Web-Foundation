@@ -19,10 +19,15 @@ export interface PreviewResolverOptions {
   langMap?: (dataset: DatasetRef, lang: Lang) => Promise<Record<string, string>>;
 }
 
-const resolvers = new Map<
+const resolvers = ((globalThis as Record<symbol, unknown>)[
+  Symbol.for('terrafirmagreg.preview.resolvers')
+] ??= new Map<
   string,
   { resolve: PreviewResolver; langMap?: PreviewResolverOptions['langMap'] }
->();
+>()) as Map<
+  string,
+  { resolve: PreviewResolver; langMap?: PreviewResolverOptions['langMap'] }
+>;
 
 export function registerPreviewResolver(
   section: string,

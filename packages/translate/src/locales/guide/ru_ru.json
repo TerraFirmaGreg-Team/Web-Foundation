@@ -3,6 +3,7 @@
   "Entry not found(guide.entry_missing)": "Запись не найдена",
   "Gameplay guide(sections.desc.guide)": "Игровой гайд",
   "Guide(sections.guide)": "Гайды",
+  "Guide data is temporarily unavailable. Try again later.(guide.unavailable)": "Данные гайдов временно недоступны. Попробуйте позже.",
   "No recipes(guide.recipe_empty)": "Нет рецептов",
   "Objective(guide.objective)": "Задача",
   "Open(guide.link)": "Открыть",

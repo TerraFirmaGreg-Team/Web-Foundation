@@ -31,7 +31,7 @@ export type GuideConfig = {
 const { register: registerGuideConfig, get: guideConfig } = createConfigRegistry<
   GuideConfigInput,
   GuideConfig
->((overrides) => ({
+>('guide', (overrides) => ({
   appName: overrides.appName ?? uiConfig().brand?.name ?? '',
   components: {
     PageActions: (overrides.components?.PageActions ??

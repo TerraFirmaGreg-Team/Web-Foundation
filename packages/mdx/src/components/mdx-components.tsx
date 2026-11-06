@@ -46,7 +46,9 @@ import { LinkPreview } from '@terrafirmagreg-team/ui/components/blocks/link/link
 import type { MDXComponents } from 'mdx/types';
 import type { ComponentProps, HTMLAttributes } from 'react';
 
-const extras: MDXComponents = {};
+const extras = ((globalThis as Record<symbol, unknown>)[
+  Symbol.for('terrafirmagreg.mdx.components')
+] ??= {}) as MDXComponents;
 
 export function registerMdxComponents(map: MDXComponents): void {
   Object.assign(extras, map);

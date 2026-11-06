@@ -11,7 +11,9 @@ export type MarkdownProvider = (
   ctx: MarkdownProviderCtx,
 ) => Promise<Response | undefined>;
 
-const providers = new Map<string, MarkdownProvider>();
+const providers = ((globalThis as Record<symbol, unknown>)[
+  Symbol.for('terrafirmagreg.mdx.providers')
+] ??= new Map<string, MarkdownProvider>()) as Map<string, MarkdownProvider>;
 
 export function registerMarkdownProvider(
   section: string,

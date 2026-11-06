@@ -9,7 +9,9 @@ export type SearchClientSourceCtx = {
 
 export type SearchClientSource = (ctx: SearchClientSourceCtx) => SearchClient;
 
-const sources: SearchClientSource[] = [];
+const sources = ((globalThis as Record<symbol, unknown>)[
+  Symbol.for('terrafirmagreg.search.sources')
+] ??= []) as SearchClientSource[];
 
 export function registerSearchClientSource(source: SearchClientSource): void {
   sources.push(source);

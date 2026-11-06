@@ -7,9 +7,12 @@
   "Prerequisites are hidden.(quest.prerequisites_hidden)": "Prerequisites are hidden.",
   "Prerequisites(quest.prerequisites)": "Prerequisites",
   "Quest chapters and objectives(sections.desc.quest)": "Quest chapters and objectives",
+  "Quest data is temporarily unavailable. Try again later.(quest.unavailable)": "Quest data is temporarily unavailable. Try again later.",
+  "Quest not found(quest.not_found)": "Quest not found",
   "Quests(sections.quest)": "Quests",
   "Rewards(quest.rewards)": "Rewards",
   "Search quests(quest.search)": "Search quests",
+  "Select a quest to view its details.(quest.select_hint)": "Select a quest to view its details.",
   "Tasks(quest.tasks)": "Tasks",
   "Unlocks(quest.dependents)": "Unlocks"
 }

@@ -8,8 +8,12 @@ export type DumpLocation = {
   files?: Record<string, string>;
 };
 
-const dumpLocations = new Map<string, DumpLocation>();
-const dumpLocationListeners = new Set<() => void>();
+const store = globalThis as Record<symbol, unknown>;
+const dumpLocations = (store[Symbol.for('terrafirmagreg.dump.locations')] ??=
+  new Map<string, DumpLocation>()) as Map<string, DumpLocation>;
+const dumpLocationListeners = (store[
+  Symbol.for('terrafirmagreg.dump.locationListeners')
+] ??= new Set<() => void>()) as Set<() => void>;
 
 export function registerDumpLocation(
   dataset: DatasetRef,

@@ -1,6 +1,7 @@
 import 'server-only';
 import { createLocaleSet, type LocaleSet } from '@terrafirmagreg-team/translate/create';
 import { translateConfig } from '@terrafirmagreg-team/translate/config';
+import { locales as packageLocales } from '../locales';
 import { flattenMessages } from './flatten';
 import { sortLangCodes } from './code';
 import type { LocaleMessages, LocaleRegistry } from '@terrafirmagreg-team/translate/types/locale';
@@ -27,7 +28,10 @@ function flattenAll(
 }
 
 function discoverLocaleRegistry(): LocaleRegistry {
-  const catalogs = [translateConfig().locales ?? []].flat();
+  const catalogs = [
+    ...Object.values(packageLocales),
+    translateConfig().locales ?? [],
+  ].flat();
 
   const messages: Record<string, LocaleMessages> = {};
   for (const catalog of catalogs) {

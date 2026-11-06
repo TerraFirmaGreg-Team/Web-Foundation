@@ -9,7 +9,7 @@ export type QuestConfigInput = {
 const { register: registerQuestConfig, get: questConfig } = createConfigRegistry<
   QuestConfigInput,
   { appName: string }
->((overrides) => ({
+>('quest', (overrides) => ({
   appName: overrides.appName ?? uiConfig().brand?.name ?? '',
 }));
 

@@ -6,13 +6,14 @@ export interface CommentsViewProps {
 
 export type CommentsView = ComponentType<CommentsViewProps>;
 
-let view: CommentsView | undefined;
+const store = globalThis as Record<symbol, CommentsView | undefined>;
+const VIEW_KEY = Symbol.for('terrafirmagreg.config.commentsView');
 
 export function registerCommentsView(component: CommentsView): void {
-  view = component;
+  store[VIEW_KEY] = component;
 }
 
 export function commentsView(): CommentsView | undefined {
-  return view;
+  return store[VIEW_KEY];
 }
 

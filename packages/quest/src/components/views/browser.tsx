@@ -4,7 +4,10 @@ import { useRouter } from 'next/navigation';
 import { useLocationSearchParams } from '@terrafirmagreg-team/ui/hooks/page/use-location-search';
 import { X } from 'lucide-react';
 import { questConfig } from '@terrafirmagreg-team/quest/lib/config';
-import { useAsyncValue } from '@terrafirmagreg-team/ui/hooks/use-async-value';
+import {
+  useAsyncResult,
+  useAsyncValue,
+} from '@terrafirmagreg-team/ui/hooks/use-async-value';
 import { useVersionedDataset } from '@terrafirmagreg-team/kit/hooks/use-versioned-dataset';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
 import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
@@ -21,6 +24,7 @@ import { getQuestSource } from '@terrafirmagreg-team/quest/lib/source';
 import { questDisplayTitle } from '@terrafirmagreg-team/quest/lib/display';
 import { plainQuestText } from '@terrafirmagreg-team/quest/lib/rich-text';
 import { Skeleton } from '@terrafirmagreg-team/ui/components/ui/skeleton';
+import { EmptyState } from '@terrafirmagreg-team/ui/components/blocks/page/empty-state';
 import { EntryProvider } from '@terrafirmagreg-team/game/hooks/use-entry-context';
 import {
   RightSidebarPanel,
@@ -57,6 +61,18 @@ const QUEST_SKELETON_EDGES = [
   { x: '48%', y: '78%', w: '14%' },
 ];
 
+function QuestPanelSkeleton() {
+  return (
+    <div aria-hidden className="flex flex-col gap-3 p-4">
+      <Skeleton className="h-6 w-3/4" />
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-4 w-5/6" />
+      <Skeleton className="mt-2 h-24 w-full" />
+      <Skeleton className="h-4 w-2/3" />
+    </div>
+  );
+}
+
 export function QuestBrowserFallback() {
   return (
     <div aria-hidden className="viewport-body relative min-h-0 flex-1 overflow-hidden">
@@ -74,6 +90,11 @@ export function QuestBrowserFallback() {
           style={{ left: edge.x, top: edge.y, width: edge.w }}
         />
       ))}
+      <RightSidebarPortal>
+        <RightSidebarPanel>
+          <QuestPanelSkeleton />
+        </RightSidebarPanel>
+      </RightSidebarPortal>
     </div>
   );
 }
@@ -100,7 +121,7 @@ export function QuestBrowser({
   const [searchOpen, setSearchOpen] = useState(false);
 
   const source = getQuestSource();
-  const index = useAsyncValue(
+  const index = useAsyncResult(
     () => source.index(dataset, lang),
     [dataset, lang],
   );
@@ -108,12 +129,12 @@ export function QuestBrowser({
     useAsyncValue(() => source.langMap(dataset, lang), [dataset, lang]) ?? {};
 
   const row = useMemo(() => {
-    if (!index) return undefined;
-    const all = groupQuestChapters(index).flatMap(
+    if (!index.value) return undefined;
+    const all = groupQuestChapters(index.value).flatMap(
       (group) => group.chapters,
     );
     return all.find((chapter) => chapter.filename === category) ?? all[0];
-  }, [index, category]);
+  }, [index.value, category]);
 
   const resolved = useResolvedLang();
   useEffect(() => {
@@ -128,21 +149,24 @@ export function QuestBrowser({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- params change per render
   }, [row?.filename, category, dataset, resolved]);
 
-  const chapter = useAsyncValue(
-    () => source.chapter(dataset, row, index?.book?.defaultQuestShape),
-    [dataset, row?.file, index],
+  const chapter = useAsyncResult(
+    row
+      ? () => source.chapter(dataset, row, index.value?.book?.defaultQuestShape)
+      : undefined,
+    [dataset, row?.file, index.value],
   );
 
   const autoOpenedRef = useRef<string | null>(null);
   const prevChapterRef = useRef<string>(undefined);
   useEffect(() => {
-    const filename = chapter?.filename;
-    if (!filename) return;
+    const current = chapter.value;
+    if (!current) return;
+    const filename = current.filename;
     if (prevChapterRef.current === filename) return;
     prevChapterRef.current = filename;
     autoOpenedRef.current = null;
     if (selectedId) return;
-    const entryId = chapterEntryQuestId(chapter);
+    const entryId = chapterEntryQuestId(current);
     if (!entryId) return;
     autoOpenedRef.current = entryId;
     router.replace(
@@ -153,22 +177,22 @@ export function QuestBrowser({
       }),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps -- params change per render
-  }, [chapter, selectedId, dataset, resolved]);
+  }, [chapter.value, selectedId, dataset, resolved]);
 
-  const chapterTitle = chapter
-    ? plainQuestText(chapter.title ?? chapter.filename, langMap)
+  const chapterTitle = chapter.value
+    ? plainQuestText(chapter.value.title ?? chapter.value.filename, langMap)
     : (row && plainQuestText(row.title, langMap)) || row?.filename || '';
 
-  const local = chapter?.quests.find((quest) => quest.id === selectedId);
-  const linked = index?.quests.find((entry) => entry.id === selectedId);
+  const local = chapter.value?.quests.find((quest) => quest.id === selectedId);
+  const linked = index.value?.quests.find((entry) => entry.id === selectedId);
   const selected = local ?? (linked ? questFromCompact(linked) : undefined);
   const linkTarget =
-    !local && linked && chapter && linked.filename !== chapter.filename
+    !local && linked && chapter.value && linked.filename !== chapter.value.filename
       ? linked
       : undefined;
   const linkTargetTitle = linkTarget
     ? (plainQuestText(
-        index?.chapters.find((row) => row.filename === linkTarget.filename)
+        index.value?.chapters.find((row) => row.filename === linkTarget.filename)
           ?.title ?? linkTarget.filename,
         langMap,
       ) || linkTarget.filename)
@@ -196,30 +220,44 @@ export function QuestBrowser({
       dataset={dataset}
       lang={lang}
       langMap={langMap}
-      index={index}
+      index={index.value}
       chapterJump={
         linkTarget
           ? { filename: linkTarget.filename, title: linkTargetTitle }
           : undefined
       }
     />
+  ) : index.pending || chapter.pending ? (
+    <QuestPanelSkeleton />
   ) : (
-    <p className="p-4 text-sm text-muted-foreground">{selectedId}</p>
+    <div className="p-4">
+      <EmptyState variant="missing">
+        {t('Quest not found', { note: 'quest.not_found' })}
+      </EmptyState>
+    </div>
   );
 
   return (
     <EntryProvider dataset={dataset} lang={lang} langMap={langMap}>
       <div className="viewport-shell quest-viewport relative">
-        {chapter && chapter.filename === row?.filename ? (
+        {index.error || (!index.pending && !index.value) ? (
+          <div className="absolute inset-0 flex items-center justify-center p-6">
+            <EmptyState variant="missing">
+              {t('Quest data is temporarily unavailable. Try again later.', {
+                note: 'quest.unavailable',
+              })}
+            </EmptyState>
+          </div>
+        ) : chapter.value && chapter.value.filename === row?.filename ? (
           <CanvasFlow
-            chapter={chapter}
+            chapter={chapter.value}
             dataset={dataset}
             langMap={langMap}
-            gridScale={index?.book?.gridScale ?? DEFAULT_GRID_SCALE}
+            gridScale={index.value?.book?.gridScale ?? DEFAULT_GRID_SCALE}
             questSpacing={
-              index?.book?.questSpacing ?? DEFAULT_QUEST_SPACING
+              index.value?.book?.questSpacing ?? DEFAULT_QUEST_SPACING
             }
-            index={index ?? null}
+            index={index.value ?? null}
             selectedId={selectedId ?? null}
             suppressPanRef={autoOpenedRef}
             onSelectQuest={(id, filename, kind) => {
@@ -233,6 +271,14 @@ export function QuestBrowser({
             onClearSelection={() => replaceQuest({ category: row?.filename })}
             onOpenSearch={() => setSearchOpen(true)}
           />
+        ) : chapter.error || (!chapter.pending && !chapter.value && row) ? (
+          <div className="absolute inset-0 flex items-center justify-center p-6">
+            <EmptyState variant="missing">
+              {t('Quest data is temporarily unavailable. Try again later.', {
+                note: 'quest.unavailable',
+              })}
+            </EmptyState>
+          </div>
         ) : (
           <div aria-hidden className="absolute inset-0 overflow-hidden">
             {QUEST_SKELETON_NODES.map((node, i) => (
@@ -251,24 +297,34 @@ export function QuestBrowser({
             ))}
           </div>
         )}
+        <RightSidebarPortal>
+          <RightSidebarPanel>
+            {selectedId ? (
+              questPanel
+            ) : (
+              <div className="p-4">
+                <EmptyState>
+                  {t('Select a quest to view its details.', {
+                    note: 'quest.select_hint',
+                  })}
+                </EmptyState>
+              </div>
+            )}
+          </RightSidebarPanel>
+        </RightSidebarPortal>
         {selectedId ? (
-          <>
-            <RightSidebarPortal>
-              <RightSidebarPanel>{questPanel}</RightSidebarPanel>
-            </RightSidebarPortal>
-            <aside className="absolute inset-y-0 right-0 z-20 w-full max-w-md border-l border-border bg-background shadow-lg lg:hidden ps-4">
-              <IconButton
-                variant="ghost"
-                size="icon-sm"
-                label={t('Close', { note: 'quest.close' })}
-                onClick={() => replaceQuest({ category: row?.filename })}
-                className="absolute right-2 top-2 z-10"
-              >
-                <X className="size-4" />
-              </IconButton>
-              {questPanel}
-            </aside>
-          </>
+          <aside className="absolute inset-y-0 right-0 z-20 w-full max-w-md border-l border-border bg-background shadow-lg lg:hidden ps-4">
+            <IconButton
+              variant="ghost"
+              size="icon-sm"
+              label={t('Close', { note: 'quest.close' })}
+              onClick={() => replaceQuest({ category: row?.filename })}
+              className="absolute right-2 top-2 z-10"
+            >
+              <X className="size-4" />
+            </IconButton>
+            {questPanel}
+          </aside>
         ) : null}
         <SearchOverlay
           open={searchOpen}
@@ -280,7 +336,7 @@ export function QuestBrowser({
           }}
           dataset={dataset}
           langMap={langMap}
-          index={index ?? null}
+          index={index.value ?? null}
         />
       </div>
     </EntryProvider>

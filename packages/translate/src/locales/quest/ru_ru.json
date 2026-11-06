@@ -7,9 +7,12 @@
   "Prerequisites are hidden.(quest.prerequisites_hidden)": "Требования скрыты.",
   "Prerequisites(quest.prerequisites)": "Требования",
   "Quest chapters and objectives(sections.desc.quest)": "Главы и задания квестбука",
+  "Quest data is temporarily unavailable. Try again later.(quest.unavailable)": "Данные квестов временно недоступны. Попробуйте позже.",
+  "Quest not found(quest.not_found)": "Квест не найден",
   "Quests(sections.quest)": "Квесты",
   "Rewards(quest.rewards)": "Награды",
   "Search quests(quest.search)": "Поиск квестов",
+  "Select a quest to view its details.(quest.select_hint)": "Выберите квест, чтобы увидеть детали.",
   "Tasks(quest.tasks)": "Задания",
   "Unlocks(quest.dependents)": "Открывает"
 }

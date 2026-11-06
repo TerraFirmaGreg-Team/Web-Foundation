@@ -5,7 +5,12 @@ export type SearchHitFilterFactory = (
   params: URLSearchParams,
 ) => SearchHitFilter | undefined;
 
-const hitFilters = new Map<string, SearchHitFilterFactory>();
+const hitFilters = ((globalThis as Record<symbol, unknown>)[
+  Symbol.for('terrafirmagreg.search.hitFilters')
+] ??= new Map<string, SearchHitFilterFactory>()) as Map<
+  string,
+  SearchHitFilterFactory
+>;
 
 export function registerSearchHitFilter(
   section: string,

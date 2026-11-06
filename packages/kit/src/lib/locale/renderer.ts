@@ -21,10 +21,14 @@ export type LocaleLoader = (
   lang: Lang,
 ) => Promise<LocaleLoadResult>;
 
-const renderers = new Map<
+const store = globalThis as Record<symbol, unknown>;
+const RENDERERS_KEY = Symbol.for('terrafirmagreg.locale.renderers');
+const LOADER_KEY = Symbol.for('terrafirmagreg.locale.loader');
+
+const renderers = (store[RENDERERS_KEY] ??= new Map<
   string,
   { resolve: LocaleResolve; render: LocaleRender }
->();
+>()) as Map<string, { resolve: LocaleResolve; render: LocaleRender }>;
 
 export function registerLocaleRenderer(
   section: string,
@@ -37,13 +41,11 @@ export function localeRenderer(section: string) {
   return renderers.get(section);
 }
 
-let loader: LocaleLoader | undefined;
-
 export function registerLocaleLoader(next: LocaleLoader): void {
-  loader = next;
+  store[LOADER_KEY] = next;
 }
 
 export function localeLoader(): LocaleLoader | undefined {
-  return loader;
+  return store[LOADER_KEY] as LocaleLoader | undefined;
 }
 

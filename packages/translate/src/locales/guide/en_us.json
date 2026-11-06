@@ -3,6 +3,7 @@
   "Entry not found(guide.entry_missing)": "Entry not found",
   "Gameplay guide(sections.desc.guide)": "Gameplay guide",
   "Guide(sections.guide)": "Guide",
+  "Guide data is temporarily unavailable. Try again later.(guide.unavailable)": "Guide data is temporarily unavailable. Try again later.",
   "No recipes(guide.recipe_empty)": "No recipes",
   "Objective(guide.objective)": "Objective",
   "Open(guide.link)": "Open",

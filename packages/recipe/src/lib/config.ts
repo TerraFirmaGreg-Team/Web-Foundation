@@ -9,7 +9,7 @@ export type RecipeConfigInput = {
 };
 
 const { register: registerRecipeConfig, get: recipeConfig } =
-  createConfigRegistry<RecipeConfigInput, { appName: string }>((overrides) => ({
+  createConfigRegistry<RecipeConfigInput, { appName: string }>('recipe', (overrides) => ({
     appName: overrides.appName ?? uiConfig().brand?.name ?? '',
   }));
 

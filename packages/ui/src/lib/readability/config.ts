@@ -5,7 +5,7 @@ export type ReadabilityConfig = {
 };
 
 const { register: registerReadabilityConfig, get: readabilityConfig } =
-  createConfigRegistry<ReadabilityConfig>();
+  createConfigRegistry<ReadabilityConfig>('readability');
 
 export { registerReadabilityConfig, readabilityConfig };
 

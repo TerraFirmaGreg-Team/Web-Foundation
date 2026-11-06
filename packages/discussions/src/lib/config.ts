@@ -9,15 +9,17 @@ export type DiscussionsConfig = {
   knownLanguages: readonly string[];
 };
 
-let config: DiscussionsConfig | undefined;
+const store = globalThis as Record<symbol, DiscussionsConfig | undefined>;
+const CONFIG_KEY = Symbol.for('terrafirmagreg.config.discussions');
 
 export function registerDiscussionsConfig(
   input: Partial<DiscussionsConfig>,
 ): void {
-  config = { ...config, ...input } as DiscussionsConfig;
+  store[CONFIG_KEY] = { ...store[CONFIG_KEY], ...input } as DiscussionsConfig;
 }
 
 export function discussionsConfig(): DiscussionsConfig {
+  const config = store[CONFIG_KEY];
   if (!config) {
     throw new Error(
       'Discussions config is not registered: call registerDiscussionsConfig() at app startup.',

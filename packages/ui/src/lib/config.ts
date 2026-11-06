@@ -85,22 +85,26 @@ export type UiConfig = {
   pagePreviewIcon?: ComponentType<{ icon: PreviewIcon }>;
 };
 
+const store = globalThis as Record<symbol, unknown>;
+
 export function createConfigRegistry<I extends object, R = I>(
+  label: string,
   resolve: (overrides: I) => R = (overrides) => overrides as unknown as R,
 ) {
-  let overrides = {} as I;
+  const key = Symbol.for(`terrafirmagreg.config.${label}`);
+  store[key] ??= {} as I;
   return {
     register(input: I): void {
-      overrides = { ...overrides, ...input };
+      store[key] = { ...(store[key] as I), ...input };
     },
     get(): R {
-      return resolve(overrides);
+      return resolve(store[key] as I);
     },
   };
 }
 
 const { register: registerUiConfig, get: uiConfig } =
-  createConfigRegistry<UiConfig>();
+  createConfigRegistry<UiConfig>('ui');
 
 export { registerUiConfig, uiConfig };
 
