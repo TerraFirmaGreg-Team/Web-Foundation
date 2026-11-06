@@ -1,6 +1,6 @@
 {
   "name": "@terrafirmagreg-team/preview",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "type": "module",
   "description": "Link previews and OG images",
   "license": "LGPL-3.0-only",
