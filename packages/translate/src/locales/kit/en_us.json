@@ -1,5 +1,6 @@
 {
   "Failed to copy(ui.copy_error)": "Failed to copy",
+  "Section data is temporarily unavailable. Try again later.(kit.section_unavailable)": "Section data is temporarily unavailable. Try again later.",
   "Select dataset(ui.select_dataset)": "Select dataset",
   "Select section(ui.select_section)": "Select section",
   "View as Markdown(ui.view_markdown)": "View as Markdown",

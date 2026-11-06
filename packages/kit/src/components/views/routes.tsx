@@ -5,6 +5,7 @@ import type * as PageTree from 'fumadocs-core/page-tree';
 import { flattenTree } from 'fumadocs-core/page-tree';
 import { LangRedirect } from '@terrafirmagreg-team/ui/components/blocks/lang/redirect';
 import { LangContentSwitch } from '@terrafirmagreg-team/ui/components/blocks/lang/content';
+import { SectionNotFound } from '@terrafirmagreg-team/kit/components/views/not-found';
 import {
   renderSectionView,
   renderSectionWorkspace,
@@ -101,6 +102,13 @@ export function createSectionRedirect(section: SectionKey) {
     const dataset = await defaultDataset(section);
     if (!dataset) notFound();
     return <LangRedirect to={sectionUrl(section, dataset)} />;
+  };
+}
+
+export function createSectionNotFound(section: SectionKey) {
+  return async function NotFound() {
+    const datasets = await sectionDatasets(section);
+    return <SectionNotFound section={section} datasets={datasets} />;
   };
 }
 

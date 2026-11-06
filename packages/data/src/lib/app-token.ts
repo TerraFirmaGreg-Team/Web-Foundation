@@ -1,16 +1,17 @@
+import { createPrivateKey, sign } from 'node:crypto';
 import { env } from './env';
 import { githubFetch } from './github';
 
 const TOKEN_TTL_MS = 50 * 60 * 1000;
 const cache = new Map<string, { token: Promise<string>; exp: number }>();
 
-function pemToDer(pem: string): ArrayBuffer {
-  const b64 = pem.replace(/\\n/g, '\n').replace(/-----(?:BEGIN|END)[^\n-]*-----|\s/g, '');
-  const bin = Buffer.from(b64, 'base64');
-  return bin.buffer.slice(
-    bin.byteOffset,
-    bin.byteOffset + bin.byteLength,
-  ) as ArrayBuffer;
+function privateKey(pem: string) {
+  const normalized = pem.replace(/\\n/g, '\n');
+  if (normalized.includes('-----BEGIN')) return createPrivateKey(normalized);
+  return createPrivateKey({
+    key: Buffer.from(normalized.trim(), 'base64'),
+    format: 'der',
+  });
 }
 
 async function appJwt(): Promise<string> {
@@ -22,19 +23,8 @@ async function appJwt(): Promise<string> {
   const pack = (value: object) =>
     Buffer.from(JSON.stringify(value)).toString('base64url');
   const payload = `${pack({ alg: 'RS256', typ: 'JWT' })}.${pack({ iat: now - 60, exp: now + 540, iss: appId })}`;
-  const key = await crypto.subtle.importKey(
-    'pkcs8',
-    pemToDer(pem),
-    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
-    false,
-    ['sign'],
-  );
-  const signature = await crypto.subtle.sign(
-    'RSASSA-PKCS1-v1_5',
-    key,
-    new TextEncoder().encode(payload),
-  );
-  return `${payload}.${Buffer.from(signature).toString('base64url')}`;
+  const signature = sign('sha256', Buffer.from(payload), privateKey(pem));
+  return `${payload}.${signature.toString('base64url')}`;
 }
 
 async function mintInstallationToken(repo: string): Promise<string> {
