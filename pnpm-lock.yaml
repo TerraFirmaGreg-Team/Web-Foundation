@@ -90,10 +90,10 @@ importers:
   packages/analytics:
     dependencies:
       '@terrafirmagreg-team/data':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../data
       '@terrafirmagreg-team/translate':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../translate
       lucide-react:
         specifier: 'catalog:'
@@ -124,7 +124,7 @@ importers:
   packages/auth:
     dependencies:
       '@terrafirmagreg-team/data':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../data
       arctic:
         specifier: ^3.7.0
@@ -137,16 +137,16 @@ importers:
   packages/changelog:
     dependencies:
       '@terrafirmagreg-team/kit':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../kit
       '@terrafirmagreg-team/mdx':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../mdx
       '@terrafirmagreg-team/translate':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../translate
       '@terrafirmagreg-team/ui':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../ui
       fumadocs-core:
         specifier: 'catalog:'
@@ -177,7 +177,7 @@ importers:
   packages/chat:
     dependencies:
       '@terrafirmagreg-team/ui':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../ui
       lucide-react:
         specifier: 'catalog:'
@@ -227,16 +227,16 @@ importers:
         specifier: 1.6.0
         version: 1.6.0(drizzle-orm@0.45.4(kysely@0.29.8))(next@16.4.4(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@26.6.6)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))
       '@terrafirmagreg-team/auth':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../auth
       '@terrafirmagreg-team/data':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../data
       '@terrafirmagreg-team/translate':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../translate
       '@terrafirmagreg-team/ui':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../ui
       class-variance-authority:
         specifier: 'catalog:'
@@ -276,19 +276,19 @@ importers:
   packages/docs:
     dependencies:
       '@terrafirmagreg-team/kit':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../kit
       '@terrafirmagreg-team/mdx':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../mdx
       '@terrafirmagreg-team/sites':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../sites
       '@terrafirmagreg-team/translate':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../translate
       '@terrafirmagreg-team/ui':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../ui
       fumadocs-core:
         specifier: 'catalog:'
@@ -316,13 +316,13 @@ importers:
   packages/dump:
     dependencies:
       '@terrafirmagreg-team/data':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../data
       '@terrafirmagreg-team/sites':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../sites
       '@terrafirmagreg-team/translate':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../translate
       aws4fetch:
         specifier: ^1.0.20
@@ -334,25 +334,25 @@ importers:
   packages/game:
     dependencies:
       '@terrafirmagreg-team/data':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../data
       '@terrafirmagreg-team/dump':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../dump
       '@terrafirmagreg-team/kit':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../kit
       '@terrafirmagreg-team/search':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../search
       '@terrafirmagreg-team/sites':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../sites
       '@terrafirmagreg-team/translate':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../translate
       '@terrafirmagreg-team/ui':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../ui
       fumadocs-core:
         specifier: 'catalog:'
@@ -383,37 +383,37 @@ importers:
   packages/guide:
     dependencies:
       '@terrafirmagreg-team/data':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../data
       '@terrafirmagreg-team/discussions':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../discussions
       '@terrafirmagreg-team/dump':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../dump
       '@terrafirmagreg-team/game':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../game
       '@terrafirmagreg-team/kit':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../kit
       '@terrafirmagreg-team/mdx':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../mdx
       '@terrafirmagreg-team/preview':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../preview
       '@terrafirmagreg-team/search':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../search
       '@terrafirmagreg-team/sites':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../sites
       '@terrafirmagreg-team/translate':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../translate
       '@terrafirmagreg-team/ui':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../ui
       fumadocs-core:
         specifier: 'catalog:'
@@ -472,19 +472,19 @@ importers:
         specifier: 'catalog:'
         version: 13.15.1(react@19.3.1)
       '@terrafirmagreg-team/data':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../data
       '@terrafirmagreg-team/mdx':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../mdx
       '@terrafirmagreg-team/sites':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../sites
       '@terrafirmagreg-team/translate':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../translate
       '@terrafirmagreg-team/ui':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../ui
       fumadocs-core:
         specifier: 'catalog:'
@@ -527,10 +527,10 @@ importers:
         specifier: ^1.1.2
         version: 1.1.2(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@terrafirmagreg-team/translate':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../translate
       '@terrafirmagreg-team/ui':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../ui
       '@types/turndown':
         specifier: ^5.0.6
@@ -603,13 +603,13 @@ importers:
   packages/preview:
     dependencies:
       '@terrafirmagreg-team/sites':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../sites
       '@terrafirmagreg-team/translate':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../translate
       '@terrafirmagreg-team/ui':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../ui
       next:
         specifier: 'catalog:'
@@ -631,31 +631,31 @@ importers:
   packages/quest:
     dependencies:
       '@terrafirmagreg-team/data':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../data
       '@terrafirmagreg-team/discussions':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../discussions
       '@terrafirmagreg-team/dump':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../dump
       '@terrafirmagreg-team/game':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../game
       '@terrafirmagreg-team/kit':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../kit
       '@terrafirmagreg-team/preview':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../preview
       '@terrafirmagreg-team/sites':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../sites
       '@terrafirmagreg-team/translate':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../translate
       '@terrafirmagreg-team/ui':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../ui
       fumadocs-core:
         specifier: 'catalog:'
@@ -683,32 +683,35 @@ importers:
   packages/recipe:
     dependencies:
       '@terrafirmagreg-team/data':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../data
       '@terrafirmagreg-team/dump':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../dump
       '@terrafirmagreg-team/game':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../game
       '@terrafirmagreg-team/kit':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../kit
       '@terrafirmagreg-team/mdx':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../mdx
       '@terrafirmagreg-team/preview':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../preview
       '@terrafirmagreg-team/sites':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../sites
       '@terrafirmagreg-team/translate':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../translate
       '@terrafirmagreg-team/ui':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../ui
+      '@types/pathfinding':
+        specifier: ^0.1.0
+        version: 0.1.0
       comlink:
         specifier: ^4.4.2
         version: 4.4.2
@@ -734,9 +737,6 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 26.6.6
-      '@types/pathfinding':
-        specifier: ^0.1.0
-        version: 0.1.0
       '@types/react':
         specifier: 'catalog:'
         version: 19.3.0
@@ -747,16 +747,16 @@ importers:
   packages/search:
     dependencies:
       '@terrafirmagreg-team/kit':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../kit
       '@terrafirmagreg-team/sites':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../sites
       '@terrafirmagreg-team/translate':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../translate
       '@terrafirmagreg-team/ui':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../ui
       fumadocs-core:
         specifier: 'catalog:'
@@ -787,10 +787,10 @@ importers:
   packages/share:
     dependencies:
       '@terrafirmagreg-team/data':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../data
       '@terrafirmagreg-team/sites':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../sites
       server-only:
         specifier: 'catalog:'
@@ -843,10 +843,10 @@ importers:
         specifier: ^0.3.1
         version: 0.3.1(@types/react@19.3.0)(react@19.3.1)
       '@terrafirmagreg-team/data':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../data
       '@terrafirmagreg-team/translate':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../translate
       '@xyflow/react':
         specifier: 12.12.0

@@ -15,9 +15,9 @@
     "src"
   ],
   "dependencies": {
-    "@terrafirmagreg-team/data": "workspace:*",
+    "@terrafirmagreg-team/data": "workspace:^",
     "server-only": "catalog:",
-    "@terrafirmagreg-team/sites": "workspace:*"
+    "@terrafirmagreg-team/sites": "workspace:^"
   },
   "devDependencies": {
     "@types/node": "catalog:"

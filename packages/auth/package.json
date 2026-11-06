@@ -15,7 +15,7 @@
     "src"
   ],
   "dependencies": {
-    "@terrafirmagreg-team/data": "workspace:*",
+    "@terrafirmagreg-team/data": "workspace:^",
     "arctic": "^3.7.0"
   },
   "devDependencies": {

@@ -21,11 +21,11 @@
     ]
   },
   "dependencies": {
-    "@terrafirmagreg-team/kit": "workspace:*",
-    "@terrafirmagreg-team/mdx": "workspace:*",
-    "@terrafirmagreg-team/sites": "workspace:*",
-    "@terrafirmagreg-team/translate": "workspace:*",
-    "@terrafirmagreg-team/ui": "workspace:*",
+    "@terrafirmagreg-team/kit": "workspace:^",
+    "@terrafirmagreg-team/mdx": "workspace:^",
+    "@terrafirmagreg-team/sites": "workspace:^",
+    "@terrafirmagreg-team/translate": "workspace:^",
+    "@terrafirmagreg-team/ui": "workspace:^",
     "fumadocs-core": "catalog:"
   },
   "peerDependencies": {

@@ -21,8 +21,8 @@
   "dependencies": {
     "@fumadocs/story": "^1.5.3",
     "@fumari/stf": "^1.1.2",
-    "@terrafirmagreg-team/translate": "workspace:*",
-    "@terrafirmagreg-team/ui": "workspace:*",
+    "@terrafirmagreg-team/translate": "workspace:^",
+    "@terrafirmagreg-team/ui": "workspace:^",
     "@types/turndown": "^5.0.6",
     "fumadocs-core": "catalog:",
     "fumadocs-docgen": "^3.2.0",

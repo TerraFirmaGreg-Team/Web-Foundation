@@ -23,20 +23,21 @@
     "./styles.css": "./styles.css"
   },
   "dependencies": {
-    "@terrafirmagreg-team/data": "workspace:*",
-    "@terrafirmagreg-team/dump": "workspace:*",
-    "@terrafirmagreg-team/game": "workspace:*",
-    "@terrafirmagreg-team/kit": "workspace:*",
-    "@terrafirmagreg-team/mdx": "workspace:*",
-    "@terrafirmagreg-team/preview": "workspace:*",
-    "@terrafirmagreg-team/sites": "workspace:*",
-    "@terrafirmagreg-team/translate": "workspace:*",
-    "@terrafirmagreg-team/ui": "workspace:*",
+    "@terrafirmagreg-team/data": "workspace:^",
+    "@terrafirmagreg-team/dump": "workspace:^",
+    "@terrafirmagreg-team/game": "workspace:^",
+    "@terrafirmagreg-team/kit": "workspace:^",
+    "@terrafirmagreg-team/mdx": "workspace:^",
+    "@terrafirmagreg-team/preview": "workspace:^",
+    "@terrafirmagreg-team/sites": "workspace:^",
+    "@terrafirmagreg-team/translate": "workspace:^",
+    "@terrafirmagreg-team/ui": "workspace:^",
     "comlink": "^4.4.2",
     "fflate": "0.8.3",
     "fumadocs-core": "catalog:",
     "lucide-react": "catalog:",
-    "pathfinding": "0.4.18"
+    "pathfinding": "0.4.18",
+    "@types/pathfinding": "^0.1.0"
   },
   "peerDependencies": {
     "next": "catalog:",
@@ -44,7 +45,6 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "@types/pathfinding": "^0.1.0",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:"
   },

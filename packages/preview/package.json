@@ -17,9 +17,9 @@
     ]
   },
   "dependencies": {
-    "@terrafirmagreg-team/sites": "workspace:*",
-    "@terrafirmagreg-team/translate": "workspace:*",
-    "@terrafirmagreg-team/ui": "workspace:*"
+    "@terrafirmagreg-team/sites": "workspace:^",
+    "@terrafirmagreg-team/translate": "workspace:^",
+    "@terrafirmagreg-team/ui": "workspace:^"
   },
   "peerDependencies": {
     "next": "catalog:",

@@ -18,10 +18,10 @@
     "./types": "./src/types/index.ts"
   },
   "dependencies": {
-    "@terrafirmagreg-team/kit": "workspace:*",
-    "@terrafirmagreg-team/mdx": "workspace:*",
-    "@terrafirmagreg-team/translate": "workspace:*",
-    "@terrafirmagreg-team/ui": "workspace:*",
+    "@terrafirmagreg-team/kit": "workspace:^",
+    "@terrafirmagreg-team/mdx": "workspace:^",
+    "@terrafirmagreg-team/translate": "workspace:^",
+    "@terrafirmagreg-team/ui": "workspace:^",
     "fumadocs-core": "catalog:",
     "lucide-react": "catalog:"
   },
