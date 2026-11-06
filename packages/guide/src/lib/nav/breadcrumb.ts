@@ -1,5 +1,5 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
-import { guideBookHref, guideCategoryHref } from '@terrafirmagreg-team/guide/lib/paths';
+import { guideBookHref, guideCategoryHref } from '@terrafirmagreg-team/guide/lib/nav/paths';
 import type { GuideCategory, GuideIndex, GuidePageKind } from '@terrafirmagreg-team/guide/types';
 
 export function categoryMap(

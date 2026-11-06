@@ -3,8 +3,8 @@ import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 
 import type * as PageTree from 'fumadocs-core/page-tree';
 import { useAsyncValue } from '@terrafirmagreg-team/ui/hooks/use-async-value';
-import { loadClientGuideBook } from '@terrafirmagreg-team/guide/lib/client/guides';
-import { listGuideBooks } from '@terrafirmagreg-team/guide/lib/books';
+import { loadClientGuideBook } from '@terrafirmagreg-team/guide/lib/client/books';
+import { listGuideBooks } from '@terrafirmagreg-team/guide/lib/book/list';
 import { guideTreeChildren } from '@terrafirmagreg-team/guide/components/tree/children';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 

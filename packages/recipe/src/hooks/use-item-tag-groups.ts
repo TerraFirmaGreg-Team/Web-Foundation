@@ -4,7 +4,7 @@ import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { useMemo } from 'react';
 import { useAsyncValue } from '@terrafirmagreg-team/ui/hooks/use-async-value';
 import { loadTagSlice } from '@terrafirmagreg-team/recipe/lib/client-index';
-import { registryId } from '@terrafirmagreg-team/recipe/lib/lookup';
+import { registryId } from '@terrafirmagreg-team/recipe/lib/browser/lookup';
 import { splitDumpId } from '@terrafirmagreg-team/dump/lib/dump/paths';
 import type { RecipeCompactIndex } from '@terrafirmagreg-team/recipe/types';
 

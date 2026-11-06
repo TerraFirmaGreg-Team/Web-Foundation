@@ -14,18 +14,18 @@ import {
 import { guideConfig } from '@terrafirmagreg-team/guide/lib/config';
 import { GithubInfo } from '@terrafirmagreg-team/ui/components/blocks/git/github-info';
 import { sectionConfig } from '@terrafirmagreg-team/kit/lib/config';
-import { categoryMap, guideBreadcrumbItems } from '@terrafirmagreg-team/guide/lib/breadcrumb';
-import { guideToc } from '@terrafirmagreg-team/guide/lib/toc';
+import { categoryMap, guideBreadcrumbItems } from '@terrafirmagreg-team/guide/lib/nav/breadcrumb';
+import { guideToc } from '@terrafirmagreg-team/guide/lib/nav/toc';
 import { GuideText } from '@terrafirmagreg-team/guide/components/views/text';
 import { GuideOverviewBody } from '@terrafirmagreg-team/guide/components/views/page/overview-body';
 import { GuideCategoryBody } from '@terrafirmagreg-team/guide/components/views/page/category-body';
 import { GuideEntryBody } from '@terrafirmagreg-team/guide/components/views/page/entry-body';
-import { guideMessage } from '@terrafirmagreg-team/guide/lib/messages';
+import { guideMessage } from '@terrafirmagreg-team/guide/lib/display/messages';
 import { CommentsSlot } from '@terrafirmagreg-team/discussions/components/comments';
 import {
   guideBookHref,
   guideCategoryHref,
-} from '@terrafirmagreg-team/guide/lib/paths';
+} from '@terrafirmagreg-team/guide/lib/nav/paths';
 import type { GuideIndex, GuidePagePayload } from '@terrafirmagreg-team/guide/types';
 
 type NavItem = { name: string; url: string };

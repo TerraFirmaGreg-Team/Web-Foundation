@@ -11,7 +11,7 @@ import {
 } from '@terrafirmagreg-team/recipe/components/cards/strip-card/buttons';
 import { StripCardMember } from '@terrafirmagreg-team/recipe/components/cards/strip-card/member-cell';
 import { recipeGrid } from '@terrafirmagreg-team/recipe/lib/data/grid';
-import { recipeSlots } from '@terrafirmagreg-team/recipe/lib/recipe-slots';
+import { recipeSlots } from '@terrafirmagreg-team/recipe/lib/browser/recipe-slots';
 import { cn } from '@terrafirmagreg-team/ui/lib/utils/cn';
 import { useInView } from '@terrafirmagreg-team/ui/hooks/use-in-view';
 import { Hint } from '@terrafirmagreg-team/ui/components/blocks/tooltip/hint';

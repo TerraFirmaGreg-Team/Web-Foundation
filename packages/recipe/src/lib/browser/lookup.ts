@@ -10,7 +10,7 @@ import {
   resolveRecipeRows,
 } from '@terrafirmagreg-team/recipe/lib/client-index';
 import { stackIdFromRef } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
-import { loadFluidIoIndex } from '@terrafirmagreg-team/recipe/lib/fluid-outputs';
+import { loadFluidIoIndex } from '@terrafirmagreg-team/recipe/lib/browser/fluid-outputs';
 
 export { registryId, tagPseudoId } from '@terrafirmagreg-team/dump/lib/dump/paths';
 

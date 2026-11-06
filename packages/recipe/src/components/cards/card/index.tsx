@@ -7,12 +7,12 @@ import {
   cardStripGeo,
   countCoveredText,
   textInStrip,
-} from '@terrafirmagreg-team/recipe/lib/card-model';
+} from '@terrafirmagreg-team/recipe/lib/cards/model';
 import { CardText } from '@terrafirmagreg-team/recipe/components/cards/card/text';
 import { CardSceneOverlay } from '@terrafirmagreg-team/recipe/components/cards/card/scene';
 import { CardWidgetTips } from '@terrafirmagreg-team/recipe/components/cards/card/tips';
 import { CardStrip } from '@terrafirmagreg-team/recipe/components/cards/card/strip';
-import { recipeSlots } from '@terrafirmagreg-team/recipe/lib/recipe-slots';
+import { recipeSlots } from '@terrafirmagreg-team/recipe/lib/browser/recipe-slots';
 import {
   recipeMultiblock,
   recipeSceneEntities,

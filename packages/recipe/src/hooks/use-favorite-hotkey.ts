@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useFavorites } from '@terrafirmagreg-team/recipe/hooks/use-favorites';
-import { favoriteHoverTarget } from '@terrafirmagreg-team/recipe/lib/favorite-hover';
+import { favoriteHoverTarget } from '@terrafirmagreg-team/recipe/lib/browser/favorite-hover';
 
 export function useFavoriteHotkey() {
   const { toggleItem, toggleRecipe } = useFavorites();

@@ -2,7 +2,7 @@ import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import type { Recipe } from '@terrafirmagreg-team/recipe/lib/data/dto';
 import { loadClientRecipe } from '@terrafirmagreg-team/recipe/lib/client/recipe';
 import { resolveClientTag } from '@terrafirmagreg-team/dump/lib/dump/client/tags';
-import { recipesForOutput } from '@terrafirmagreg-team/recipe/lib/lookup';
+import { recipesForOutput } from '@terrafirmagreg-team/recipe/lib/browser/lookup';
 import { recipeDivisor, toCalcRecipe } from './tree';
 import type { RecipeCompactIndex, RecipeCompactRow } from '@terrafirmagreg-team/recipe/types';
 import type {

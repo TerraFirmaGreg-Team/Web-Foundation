@@ -5,7 +5,7 @@ import { useAsyncResult } from '@terrafirmagreg-team/ui/hooks/use-async-value';
 import {
   recipesForOutput,
   usesForInput,
-} from '@terrafirmagreg-team/recipe/lib/lookup';
+} from '@terrafirmagreg-team/recipe/lib/browser/lookup';
 import type { RecipeCompactIndex, RecipeCompactRow } from '@terrafirmagreg-team/recipe/types';
 
 export const EMPTY_ROWS: RecipeCompactRow[] = [];

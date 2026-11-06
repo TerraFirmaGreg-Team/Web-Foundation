@@ -2,7 +2,7 @@ import { asTaggedReference } from '@terrafirmagreg-team/dump/lib/dump/contract/r
 import { asDumpTextList } from '@terrafirmagreg-team/dump/lib/dump/contract/text';
 import type { DumpText } from '@terrafirmagreg-team/dump/lib/dump/contract/text';
 import type { TaggedReference } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
-import { bareId } from '@terrafirmagreg-team/guide/lib/paths';
+import { bareId } from '@terrafirmagreg-team/guide/lib/nav/paths';
 
 export type RawRecord = Record<string, unknown>;
 

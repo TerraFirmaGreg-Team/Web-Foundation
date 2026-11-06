@@ -1,5 +1,6 @@
 import { findClientQuestLocation } from '@terrafirmagreg-team/quest/lib/client/quest';
 import { questHref } from '@terrafirmagreg-team/quest/lib/links';
+import { registerSectionEmbed } from '@terrafirmagreg-team/kit/lib/embeds';
 import type { SectionEmbeds } from '@terrafirmagreg-team/kit/types/embeds';
 
 export const questSectionEmbed: NonNullable<SectionEmbeds['quest']> = {
@@ -7,3 +8,5 @@ export const questSectionEmbed: NonNullable<SectionEmbeds['quest']> = {
     questHref(dataset, lang, { category: ref.category, id: ref.id }),
   findLocation: findClientQuestLocation,
 };
+
+registerSectionEmbed('quest', questSectionEmbed);

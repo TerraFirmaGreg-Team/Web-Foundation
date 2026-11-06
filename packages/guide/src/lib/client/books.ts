@@ -1,7 +1,7 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { asRecord, asString } from '@terrafirmagreg-team/dump/lib/dump/contract/read';
 import { joinDumpRel } from '@terrafirmagreg-team/dump/lib/dump/paths';
-import { bareId } from '@terrafirmagreg-team/guide/lib/paths';
+import { bareId } from '@terrafirmagreg-team/guide/lib/nav/paths';
 import type { GuideEntry } from '@terrafirmagreg-team/guide/types';
 import type { GuideMultiblock } from '@terrafirmagreg-team/guide/lib/data/dto';
 import type {

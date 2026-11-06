@@ -3,7 +3,7 @@
 import { createElement, useMemo } from 'react';
 import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
-import { panelTabRows } from '@terrafirmagreg-team/recipe/lib/panel';
+import { panelTabRows } from '@terrafirmagreg-team/recipe/lib/browser/panel';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import type { RecipeCompactIndex } from '@terrafirmagreg-team/recipe/types';
 

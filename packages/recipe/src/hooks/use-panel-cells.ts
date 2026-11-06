@@ -4,17 +4,17 @@ import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { useDeferredValue, useMemo } from 'react';
 import { useItemTooltips } from '@terrafirmagreg-team/recipe/hooks/use-item-tooltips';
 import { useTagMembers } from '@terrafirmagreg-team/recipe/hooks/use-tag-members';
-import { filterCatalogItemIds } from '@terrafirmagreg-team/recipe/lib/search';
+import { filterCatalogItemIds } from '@terrafirmagreg-team/recipe/lib/search/index';
 import {
   buildPanelCells,
   panelPool,
   type ItemPanelMode,
-} from '@terrafirmagreg-team/recipe/lib/panel';
+} from '@terrafirmagreg-team/recipe/lib/browser/panel';
 import {
   filterUsedIds,
   hasRecipeUsage,
   recipeUsedItems,
-} from '@terrafirmagreg-team/recipe/lib/used-items';
+} from '@terrafirmagreg-team/recipe/lib/browser/used-items';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import type {
   FavoriteEntry,

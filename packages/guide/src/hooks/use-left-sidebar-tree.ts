@@ -6,7 +6,7 @@ import { useLocationSearchParams } from '@terrafirmagreg-team/ui/hooks/page/use-
 import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { useLastValue } from '@terrafirmagreg-team/ui/hooks/use-last-value';
 import { useGuideTree } from '@terrafirmagreg-team/guide/hooks/use-tree';
-import { guideQueryFromParams } from '@terrafirmagreg-team/guide/lib/query';
+import { guideQueryFromParams } from '@terrafirmagreg-team/guide/lib/nav/query';
 import { parseSectionLocation } from '@terrafirmagreg-team/sites/location';
 
 export function useGuideLeftSidebarTree(tree: PageTree.Root): PageTree.Root {

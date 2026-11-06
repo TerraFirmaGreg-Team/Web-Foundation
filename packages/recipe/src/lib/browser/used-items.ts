@@ -1,4 +1,4 @@
-import { registryId } from '@terrafirmagreg-team/recipe/lib/lookup';
+import { registryId } from '@terrafirmagreg-team/recipe/lib/browser/lookup';
 import type { RecipeCompactIndex, UsedItems } from '@terrafirmagreg-team/recipe/types';
 
 export function recipeUsedItems(index: RecipeCompactIndex | null): UsedItems {

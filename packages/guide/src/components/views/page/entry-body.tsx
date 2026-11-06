@@ -1,7 +1,7 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { EmptyState } from '@terrafirmagreg-team/ui/components/blocks/page/empty-state';
 import { EntryView } from '@terrafirmagreg-team/guide/components/views/entry/view';
-import { guideMessage } from '@terrafirmagreg-team/guide/lib/messages';
+import { guideMessage } from '@terrafirmagreg-team/guide/lib/display/messages';
 import type { PagePreviewData } from '@terrafirmagreg-team/ui/types/preview';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import type {

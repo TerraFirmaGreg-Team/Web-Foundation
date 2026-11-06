@@ -1,6 +1,6 @@
-import { listGuideBooks } from '@terrafirmagreg-team/guide/lib/books';
-import { loadClientGuideBook } from '@terrafirmagreg-team/guide/lib/client/guides';
-import { loadClientGuidePayload } from '@terrafirmagreg-team/guide/lib/client-payload';
+import { listGuideBooks } from '@terrafirmagreg-team/guide/lib/book/list';
+import { loadClientGuideBook } from '@terrafirmagreg-team/guide/lib/client/books';
+import { loadClientGuidePayload } from '@terrafirmagreg-team/guide/lib/client/payload';
 
 export function getGuideSource() {
   return {

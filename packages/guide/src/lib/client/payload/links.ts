@@ -1,10 +1,8 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
-import {
-  guideEmbeds,
-  type EmbedQuestLocation,
-} from '@terrafirmagreg-team/guide/lib/embeds';
+import { sectionEmbeds } from '@terrafirmagreg-team/kit/lib/embeds';
+import type { EmbedQuestLocation } from '@terrafirmagreg-team/kit/types/embeds';
 import { classify, pageTexts } from '@terrafirmagreg-team/guide/lib/page-kind';
-import { formatGuide } from '@terrafirmagreg-team/guide/lib/format';
+import { formatGuide } from '@terrafirmagreg-team/guide/lib/display/format';
 import {
   parseGuideReference,
   resolveGuideReference,
@@ -24,7 +22,7 @@ async function collectQuestLink(
   const ref = parseGuideReference(target);
   if (!force && ref.kind !== 'quest') return;
   if (questLinks[ref.id]) return;
-  const hit = await guideEmbeds().quest?.findLocation(dataset, ref.id);
+  const hit = await sectionEmbeds().quest?.findLocation(dataset, ref.id);
   if (hit) questLinks[ref.id] = hit;
 }
 

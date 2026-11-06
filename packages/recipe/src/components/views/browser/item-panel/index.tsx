@@ -17,10 +17,10 @@ import { usePagedList } from '@terrafirmagreg-team/ui/hooks/page/use-paged-list'
 import { useSwipe } from '@terrafirmagreg-team/ui/hooks/use-swipe';
 import { useElementSize } from '@terrafirmagreg-team/ui/hooks/use-element-size';
 import { EmptyState } from '@terrafirmagreg-team/ui/components/blocks/page/empty-state';
-import { type ItemPanelMode } from '@terrafirmagreg-team/recipe/lib/panel';
+import { type ItemPanelMode } from '@terrafirmagreg-team/recipe/lib/browser/panel';
 import { recipeHref } from '@terrafirmagreg-team/recipe/lib/links';
 import { replaceUrlState } from '@terrafirmagreg-team/ui/lib/utils/history';
-import { favoriteHover } from '@terrafirmagreg-team/recipe/lib/favorite-hover';
+import { favoriteHover } from '@terrafirmagreg-team/recipe/lib/browser/favorite-hover';
 import { IconPager } from '@terrafirmagreg-team/ui/components/blocks/page/pager';
 import { FavoriteButton } from '@terrafirmagreg-team/recipe/components/views/browser/favorite-button';
 import { ItemPanelGrid } from '@terrafirmagreg-team/recipe/components/views/browser/item-panel-grid';

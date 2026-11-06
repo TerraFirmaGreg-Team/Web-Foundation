@@ -1,8 +1,8 @@
-import { guideEmbeds } from '@terrafirmagreg-team/guide/lib/embeds';
+import { sectionEmbeds } from '@terrafirmagreg-team/kit/lib/embeds';
 import {
   bareId,
   guideBookHref,
-} from '@terrafirmagreg-team/guide/lib/paths';
+} from '@terrafirmagreg-team/guide/lib/nav/paths';
 import type {
   GuideReference,
   GuideReferenceContext,
@@ -66,13 +66,13 @@ export function resolveGuideReference(
     case 'recipe': {
       const href =
         context.targets?.recipe?.(reference.id) ??
-        guideEmbeds().recipe?.href(context.dataset, undefined, { id: reference.id });
+        sectionEmbeds().recipe?.href(context.dataset, undefined, { id: reference.id });
       return { ...reference, href, available: Boolean(href) };
     }
     case 'quest': {
       const hit = context.questLinks?.[reference.id];
       const href = hit
-        ? guideEmbeds().quest?.href(context.dataset, undefined, {
+        ? sectionEmbeds().quest?.href(context.dataset, undefined, {
             category: hit.filename,
             id: hit.questId,
           })

@@ -7,7 +7,7 @@ import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolv
 import { useLastValue } from '@terrafirmagreg-team/ui/hooks/use-last-value';
 import { useRecipeModNames } from '@terrafirmagreg-team/recipe/hooks/use-mod-names';
 import { useSidebarGroup } from '@terrafirmagreg-team/recipe/hooks/use-sidebar-group';
-import { groupRecipeSidebarByMod } from '@terrafirmagreg-team/recipe/lib/sidebar';
+import { groupRecipeSidebarByMod } from '@terrafirmagreg-team/recipe/lib/browser/sidebar';
 import { parseSectionLocation } from '@terrafirmagreg-team/sites/location';
 
 export function useRecipeLeftSidebarTree(tree: PageTree.Root): PageTree.Root {

@@ -4,8 +4,8 @@ import type {
 } from '@terrafirmagreg-team/guide/types';
 import { classify, isIndexPage, pageTexts } from '@terrafirmagreg-team/guide/lib/page-kind';
 import { guideLink } from '@terrafirmagreg-team/guide/lib/reference';
-import { bareId } from '@terrafirmagreg-team/guide/lib/paths';
-import { guideEmbeds } from '@terrafirmagreg-team/guide/lib/embeds';
+import { bareId } from '@terrafirmagreg-team/guide/lib/nav/paths';
+import { sectionEmbeds } from '@terrafirmagreg-team/kit/lib/embeds';
 import { texturePublicUrl } from '@terrafirmagreg-team/dump/lib/dump/assets/urls';
 import { collectItemIds } from '@terrafirmagreg-team/guide/lib/data/parse';
 import { stackDisplayName } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names';
@@ -68,8 +68,8 @@ export function guidePageMarkdown(
       ];
       for (const id of ids) {
         const recipe = payload?.extras?.recipes[id];
-        const label = recipe ? guideEmbeds().recipe?.title(recipe, ctx.langMap) : id;
-        parts.push(`- [${label}](${guideEmbeds().recipe?.href(ctx.dataset, undefined, { id })})`);
+        const label = recipe ? sectionEmbeds().recipe?.title(recipe, ctx.langMap) : id;
+        parts.push(`- [${label}](${sectionEmbeds().recipe?.href(ctx.dataset, undefined, { id })})`);
       }
       for (const raw of pageTexts(page)) parts.push(guideTextMarkdown(raw, ctx));
       break;
@@ -129,7 +129,7 @@ export function guidePageMarkdown(
       const url =
         href ??
         (hit
-          ? guideEmbeds().quest?.href(ctx.dataset, undefined, {
+          ? sectionEmbeds().quest?.href(ctx.dataset, undefined, {
               category: hit.filename,
               id: hit.questId,
             })

@@ -5,7 +5,7 @@ import { Fragment, useRef, useState } from 'react';
 import { SlotHitbox } from '@terrafirmagreg-team/recipe/components/cards/slot-hitbox';
 import { CardText } from '@terrafirmagreg-team/recipe/components/cards/card/text';
 import { formatCount } from '@terrafirmagreg-team/ui/lib/utils/format';
-import type { CardStripGeo } from '@terrafirmagreg-team/recipe/lib/card-model';
+import type { CardStripGeo } from '@terrafirmagreg-team/recipe/lib/cards/model';
 import type { EntryTooltipLevel } from '@terrafirmagreg-team/game/components/entry/tooltip';
 import type { RecipeTextWidget } from '@terrafirmagreg-team/recipe/lib/data/dto';
 import type { RecipeHrefOpts } from '@terrafirmagreg-team/recipe/types';

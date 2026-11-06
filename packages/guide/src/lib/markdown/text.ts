@@ -1,5 +1,5 @@
 import type { GuideFormatNode } from '@terrafirmagreg-team/guide/types';
-import { formatGuide, keybindLabels } from '@terrafirmagreg-team/guide/lib/format';
+import { formatGuide, keybindLabels } from '@terrafirmagreg-team/guide/lib/display/format';
 import { guideLink } from '@terrafirmagreg-team/guide/lib/reference';
 import { type GuideMarkdownCtx, refCtx } from './ctx';
 

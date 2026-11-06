@@ -16,7 +16,7 @@ import {
   sectionUrl,
   versionSuffix,
 } from '@terrafirmagreg-team/sites/location';
-import { bookOptionId } from '@terrafirmagreg-team/guide/lib/paths';
+import { bookOptionId } from '@terrafirmagreg-team/guide/lib/nav/paths';
 import { bookSlug, toBook } from '@terrafirmagreg-team/guide/lib/book';
 import { sectionDatasets } from '@terrafirmagreg-team/kit/lib/datasets';
 import type { GuideBookJson, GuideBookRef } from '@terrafirmagreg-team/guide/lib/data/dto';

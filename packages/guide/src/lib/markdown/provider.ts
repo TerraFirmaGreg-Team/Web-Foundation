@@ -1,8 +1,8 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { registerMarkdownProvider } from '@terrafirmagreg-team/mdx/lib/markdown';
-import { loadClientGuidePayload } from '@terrafirmagreg-team/guide/lib/client-payload';
+import { loadClientGuidePayload } from '@terrafirmagreg-team/guide/lib/client/payload';
 import { clientDumpLang } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
-import { categoryMap } from '@terrafirmagreg-team/guide/lib/breadcrumb';
+import { categoryMap } from '@terrafirmagreg-team/guide/lib/nav/breadcrumb';
 import {
   guideCategoryMarkdown,
   guideEntryMarkdown,

@@ -12,7 +12,7 @@ import {
 } from '@terrafirmagreg-team/ui/lib/canvas/edge';
 import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
-import { useCalcSession } from '@terrafirmagreg-team/recipe/hooks/calc/use-session';
+import { useCalcSession } from '@terrafirmagreg-team/recipe/hooks/calc/use-calc-session';
 import { recipeItemName } from '@terrafirmagreg-team/recipe/lib/client-index';
 import { formatCount } from '@terrafirmagreg-team/ui/lib/utils/format';
 import type { FlowPoint } from '@terrafirmagreg-team/ui/types/canvas';

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { GuideText } from '@terrafirmagreg-team/guide/components/views/text';
 import { useDumpLocation } from '@terrafirmagreg-team/game/hooks/use-dump-location';
-import { asMultiblock } from '@terrafirmagreg-team/guide/lib/meta';
+import { asMultiblock } from '@terrafirmagreg-team/guide/lib/multiblock/meta';
 import {
   createDumpAssetResolver,
   texturePublicUrl,
@@ -12,8 +12,8 @@ import { langString } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names
 import { matchVariant } from '@terrafirmagreg-team/dump/lib/dump/data/registry/parse';
 import { GlbViewer } from '@terrafirmagreg-team/ui/components/blocks/media/glb/viewer';
 import { multiblockKey } from '@terrafirmagreg-team/guide/lib/multiblock';
-import { guideFormatOpts } from '@terrafirmagreg-team/guide/lib/format';
-import { spriteName } from '@terrafirmagreg-team/guide/lib/names';
+import { guideFormatOpts } from '@terrafirmagreg-team/guide/lib/display/format';
+import { spriteName } from '@terrafirmagreg-team/guide/lib/display/names';
 import type { PageRendererProps } from '@terrafirmagreg-team/guide/types';
 import { GlbPlaceholder } from '@terrafirmagreg-team/ui/components/blocks/media/glb/viewer';
 import { Slideshow } from '@terrafirmagreg-team/ui/components/blocks/media/slideshow';

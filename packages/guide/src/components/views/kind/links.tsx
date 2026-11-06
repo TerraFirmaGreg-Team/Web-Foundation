@@ -1,12 +1,12 @@
 import { LinkPreview } from '@terrafirmagreg-team/ui/components/blocks/link/link-preview';
 import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
-import { guideEmbeds } from '@terrafirmagreg-team/guide/lib/embeds';
-import { guideMessage } from '@terrafirmagreg-team/guide/lib/messages';
+import { sectionEmbeds } from '@terrafirmagreg-team/kit/lib/embeds';
+import { guideMessage } from '@terrafirmagreg-team/guide/lib/display/messages';
 import {
   entryLabel,
   entryRef,
   spriteName,
-} from '@terrafirmagreg-team/guide/lib/names';
+} from '@terrafirmagreg-team/guide/lib/display/names';
 import { referenceHref } from '@terrafirmagreg-team/guide/lib/reference';
 import { parseGuideReference } from '@terrafirmagreg-team/guide/lib/reference/resolver';
 import type { PageRendererProps } from '@terrafirmagreg-team/guide/types';
@@ -92,7 +92,7 @@ export function QuestPage({
   const id = page.trigger || page.quest || page.link;
   const hit = id ? questLinks?.[parseGuideReference(id).id] : undefined;
   const href = hit
-    ? guideEmbeds().quest?.href(dataset, lang, { category: hit.filename, id: hit.questId })
+    ? sectionEmbeds().quest?.href(dataset, lang, { category: hit.filename, id: hit.questId })
     : undefined;
   const name = id ? spriteName(dataset, langMap, atlases, id) : '—';
   const label = id && name !== id ? name : <code>{name}</code>;

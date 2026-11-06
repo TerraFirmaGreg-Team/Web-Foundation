@@ -1,6 +1,6 @@
 import { registerPreviewResolver } from '@terrafirmagreg-team/preview/lib';
-import { loadClientGuideBook } from '@terrafirmagreg-team/guide/lib/client/guides';
-import { guidePlainText } from '@terrafirmagreg-team/guide/lib/format';
+import { loadClientGuideBook } from '@terrafirmagreg-team/guide/lib/client/books';
+import { guidePlainText } from '@terrafirmagreg-team/guide/lib/display/format';
 import { entryPreviewIcon } from '@terrafirmagreg-team/game/lib/preview';
 import type { PreviewResolverCtx } from '@terrafirmagreg-team/preview/lib';
 import type { PagePreviewData } from '@terrafirmagreg-team/ui/types/preview';

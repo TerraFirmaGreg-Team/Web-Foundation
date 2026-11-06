@@ -1,9 +1,9 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
-import { loadClientGuideBook } from '@terrafirmagreg-team/guide/lib/client/guides';
+import { loadClientGuideBook } from '@terrafirmagreg-team/guide/lib/client/books';
 import { uiConfig } from '@terrafirmagreg-team/ui/lib/config';
-import { categoryMap } from '@terrafirmagreg-team/guide/lib/breadcrumb';
-import { bareId, guideBookHref } from '@terrafirmagreg-team/guide/lib/paths';
-import { guideEmbeds } from '@terrafirmagreg-team/guide/lib/embeds';
+import { categoryMap } from '@terrafirmagreg-team/guide/lib/nav/breadcrumb';
+import { bareId, guideBookHref } from '@terrafirmagreg-team/guide/lib/nav/paths';
+import { sectionEmbeds } from '@terrafirmagreg-team/kit/lib/embeds';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import type {
   GuideMessages,
@@ -76,7 +76,7 @@ export async function loadClientGuidePayload(
       )
     : undefined;
   for (const hit of Object.values(questLinks)) {
-    const url = guideEmbeds().quest?.href(dataset, undefined, {
+    const url = sectionEmbeds().quest?.href(dataset, undefined, {
       category: hit.filename,
       id: hit.questId,
     });

@@ -1,14 +1,14 @@
 'use client';
 import { Card } from '@terrafirmagreg-team/ui/components/ui/card';
 import { EmptyState } from '@terrafirmagreg-team/ui/components/blocks/page/empty-state';
-import { guideEmbeds } from '@terrafirmagreg-team/guide/lib/embeds';
+import { sectionEmbeds } from '@terrafirmagreg-team/kit/lib/embeds';
 import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
 import { EntryList } from '@terrafirmagreg-team/game/components/entry/list';
-import { guideMessage } from '@terrafirmagreg-team/guide/lib/messages';
+import { guideMessage } from '@terrafirmagreg-team/guide/lib/display/messages';
 import { collectItemIds } from '@terrafirmagreg-team/guide/lib/data/parse';
-import { pageTitle } from '@terrafirmagreg-team/guide/lib/toc';
-import { spriteName } from '@terrafirmagreg-team/guide/lib/names';
-import { recipeIds, recipeNameScope } from '@terrafirmagreg-team/guide/lib/recipe';
+import { pageTitle } from '@terrafirmagreg-team/guide/lib/nav/toc';
+import { spriteName } from '@terrafirmagreg-team/guide/lib/display/names';
+import { recipeIds, recipeNameScope } from '@terrafirmagreg-team/guide/lib/kind/recipe';
 
 import type { PageRendererProps } from '@terrafirmagreg-team/guide/types';
 
@@ -29,7 +29,7 @@ export function RecipePage({
       </EmptyState>
     );
   }
-  const RecipeCard = guideEmbeds().recipe?.Card;
+  const RecipeCard = sectionEmbeds().recipe?.Card;
   return (
     <div className="space-y-4">
       {ids.map((id) => {

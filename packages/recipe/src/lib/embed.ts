@@ -6,6 +6,7 @@ import {
 } from '@terrafirmagreg-team/recipe/lib/links';
 import { recipeTitle } from '@terrafirmagreg-team/recipe/lib/data/parse';
 import type { Recipe } from '@terrafirmagreg-team/recipe/lib/data/dto';
+import { registerSectionEmbed } from '@terrafirmagreg-team/kit/lib/embeds';
 import type {
   EmbedRecipe,
   SectionEmbeds,
@@ -20,3 +21,5 @@ export const recipeSectionEmbed: NonNullable<SectionEmbeds['recipe']> = {
     recipeTitle(recipe as unknown as Recipe, langMap),
   Card: RecipeEmbedCard,
 };
+
+registerSectionEmbed('recipe', recipeSectionEmbed);

@@ -6,7 +6,7 @@ import { SlotHitbox } from './slot-hitbox';
 import { StripCard } from './strip-card';
 import { recipeGlareFilter } from './glare-filter';
 import { recipeGrid } from '@terrafirmagreg-team/recipe/lib/data/grid';
-import { recipeSlots } from '@terrafirmagreg-team/recipe/lib/recipe-slots';
+import { recipeSlots } from '@terrafirmagreg-team/recipe/lib/browser/recipe-slots';
 import { PagerArrow } from '@terrafirmagreg-team/ui/components/blocks/page/pager';
 import { useInView } from '@terrafirmagreg-team/ui/hooks/use-in-view';
 import { useSwipe } from '@terrafirmagreg-team/ui/hooks/use-swipe';

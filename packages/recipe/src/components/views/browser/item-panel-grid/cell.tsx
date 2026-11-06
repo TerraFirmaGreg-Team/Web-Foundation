@@ -15,7 +15,7 @@ import { cn } from '@terrafirmagreg-team/ui/lib/utils/cn';
 import { RecipeFavoriteCell } from '@terrafirmagreg-team/recipe/components/views/browser/item-panel-grid/favorite-cell';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import type { EntrySize } from '@terrafirmagreg-team/game/types/entry';
-import type { FavoriteHoverTarget } from '@terrafirmagreg-team/recipe/lib/favorite-hover';
+import type { FavoriteHoverTarget } from '@terrafirmagreg-team/recipe/lib/browser/favorite-hover';
 import type { ItemPanelCell, RecipeHrefOpts } from '@terrafirmagreg-team/recipe/types';
 
 function PanelChip({

@@ -1,7 +1,7 @@
 'use client';
 
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { groupOutlines } from '@terrafirmagreg-team/recipe/lib/panel-outline';
+import { groupOutlines } from '@terrafirmagreg-team/recipe/lib/browser/panel-outline';
 import type { ItemPanelCell } from '@terrafirmagreg-team/recipe/types';
 
 const CELL = 36;

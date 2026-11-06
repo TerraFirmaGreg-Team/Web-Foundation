@@ -1,8 +1,8 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
 import { ItemRow } from '@terrafirmagreg-team/ui/components/blocks/list/row';
-import { guideBookHref } from '@terrafirmagreg-team/guide/lib/paths';
-import { guideMessage } from '@terrafirmagreg-team/guide/lib/messages';
+import { guideBookHref } from '@terrafirmagreg-team/guide/lib/nav/paths';
+import { guideMessage } from '@terrafirmagreg-team/guide/lib/display/messages';
 import type { GuideIndex, GuideMessages } from '@terrafirmagreg-team/guide/types';
 
 type GuideCategoryBodyProps = {

@@ -2,8 +2,8 @@ import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { Fragment, type ReactNode } from 'react';
 import { LinkPreview } from '@terrafirmagreg-team/ui/components/blocks/link/link-preview';
 import { guideLink } from '@terrafirmagreg-team/guide/lib/reference';
-import { formatGuide } from '@terrafirmagreg-team/guide/lib/format';
-import { keybindLabels } from '@terrafirmagreg-team/guide/lib/format';
+import { formatGuide } from '@terrafirmagreg-team/guide/lib/display/format';
+import { keybindLabels } from '@terrafirmagreg-team/guide/lib/display/format';
 import { Kbd } from '@terrafirmagreg-team/ui/components/ui/kbd';
 import {
   Tooltip,

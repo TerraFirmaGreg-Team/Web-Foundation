@@ -8,7 +8,7 @@ import { useMountLimit } from '@terrafirmagreg-team/recipe/hooks/use-mount-limit
 import { useGroupOutlines } from '@terrafirmagreg-team/recipe/hooks/use-group-outlines';
 import { Skeleton } from '@terrafirmagreg-team/ui/components/ui/skeleton';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
-import type { FavoriteHoverTarget } from '@terrafirmagreg-team/recipe/lib/favorite-hover';
+import type { FavoriteHoverTarget } from '@terrafirmagreg-team/recipe/lib/browser/favorite-hover';
 import type { ItemPanelCell, RecipeHrefOpts } from '@terrafirmagreg-team/recipe/types';
 
 const CELL = 36;

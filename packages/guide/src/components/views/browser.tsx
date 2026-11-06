@@ -13,7 +13,7 @@ import { GuidePageView } from '@terrafirmagreg-team/guide/components/views/page/
 import {
   firstGuideEntryId,
   guideQueryFromParams,
-} from '@terrafirmagreg-team/guide/lib/query';
+} from '@terrafirmagreg-team/guide/lib/nav/query';
 import { getGuideSource } from '@terrafirmagreg-team/guide/lib/source';
 import { guideHref } from '@terrafirmagreg-team/guide/lib/links';
 import { guideConfig } from '@terrafirmagreg-team/guide/lib/config';

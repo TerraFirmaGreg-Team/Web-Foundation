@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo } from 'react';
-import { groupByCategory } from '@terrafirmagreg-team/recipe/lib/group';
+import { groupByCategory } from '@terrafirmagreg-team/recipe/lib/browser/group';
 import { TAG_RECIPE_TYPE } from '@terrafirmagreg-team/recipe/lib/client-index';
 import { RECIPE_ALL_TYPE, recipeHref } from '@terrafirmagreg-team/recipe/lib/links';
 import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';

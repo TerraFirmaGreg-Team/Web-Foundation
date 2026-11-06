@@ -7,7 +7,7 @@ import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
 import { useEntryContext } from '@terrafirmagreg-team/game/hooks/use-entry-context';
 import { ResolvedLangContext } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { useAsyncValue } from '@terrafirmagreg-team/ui/hooks/use-async-value';
-import { findClientGuideEntry } from '@terrafirmagreg-team/guide/lib/client/guides';
+import { findClientGuideEntry } from '@terrafirmagreg-team/guide/lib/client/books';
 import type { GuideDirectiveProps } from '@terrafirmagreg-team/game/types/entry';
 
 export function GuideEntry({

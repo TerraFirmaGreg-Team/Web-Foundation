@@ -1,6 +1,6 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { sectionConfig } from '@terrafirmagreg-team/kit/lib/config';
-import { listClientGuideBookSummaries } from '@terrafirmagreg-team/guide/lib/client/guides';
+import { listClientGuideBookSummaries } from '@terrafirmagreg-team/guide/lib/client/books';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 
 type GuideBookSummary = Awaited<

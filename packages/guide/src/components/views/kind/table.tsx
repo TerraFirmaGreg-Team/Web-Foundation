@@ -10,8 +10,8 @@ import {
   TableRow,
 } from '@terrafirmagreg-team/ui/components/ui/table';
 import { collectItemIds } from '@terrafirmagreg-team/guide/lib/data/parse';
-import { cssColor, cellTexts } from '@terrafirmagreg-team/guide/lib/table';
-import { guideFormatOpts } from '@terrafirmagreg-team/guide/lib/format';
+import { cssColor, cellTexts } from '@terrafirmagreg-team/guide/lib/kind/table';
+import { guideFormatOpts } from '@terrafirmagreg-team/guide/lib/display/format';
 import type { GuideTableCell, PageRendererProps } from '@terrafirmagreg-team/guide/types';
 
 export function TablePage(props: PageRendererProps) {

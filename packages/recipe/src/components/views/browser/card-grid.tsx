@@ -18,7 +18,7 @@ import { recipeItemName } from '@terrafirmagreg-team/recipe/lib/client-index';
 import { loadClientRecipe } from '@terrafirmagreg-team/recipe/lib/client/recipe';
 import { pushUrlState } from '@terrafirmagreg-team/ui/lib/utils/history';
 import { useSwipe } from '@terrafirmagreg-team/ui/hooks/use-swipe';
-import { favoriteHover } from '@terrafirmagreg-team/recipe/lib/favorite-hover';
+import { favoriteHover } from '@terrafirmagreg-team/recipe/lib/browser/favorite-hover';
 import { recipeTitle } from '@terrafirmagreg-team/recipe/lib/data/parse';
 import { cn } from '@terrafirmagreg-team/ui/lib/utils/cn';
 import type { FitDim } from '@terrafirmagreg-team/ui/hooks/page/use-fit-pages';

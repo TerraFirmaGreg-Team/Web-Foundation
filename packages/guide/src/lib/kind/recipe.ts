@@ -1,5 +1,5 @@
 import type { GuidePage } from '@terrafirmagreg-team/guide/types';
-import type { EmbedRecipe } from '@terrafirmagreg-team/guide/lib/embeds';
+import type { EmbedRecipe } from '@terrafirmagreg-team/kit/types/embeds';
 import { stackDisplayName } from '@terrafirmagreg-team/game/lib/entry/display';
 
 export function recipeIds(page: GuidePage): string[] {

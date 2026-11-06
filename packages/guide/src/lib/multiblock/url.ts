@@ -8,7 +8,7 @@ import {
 } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import { loadDatasetDump } from '@terrafirmagreg-team/dump/lib/dump/mods/load';
 import { createDatasetCache } from '@terrafirmagreg-team/dump/lib/dump/reader';
-import { loadMultiblockNameIndex } from '@terrafirmagreg-team/guide/lib/client/guides';
+import { loadMultiblockNameIndex } from '@terrafirmagreg-team/guide/lib/client/books';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import type { GuideMultiblock } from '@terrafirmagreg-team/guide/types';
 

@@ -1,7 +1,7 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import type { AdvancedIndex } from 'fumadocs-core/search/server';
 import { dumpTextString, langString } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names';
-import { formatGuide } from '@terrafirmagreg-team/guide/lib/format';
+import { formatGuide } from '@terrafirmagreg-team/guide/lib/display/format';
 import { isIndexPage } from '@terrafirmagreg-team/guide/lib/page-kind';
 import type { DumpIndex } from '@terrafirmagreg-team/dump/lib/dump/mods/dto';
 

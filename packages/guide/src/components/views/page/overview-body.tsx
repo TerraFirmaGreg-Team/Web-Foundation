@@ -5,11 +5,11 @@ import { GuideText } from '@terrafirmagreg-team/guide/components/views/text';
 import {
   guideCategoryHref,
   isRootCategory,
-} from '@terrafirmagreg-team/guide/lib/paths';
+} from '@terrafirmagreg-team/guide/lib/nav/paths';
 import { texturePublicUrl } from '@terrafirmagreg-team/dump/lib/dump/assets/urls';
 import { useDumpLocation } from '@terrafirmagreg-team/game/hooks/use-dump-location';
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
-import { guideMessage } from '@terrafirmagreg-team/guide/lib/messages';
+import { guideMessage } from '@terrafirmagreg-team/guide/lib/display/messages';
 import type { PagePreviewData } from '@terrafirmagreg-team/ui/types/preview';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import type { GuideIndex, GuideMessages } from '@terrafirmagreg-team/guide/types';

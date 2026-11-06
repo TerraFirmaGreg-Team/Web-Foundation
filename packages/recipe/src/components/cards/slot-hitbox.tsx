@@ -11,7 +11,7 @@ import { useCycleIndex } from '@terrafirmagreg-team/ui/hooks/use-cycle-index';
 import { stackDisplayName } from '@terrafirmagreg-team/game/lib/entry/display';
 import { entryHref } from '@terrafirmagreg-team/game/lib/entry/href';
 import { loadStackDisplay } from '@terrafirmagreg-team/game/lib/entry/tooltip';
-import { favoriteHover } from '@terrafirmagreg-team/recipe/lib/favorite-hover';
+import { favoriteHover } from '@terrafirmagreg-team/recipe/lib/browser/favorite-hover';
 import { useAsyncResult } from '@terrafirmagreg-team/ui/hooks/use-async-value';
 import type { ReferenceKind } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 import type { RecipeSlotWidget } from '@terrafirmagreg-team/recipe/lib/data/dto';

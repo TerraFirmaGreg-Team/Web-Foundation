@@ -7,7 +7,7 @@ import {
   sectionUrl,
   versionSuffix,
 } from '@terrafirmagreg-team/sites/location';
-import { bookOptionId, guideCategoryHref } from '@terrafirmagreg-team/guide/lib/paths';
+import { bookOptionId, guideCategoryHref } from '@terrafirmagreg-team/guide/lib/nav/paths';
 import type { GuideIndex } from '@terrafirmagreg-team/guide/types';
 import type { TaggedReference } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 

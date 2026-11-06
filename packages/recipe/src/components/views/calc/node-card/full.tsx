@@ -19,7 +19,7 @@ import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
 import { StackCount } from '@terrafirmagreg-team/game/components/entry/stack-count';
 import { PagedCard } from '@terrafirmagreg-team/recipe/components/cards/paged-card';
 import { Skeleton } from '@terrafirmagreg-team/ui/components/ui/skeleton';
-import { useCalcSession } from '@terrafirmagreg-team/recipe/hooks/calc/use-session';
+import { useCalcSession } from '@terrafirmagreg-team/recipe/hooks/calc/use-calc-session';
 import { useCalcFar } from '@terrafirmagreg-team/recipe/hooks/calc/use-far-mode';
 import { useCalcTier } from '@terrafirmagreg-team/recipe/hooks/calc/use-tier';
 import { recipeItemName } from '@terrafirmagreg-team/recipe/lib/client-index';

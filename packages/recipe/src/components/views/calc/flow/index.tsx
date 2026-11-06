@@ -26,7 +26,7 @@ import { CalcNodeCard } from '@terrafirmagreg-team/recipe/components/views/calc/
 import { CalcDotOverlay } from '@terrafirmagreg-team/recipe/components/views/calc/dot-overlay';
 import { EmptyState } from '@terrafirmagreg-team/ui/components/blocks/page/empty-state';
 import { CalcEdge } from '@terrafirmagreg-team/recipe/components/views/calc/edge';
-import { CalcSessionProvider } from '@terrafirmagreg-team/recipe/hooks/calc/use-session';
+import { CalcSessionProvider } from '@terrafirmagreg-team/recipe/hooks/calc/use-calc-session';
 import { CalcFarProvider } from '@terrafirmagreg-team/recipe/hooks/calc/use-far-mode';
 import { CalcTierProvider } from '@terrafirmagreg-team/recipe/hooks/calc/use-tier';
 import { useFlowPickers } from '@terrafirmagreg-team/recipe/hooks/calc/flow/use-pickers';

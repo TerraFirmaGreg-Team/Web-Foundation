@@ -18,7 +18,7 @@ import type {
   QuestCompactIndex,
   QuestCompactRow,
 } from '@terrafirmagreg-team/quest/lib/data/dto';
-import { filterCompactQuests } from '@terrafirmagreg-team/quest/lib/search';
+import { filterCompactQuests } from '@terrafirmagreg-team/quest/lib/search/overlay';
 
 export function SearchOverlay({
   open,

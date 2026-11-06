@@ -3,7 +3,7 @@ import type {
   GuidePage,
   GuidePagePayload,
 } from '@terrafirmagreg-team/guide/types';
-import { guideBookHref } from '@terrafirmagreg-team/guide/lib/paths';
+import { guideBookHref } from '@terrafirmagreg-team/guide/lib/nav/paths';
 import type { GuideMarkdownCtx } from './ctx';
 import { guidePageMarkdown } from './page';
 import { guideTextMarkdown } from './text';

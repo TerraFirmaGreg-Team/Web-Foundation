@@ -22,7 +22,7 @@ import { UnknownPage } from '@terrafirmagreg-team/guide/components/views/kind/un
 import type { PageRendererProps } from '@terrafirmagreg-team/guide/types';
 import type { AtlasBundle } from '@terrafirmagreg-team/dump/lib/dump/assets/atlas/dto';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
-import { guideMessage } from '@terrafirmagreg-team/guide/lib/messages';
+import { guideMessage } from '@terrafirmagreg-team/guide/lib/display/messages';
 import type { PagePreviewData } from '@terrafirmagreg-team/ui/types/preview';
 import type { GuideBookMeta } from '@terrafirmagreg-team/guide/types';
 import type {
@@ -37,7 +37,7 @@ import {
   pageAnchors,
   pageIcons,
   repeatedTitle,
-} from '@terrafirmagreg-team/guide/lib/toc';
+} from '@terrafirmagreg-team/guide/lib/nav/toc';
 import { classify, isIndexPage, type PageKind, pageTexts } from '@terrafirmagreg-team/guide/lib/page-kind';
 import {
   EntryGroup,

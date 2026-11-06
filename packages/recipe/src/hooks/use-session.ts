@@ -7,13 +7,13 @@ import { useRecipeQuery } from '@terrafirmagreg-team/recipe/hooks/use-query';
 import { useAsyncValue } from '@terrafirmagreg-team/ui/hooks/use-async-value';
 import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { clientDumpLang } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
-import { useRecipeIndexNames } from '@terrafirmagreg-team/recipe/lib/index-store';
+import { useRecipeIndexNames } from '@terrafirmagreg-team/recipe/lib/client-index/store';
 import {
   RECIPE_ALL_TYPE,
   recipeHref,
   recipePlaceOpts,
 } from '@terrafirmagreg-team/recipe/lib/links';
-import { recipeUsedItems } from '@terrafirmagreg-team/recipe/lib/used-items';
+import { recipeUsedItems } from '@terrafirmagreg-team/recipe/lib/browser/used-items';
 import { replaceUrlState } from '@terrafirmagreg-team/ui/lib/utils/history';
 import type {
   RecipeHrefOpts,

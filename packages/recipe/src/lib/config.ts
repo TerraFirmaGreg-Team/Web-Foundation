@@ -2,6 +2,7 @@ import { createConfigRegistry, uiConfig } from '@terrafirmagreg-team/ui/lib/conf
 import { registerMdxComponents } from '@terrafirmagreg-team/mdx/components/mdx-components';
 import { Recipe } from '@terrafirmagreg-team/recipe/components/mdx/recipe';
 import '@terrafirmagreg-team/recipe/lib/preview';
+import '@terrafirmagreg-team/recipe/lib/embed';
 
 export type RecipeConfigInput = {
   appName?: string;

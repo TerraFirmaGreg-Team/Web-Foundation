@@ -9,7 +9,7 @@ import {
   loadRecipeCompactIndex,
   loadRecipeSkeletonIndex,
 } from '@terrafirmagreg-team/recipe/lib/client-index';
-import { publishRecipeIndex } from '@terrafirmagreg-team/recipe/lib/index-store';
+import { publishRecipeIndex } from '@terrafirmagreg-team/recipe/lib/client-index/store';
 import type { RecipeCompactIndex } from '@terrafirmagreg-team/recipe/types';
 
 type LoadedIndex = { key: string; index: RecipeCompactIndex };
