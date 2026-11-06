@@ -119,6 +119,11 @@
 	outline: none;
 }
 
+.chat__name:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+}
+
 .chat__name::placeholder {
 	color: var(--muted-foreground);
 }

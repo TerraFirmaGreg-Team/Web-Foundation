@@ -47,7 +47,7 @@ export function WorkspaceOutlinePopover({
         <CollapsibleTrigger
           {...trigger}
           className={cn(
-            'flex w-full h-10 items-center gap-2.5 px-4 text-start text-sm text-muted-foreground focus-visible:outline-none',
+            'flex w-full h-10 items-center gap-2.5 px-4 text-start text-sm text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
             trigger?.className,
           )}
         >

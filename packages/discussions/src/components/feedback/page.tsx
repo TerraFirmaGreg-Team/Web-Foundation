@@ -156,7 +156,7 @@ export function Feedback({
               required
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="border rounded-lg bg-fd-secondary text-fd-secondary-foreground p-3 resize-none focus-visible:outline-none placeholder:text-fd-muted-foreground"
+              className="border rounded-lg bg-fd-secondary text-fd-secondary-foreground p-3 resize-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring placeholder:text-fd-muted-foreground"
               placeholder={t('Leave your feedback…', { note: 'ui.feedback.placeholder' })}
               onKeyDown={(e) => {
                 if (e.nativeEvent.isComposing || e.keyCode === 229) return;

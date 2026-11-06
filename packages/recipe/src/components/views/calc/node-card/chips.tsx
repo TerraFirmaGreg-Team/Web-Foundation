@@ -39,7 +39,7 @@ export function CycleChip({
   children: ReactNode;
 }) {
   const centerCls = cn(
-    'flex min-w-0 flex-1 items-center justify-center gap-1 px-0.5 py-0.5 text-[10px] text-muted-foreground outline-none',
+    'flex min-w-0 flex-1 items-center justify-center gap-1 px-0.5 py-0.5 text-[10px] text-muted-foreground outline-none focus-visible:ring-1 focus-visible:ring-ring',
     onOpen && 'hover:text-foreground',
     accent && 'text-sky-500 hover:text-sky-400',
     centerClassName,
