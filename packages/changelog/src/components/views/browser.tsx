@@ -107,11 +107,19 @@ export async function changelogPage({
   features?: ChangelogPageFeatures;
 }): Promise<SectionPageView> {
   if (page.data.redirect) redirect(page.data.redirect);
-  const { body: MDX, toc } = (await (
+  const { body: MDX, toc, _exports } = (await (
     page.data as unknown as {
-      load(): Promise<{ body: MDXContent; toc: TableOfContents }>;
+      load(): Promise<{
+        body: MDXContent;
+        toc: TableOfContents;
+        _exports?: Record<string, unknown>;
+      }>;
     }
-  ).load()) as { body: MDXContent; toc: TableOfContents };
+  ).load()) as {
+    body: MDXContent;
+    toc: TableOfContents;
+    _exports?: Record<string, unknown>;
+  };
   const filePath = `${contentDir}/${page.path.replace(/\\/g, '/')}`;
   const datasetId = page.url.split('/').filter(Boolean)[1];
   const dataset = datasetId
@@ -123,6 +131,7 @@ export async function changelogPage({
     datasetId,
     copied,
     history,
+    exports: _exports,
   };
   const body = <MDX components={getMDXComponents({ a: link })} />;
   return {

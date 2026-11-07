@@ -8,6 +8,7 @@ export interface SectionPageContext {
   datasetId?: string;
   copied?: TranslationState;
   history?: boolean;
+  exports?: Record<string, unknown>;
 }
 
 export interface SectionFeatures {

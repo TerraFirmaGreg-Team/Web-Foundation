@@ -1,6 +1,7 @@
 import {
   contentChildren,
   estreeBoolean,
+  estreeStringArray,
   extractDirectiveLabel,
   extractLeafLabel,
   jsxAttr,
@@ -17,11 +18,9 @@ export function remarkAccordions() {
     walkContainers(tree, (directive) => {
       if (directive.name === 'accordion' || directive.name === 'details') {
         wrapSingle(directive);
-        return false;
       }
       if (directive.name === 'accordions') {
         toAccordions(directive);
-        return false;
       }
     });
   };
@@ -37,10 +36,22 @@ function toAccordion(node: DirectiveNode): JsxElement {
 }
 
 function wrapSingle(node: DirectiveNode): void {
+  const attrs = node.attributes ?? {};
+  const open = 'open' in attrs;
   Object.assign(node, {
     type: 'mdxJsxFlowElement',
     name: 'Accordions',
-    attributes: [],
+    attributes: open
+      ? [
+          {
+            type: 'mdxJsxAttribute',
+            name: 'defaultValue',
+            value: jsxExpression(
+              estreeStringArray([String(extractDirectiveLabel(node))]),
+            ),
+          } as JsxAttribute,
+        ]
+      : [],
     children: [toAccordion(node)],
   });
 }

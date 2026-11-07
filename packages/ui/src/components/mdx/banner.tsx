@@ -1,39 +1,60 @@
 'use client';
 
-import { type HTMLAttributes, useEffect, useState } from 'react';
+import { type CSSProperties, type HTMLAttributes, useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { cn } from '@terrafirmagreg-team/ui/lib/utils/cn';
 import { buttonVariants } from '@terrafirmagreg-team/ui/components/ui/button';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
+import {
+  gradientImage,
+  type GradientProps,
+} from '@terrafirmagreg-team/ui/lib/mdx/gradient';
 
-type BannerVariant = 'rainbow' | 'normal';
+type BannerVariant = 'rainbow' | 'normal' | 'fade' | 'glow';
 
-export type BannerProps = HTMLAttributes<HTMLDivElement> & {
+export type BannerProps = HTMLAttributes<HTMLDivElement> &
+  GradientProps & {
 
-  height?: string;
+    height?: string;
 
-  variant?: BannerVariant;
+    variant?: BannerVariant;
 
-  rainbowColors?: string[];
+    gradient?: boolean;
 
-  changeLayout?: boolean;
-};
+    rainbowColors?: string[];
+
+    changeLayout?: boolean;
+  };
+
+const fadeMask = {
+  WebkitMask:
+    'linear-gradient(#fff 0 0) content-box, linear-gradient(to bottom, #fff 0%, transparent 100%) border-box',
+  WebkitMaskComposite: 'destination-out',
+  mask: 'linear-gradient(to bottom, #fff 0%, transparent 100%) border-box subtract, linear-gradient(#fff 0 0) content-box',
+} as CSSProperties;
 
 export function Banner({
   id,
   variant = 'normal',
   changeLayout = true,
-  height = '3rem',
+  height,
+  gradient,
+  from,
+  to,
+  dir,
+  image,
   rainbowColors = [
     'rgba(0,149,255,0.56)',
     'rgba(231,77,255,0.77)',
     'rgba(255,0,0,0.73)',
     'rgba(131,255,166,0.66)',
   ],
+  style,
   ...props
 }: BannerProps) {
   const t = useTranslations();
   const [open, setOpen] = useState(true);
+  const glow = variant === 'fade' || variant === 'glow';
   const globalKey = id ? `banner-${encodeBase32(id)}` : null;
 
   useEffect(() => {
@@ -47,19 +68,41 @@ export function Banner({
 
   if (!open) return null;
 
+  const gradientBg = gradientImage({ from, to, dir, image });
+  const textStyle: CSSProperties | undefined = gradient
+    ? {
+        backgroundImage: gradientBg,
+        WebkitBackgroundClip: 'text',
+        backgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        color: 'transparent',
+      }
+    : undefined;
+
   return (
     <div
       id={id}
       {...props}
       className={cn(
-        'sticky top-0 z-40 flex flex-row items-center justify-center rounded-xl px-4 text-center text-sm font-medium',
+        'flex flex-row items-center justify-center px-4 text-center font-medium',
+        glow
+          ? 'relative isolate mt-10 mb-6 overflow-hidden rounded-[20px] p-2.5 text-xl font-semibold [&_:is(h1,h2,h3,h4,h5,h6)]:m-0 [&_:is(h1,h2,h3,h4,h5,h6)]:border-0 [&_:is(h1,h2,h3,h4,h5,h6)]:p-0 [&_:is(h1,h2,h3,h4,h5,h6)_button]:hidden'
+          : 'sticky top-0 z-40 rounded-xl text-sm',
         variant === 'normal' && 'bg-secondary',
         variant === 'rainbow' && 'bg-background',
         !open && 'hidden',
         props.className,
       )}
       style={{
-        height,
+        height: height ?? (glow ? undefined : '3rem'),
+        ...(variant === 'glow'
+          ? {
+              backgroundImage:
+                'radial-gradient(var(--header-bg-inner), var(--header-bg-outer))',
+              boxShadow: '0 0 20px var(--header-shadow)',
+            }
+          : {}),
+        ...style,
       }}
     >
       {changeLayout && open ? (
@@ -83,7 +126,16 @@ export function Banner({
             colors: rainbowColors,
           })
         : null}
-      {props.children}
+      {variant === 'fade' ? (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-[inherit] p-px"
+          style={{ backgroundImage: gradientBg, ...fadeMask }}
+        />
+      ) : null}
+      <div className="relative" style={textStyle}>
+        {props.children}
+      </div>
       {id ? (
         <button
           type="button"

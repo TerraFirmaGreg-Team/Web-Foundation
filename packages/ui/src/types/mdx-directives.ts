@@ -17,17 +17,6 @@ export type GradientDirectiveProps = {
   className?: string;
 };
 
-export type GlowDirectiveProps = {
-  from?: string;
-  to?: string;
-  dir?: string;
-  image?: string;
-  gradient?: boolean;
-  fade?: boolean;
-  children: string;
-  className?: string;
-};
-
 export type CalloutDirectiveProps = {
   type?: CalloutType;
   title?: string;
@@ -48,7 +37,12 @@ export type CardDirectiveProps = {
 export type BannerDirectiveProps = {
   id?: string;
   height?: string;
-  variant?: 'rainbow' | 'normal';
+  variant?: 'normal' | 'rainbow' | 'fade' | 'glow';
+  gradient?: boolean;
+  from?: string;
+  to?: string;
+  dir?: string;
+  image?: string;
   rainbowColors?: string[];
   changeLayout?: boolean;
   children?: string;
@@ -64,6 +58,7 @@ export type TabsDirectiveProps = {
 };
 
 export type AccordionsDirectiveProps = {
+  format?: 'details' | 'accordions' | 'jsx';
   multiple?: boolean;
   defaultValue?: string | string[];
   children: string;
@@ -76,6 +71,13 @@ export type StepsDirectiveProps = {
 };
 
 export type FilesDirectiveProps = {
+  format?: 'list' | 'fenced';
+  name?: string;
+  icon?: string;
+  href?: string;
+  description?: string;
+  disabled?: boolean;
+  defaultOpen?: boolean;
   children: string;
   className?: string;
 };
@@ -93,6 +95,13 @@ export type MermaidDirectiveProps = {
 };
 
 export type MathDirectiveProps = {
+  format?:
+    | 'inline'
+    | 'dollar'
+    | 'leaf'
+    | 'container'
+    | 'fenced'
+    | 'display';
   children: string;
   block?: boolean;
 };

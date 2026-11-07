@@ -6,7 +6,11 @@ import {
 } from '@terrafirmagreg-team/dump/lib/dump/paths';
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import type { DumpReader } from '@terrafirmagreg-team/dump/lib/dump/reader';
-import { createAsyncCache } from '@terrafirmagreg-team/data/lib/async-cache';
+import {
+  createAsyncCache,
+  type AsyncCache,
+} from '@terrafirmagreg-team/data/lib/async-cache';
+import { markDumpResult } from '@terrafirmagreg-team/data/lib/dump-status';
 
 const SAFE_LANG_CODE = /^[a-z0-9]+(_[a-z0-9]+)*$/i;
 
@@ -61,46 +65,76 @@ async function request(url: string): Promise<Response | undefined> {
 
 export const DUMP_POINTER_TTL = 60_000;
 
-const fetchJsonLoader = async (url: string, high: boolean) =>
+function markDumpFetch(
+  datasetId: string | undefined,
+  res: Response | undefined,
+  ok: boolean,
+) {
+  if (!datasetId) return;
+  if (res?.status === 404) return;
+  markDumpResult(datasetId, ok);
+}
+
+const fetchJsonLoader = async (
+  url: string,
+  high: boolean,
+  datasetId?: string,
+) =>
   fetchLane(async () => {
     try {
       const res = await request(url);
-      if (!res?.ok) return undefined;
+      const ok = res?.ok === true;
+      markDumpFetch(datasetId, res, ok);
+      if (!ok) return undefined;
       return (await res.json()) as unknown;
     } catch {
+      if (datasetId) markDumpResult(datasetId, false);
       return undefined;
     }
   }, high);
 
-const fetchJsonGzLoader = async (url: string, high: boolean) =>
+const fetchJsonGzLoader = async (
+  url: string,
+  high: boolean,
+  datasetId?: string,
+) =>
   fetchLane(async () => {
     try {
       const res = await request(url);
-      if (!res?.ok || !res.body) return undefined;
+      const ok = res?.ok === true && Boolean(res.body);
+      markDumpFetch(datasetId, res, ok);
+      if (!ok) return undefined;
       const text = await new Response(
-        res.body.pipeThrough(new DecompressionStream('gzip')),
+        res!.body!.pipeThrough(new DecompressionStream('gzip')),
       ).text();
       return JSON.parse(text) as unknown;
     } catch {
+      if (datasetId) markDumpResult(datasetId, false);
       return undefined;
     }
   }, high);
 
-const fetchJson = createAsyncCache(fetchJsonLoader, (url) => url);
+const fetchJson = createAsyncCache(
+  fetchJsonLoader,
+  (url: string) => url,
+) as AsyncCache<[url: string, high: boolean, datasetId?: string], unknown>;
 
-const fetchJsonGz = createAsyncCache(fetchJsonGzLoader, (url) => url);
+const fetchJsonGz = createAsyncCache(
+  fetchJsonGzLoader,
+  (url: string) => url,
+) as AsyncCache<[url: string, high: boolean, datasetId?: string], unknown>;
 
 const fetchJsonMutable = createAsyncCache(
   fetchJsonLoader,
-  (url) => url,
+  (url: string) => url,
   DUMP_POINTER_TTL,
-);
+) as AsyncCache<[url: string, high: boolean, datasetId?: string], unknown>;
 
 const fetchJsonGzMutable = createAsyncCache(
   fetchJsonGzLoader,
-  (url) => url,
+  (url: string) => url,
   DUMP_POINTER_TTL,
-);
+) as AsyncCache<[url: string, high: boolean, datasetId?: string], unknown>;
 
 export const COMPRESSED_TREE = /^(?:data|meta)\//;
 
@@ -135,14 +169,15 @@ export class JsonDumpReader implements DumpReader {
       return fetchJsonMutable(
         dumpStorageUrl(`${this.packId}/versions.json`),
         high,
+        this.packId,
       );
     }
     return this.location().then((loc) => {
       const key = loc.files?.[path];
       if (key) {
         return key.endsWith('.gz')
-          ? fetchJsonGz(dumpStorageUrl(`${key}`), high)
-          : fetchJson(dumpStorageUrl(`${key}`), high);
+          ? fetchJsonGz(dumpStorageUrl(`${key}`), high, this.packId)
+          : fetchJson(dumpStorageUrl(`${key}`), high, this.packId);
       }
 
       if (loc.files) return undefined;
@@ -152,8 +187,8 @@ export class JsonDumpReader implements DumpReader {
           ? [fetchJsonMutable, fetchJsonGzMutable]
           : [fetchJson, fetchJsonGz];
       return COMPRESSED_TREE.test(path)
-        ? jsonGz(dumpStorageUrl(`${rel}.gz`), high)
-        : json(dumpStorageUrl(`${rel}`), high);
+        ? jsonGz(dumpStorageUrl(`${rel}.gz`), high, this.packId)
+        : json(dumpStorageUrl(`${rel}`), high, this.packId);
     });
   }
 
@@ -185,6 +220,7 @@ export class JsonDumpReader implements DumpReader {
     const versions = (await fetchJsonMutable(
       dumpStorageUrl(`${this.packId}/versions.json`),
       true,
+      this.packId,
     )) as { latest?: string } | undefined;
     if (versions?.latest) {
       const root = `${this.packId}/${versions.latest}`;
@@ -192,6 +228,7 @@ export class JsonDumpReader implements DumpReader {
       const exists = await fetchJson(
         dumpStorageUrl(`${root}/manifest.json`),
         false,
+        this.packId,
       );
       if (exists) {
         const loc: DumpLocation = { root, files: await this.objectsIndex(root) };
@@ -212,8 +249,9 @@ export class JsonDumpReader implements DumpReader {
       (await fetchJsonGz(
         dumpStorageUrl(`${root}/objects.json.gz`),
         false,
+        this.packId,
       )) ??
-      (await fetchJson(dumpStorageUrl(`${root}/objects.json`), false));
+      (await fetchJson(dumpStorageUrl(`${root}/objects.json`), false, this.packId));
     const files =
       raw && typeof raw === 'object' && !Array.isArray(raw)
         ? (raw as Record<string, unknown>).files

@@ -44,6 +44,12 @@
   --color-error: oklch(63.7% 0.237 25.331);
   --color-success: oklch(72.3% 0.219 149.579);
   --color-idea: oklch(70.5% 0.209 60.849);
+  --color-question: oklch(80% 0.16 95);
+  --color-failure: oklch(60% 0.22 0);
+  --color-bug: oklch(57% 0.19 340);
+  --color-abstract: oklch(75% 0.15 195);
+  --color-example: oklch(62% 0.2 310);
+  --color-quote: oklch(60% 0.02 260);
   --color-diff-remove: rgba(200, 10, 100, 0.12);
   --color-diff-remove-symbol: rgb(230, 10, 100);
   --color-diff-add: rgba(14, 180, 100, 0.1);

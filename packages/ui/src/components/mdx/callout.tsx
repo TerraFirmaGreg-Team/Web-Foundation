@@ -1,35 +1,68 @@
-import { CircleCheck, CircleX, Info, Lightbulb, StickyNote, TriangleAlert } from 'lucide-react';
+import {
+  Bell,
+  Bug,
+  CircleAlert,
+  CircleCheck,
+  CircleHelp,
+  CircleX,
+  ClipboardList,
+  Info,
+  Lightbulb,
+  ListChecks,
+  Megaphone,
+  OctagonAlert,
+  OctagonX,
+  Quote,
+  StickyNote,
+  TriangleAlert,
+} from 'lucide-react';
 import type { ComponentProps, CSSProperties, ReactNode } from 'react';
 import { cn } from '@terrafirmagreg-team/ui/lib/utils/cn';
 import { calloutStyle } from '@terrafirmagreg-team/ui/lib/mdx/callout';
 
 export type CalloutType =
-  | 'info'
   | 'note'
   | 'tip'
+  | 'info'
+  | 'important'
   | 'warn'
   | 'warning'
-  | 'error'
+  | 'caution'
+  | 'attention'
   | 'danger'
+  | 'error'
   | 'success'
-  | 'idea';
+  | 'idea'
+  | 'question'
+  | 'failure'
+  | 'bug'
+  | 'abstract'
+  | 'example'
+  | 'quote';
 
 const iconClass = 'size-5 -me-0.5 fill-(--callout-color) text-card';
+const textIconClass =
+  'size-5 -me-0.5 fill-(--callout-color) text-(--callout-color)';
 
 const ICONS: Record<string, ReactNode> = {
-  info: <Info className={iconClass} />,
   note: <StickyNote className={iconClass} />,
-  tip: (
-    <Lightbulb className="size-5 -me-0.5 fill-(--callout-color) text-(--callout-color)" />
-  ),
+  tip: <Lightbulb className={textIconClass} />,
+  info: <Info className={iconClass} />,
+  important: <Megaphone className={iconClass} />,
   warn: <TriangleAlert className={iconClass} />,
   warning: <TriangleAlert className={iconClass} />,
-  error: <CircleX className={iconClass} />,
-  danger: <CircleX className={iconClass} />,
+  caution: <OctagonAlert className={iconClass} />,
+  attention: <Bell className={iconClass} />,
+  danger: <OctagonX className={iconClass} />,
+  error: <CircleAlert className={iconClass} />,
   success: <CircleCheck className={iconClass} />,
-  idea: (
-    <Lightbulb className="size-5 -me-0.5 fill-(--callout-color) text-(--callout-color)" />
-  ),
+  idea: <Lightbulb className={textIconClass} />,
+  question: <CircleHelp className={iconClass} />,
+  failure: <CircleX className={iconClass} />,
+  bug: <Bug className={iconClass} />,
+  abstract: <ClipboardList className={iconClass} />,
+  example: <ListChecks className={iconClass} />,
+  quote: <Quote className={iconClass} />,
 };
 
 export function Callout({

@@ -8,7 +8,11 @@ import {
   useAsyncResult,
   useAsyncValue,
 } from '@terrafirmagreg-team/ui/hooks/use-async-value';
+import { useLastResult } from '@terrafirmagreg-team/ui/hooks/use-last-result';
 import { useVersionedDataset } from '@terrafirmagreg-team/kit/hooks/use-versioned-dataset';
+import { useDumpRetryNonce } from '@terrafirmagreg-team/kit/hooks/use-dump-status';
+import { DumpUnavailable } from '@terrafirmagreg-team/kit/components/views/unavailable';
+import { StaleBadge } from '@terrafirmagreg-team/kit/components/dump-status/stale-badge';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
 import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { useDocumentTitle } from '@terrafirmagreg-team/ui/hooks/use-document-title';
@@ -121,12 +125,19 @@ export function QuestBrowser({
   const [searchOpen, setSearchOpen] = useState(false);
 
   const source = getQuestSource();
-  const index = useAsyncResult(
-    () => source.index(dataset, lang),
-    [dataset, lang],
+  const nonce = useDumpRetryNonce();
+  const index = useLastResult(
+    useAsyncResult(
+      () => source.index(dataset, lang),
+      [dataset, lang, nonce],
+    ),
+    dataset.id,
   );
   const langMap =
-    useAsyncValue(() => source.langMap(dataset, lang), [dataset, lang]) ?? {};
+    useAsyncValue(
+      () => source.langMap(dataset, lang),
+      [dataset, lang, nonce],
+    ) ?? {};
 
   const row = useMemo(() => {
     if (!index.value) return undefined;
@@ -149,11 +160,15 @@ export function QuestBrowser({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- params change per render
   }, [row?.filename, category, dataset, resolved]);
 
-  const chapter = useAsyncResult(
-    row
-      ? () => source.chapter(dataset, row, index.value?.book?.defaultQuestShape)
-      : undefined,
-    [dataset, row?.file, index.value],
+  const chapter = useLastResult(
+    useAsyncResult(
+      row
+        ? () =>
+            source.chapter(dataset, row, index.value?.book?.defaultQuestShape)
+        : undefined,
+      [dataset, row?.file, index.value, nonce],
+    ),
+    `${dataset.id}:${row?.filename ?? ''}`,
   );
 
   const autoOpenedRef = useRef<string | null>(null);
@@ -240,13 +255,14 @@ export function QuestBrowser({
   return (
     <EntryProvider dataset={dataset} lang={lang} langMap={langMap}>
       <div className="viewport-shell quest-viewport relative">
+        {index.stale || chapter.stale ? <StaleBadge /> : null}
         {index.error || (!index.pending && !index.value) ? (
           <div className="absolute inset-0 flex items-center justify-center p-6">
-            <EmptyState variant="missing">
+            <DumpUnavailable>
               {t('Quest data is temporarily unavailable. Try again later.', {
                 note: 'quest.unavailable',
               })}
-            </EmptyState>
+            </DumpUnavailable>
           </div>
         ) : chapter.value && chapter.value.filename === row?.filename ? (
           <CanvasFlow
@@ -273,11 +289,11 @@ export function QuestBrowser({
           />
         ) : chapter.error || (!chapter.pending && !chapter.value && row) ? (
           <div className="absolute inset-0 flex items-center justify-center p-6">
-            <EmptyState variant="missing">
+            <DumpUnavailable>
               {t('Quest data is temporarily unavailable. Try again later.', {
                 note: 'quest.unavailable',
               })}
-            </EmptyState>
+            </DumpUnavailable>
           </div>
         ) : (
           <div aria-hidden className="absolute inset-0 overflow-hidden">

@@ -211,7 +211,13 @@ export function SearchDialog(props: SharedProps & { api: string }) {
   }, [query.data, section, everywhere, scopePairs]);
 
   return (
-    <SearchDialogRoot search={search} onSearchChange={setSearch} isLoading={query.isLoading} {...props}>
+    <SearchDialogRoot
+      search={search}
+      onSearchChange={setSearch}
+      isLoading={query.isLoading}
+      error={query.error instanceof Error ? query.error : undefined}
+      {...props}
+    >
       <SearchDialogOverlay />
       <SearchDialogContent>
         <SearchDialogHeader>

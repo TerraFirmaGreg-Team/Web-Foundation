@@ -158,7 +158,7 @@ async function dumpDatasets(
   const usable = await Promise.all(
     ids.map(async (ref) => {
       const { id } = ref;
-      const index = await dump.loadDataset(ref);
+      const index = await dump.loadDataset(ref).catch(() => null);
       if (!index || !hasContent(index)) return null;
       return {
         id,
@@ -191,9 +191,10 @@ export function sectionDatasets(
   section: SectionKey,
 ): Promise<SectionDataset[]> {
   const hasContent = sectionConfig().dump?.hasContent[section];
-  return hasContent
+  const promise = hasContent
     ? dumpSectionDatasets(section, hasContent)
     : contentSectionDatasetsCached(section);
+  return promise.catch(() => []);
 }
 
 export async function defaultDataset(
@@ -228,7 +229,8 @@ const datasetCatalogCached = createAsyncCache(
   async (): Promise<DatasetCatalog> =>
     Promise.all(
       sectionTabs.map(
-        async ({ key }) => [key, await sectionDatasets(key)] as const,
+        async ({ key }) =>
+          [key, await sectionDatasets(key).catch(() => [])] as const,
       ),
     ).then((rows) => Object.fromEntries(rows) as DatasetCatalog),
   () => 'catalog',

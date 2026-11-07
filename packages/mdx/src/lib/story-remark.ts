@@ -12,6 +12,7 @@ export type DirectiveMeta = {
   multiline?: string[];
   props?: string[];
   solo?: boolean;
+  paired?: boolean;
   descriptions?: Record<string, string>;
   raw?: string;
   variants?: Record<string, Partial<DirectiveMeta>>;
@@ -89,30 +90,25 @@ const DIRECTIVE_META: Record<string, DirectiveMeta> = {
       strokeWidth: 'Lucide stroke width, default 2',
     },
   },
-  'gradient-text': {
-    name: 'gradient',
-    label: 'children',
-    colon: 1,
-    props: ['from', 'to', 'image', 'children', 'className'],
+  gradient: {
+    colon: 2,
+    paired: true,
+    multiline: ['children'],
+    props: ['from', 'to', 'dir', 'image', 'children', 'className'],
     descriptions: {
       from: 'Gradient start color',
       to: 'Gradient end color',
+      dir: 'CSS gradient direction (to right, 135deg, …)',
       image: 'CSS image overriding the gradient',
-      children: 'Text content, the directive label',
+      children: 'Body markdown inside the ::gradient … :: block',
     },
   },
-  'glow-header': {
-    name: 'glow',
-    label: 'children',
-    colon: 1,
-    props: ['from', 'to', 'image', 'gradient', 'fade', 'children', 'className'],
+  video: {
+    colon: 2,
+    props: ['src', 'title', 'className'],
     descriptions: {
-      from: 'Gradient start color',
-      to: 'Gradient end color',
-      image: 'CSS image overriding the gradient',
-      gradient: 'Also tint the background box with the gradient',
-      fade: 'Gradient border along the bottom edge',
-      children: 'Header text, the directive label',
+      src: 'Embed URL (e.g. youtube-nocookie embed)',
+      title: 'Accessible frame title',
     },
   },
   callout: {
@@ -126,11 +122,20 @@ const DIRECTIVE_META: Record<string, DirectiveMeta> = {
       title: 'Overrides the default localized title',
       children: 'Body markdown',
     },
+    variants: {
+      Alert: {
+        raw: '> [!TIP]\nA GitHub alert blockquote.',
+      },
+    },
   },
   banner: {
     colon: 3,
     multiline: ['children'],
-    props: ['id', 'height', 'variant', 'rainbowColors', 'changeLayout', 'children', 'className'],
+    props: ['id', 'height', 'variant', 'gradient', 'from', 'to', 'dir', 'image', 'rainbowColors', 'changeLayout', 'children', 'className'],
+    descriptions: {
+      variant: 'normal | rainbow | fade (gradient ring, fades down) | glow (radial bg + shadow)',
+      gradient: 'Gradient-fill the title text',
+    },
   },
   tabs: {
     colon: 3,
@@ -147,7 +152,25 @@ const DIRECTIVE_META: Record<string, DirectiveMeta> = {
   },
   accordions: {
     colon: 3,
-    props: ['multiple', 'defaultValue', 'children', 'className'],
+    props: ['format', 'multiple', 'defaultValue', 'children', 'className'],
+    descriptions: {
+      format:
+        'Input format — details: single :::details[Title] block; accordions: :::accordions group with ::accordion[Title] items; jsx: raw <Accordions>/<Accordion> markup',
+    },
+    variants: {
+      Details: {
+        raw: ':::details[Summary]\nHidden content.\n:::',
+      },
+      Open: {
+        raw: ':::details[Summary]{open}\nHidden content.\n:::',
+      },
+      'Multiple': {
+        raw: ':::accordions{multiple}\n::accordion[First]\nContent one.\n::accordion[Second]\nContent two.\n:::',
+      },
+      'Nested': {
+        raw: '::::details[Outer]{open}\nBefore.\n:::accordions\n::accordion[Inner one]\nNested answer one.\n::accordion[Inner two]\nNested answer two.\n:::\n::::',
+      },
+    },
   },
   image: {
     label: 'alt',
@@ -171,7 +194,33 @@ const DIRECTIVE_META: Record<string, DirectiveMeta> = {
       ├── mods
       └── config
     `,
-    props: ['children'],
+    props: ['format', 'children'],
+    descriptions: {
+      format:
+        'Input format — list: :::files markdown list; fenced: ```files code block',
+      name: 'Entry name — file or folder label',
+      icon: 'Custom icon name or path',
+      href: 'Link target — renders the entry as an anchor',
+      description: 'Muted description line under the entry',
+      disabled: 'Folder only — renders the entry as non-interactive',
+      defaultOpen: 'Folder only — starts expanded',
+      children:
+        'Tree body — a ```files code fence or a :::files markdown list; items: [name](href "description"), trailing / or a nested list = folder',
+    },
+    variants: {
+      List: {
+        raw: ':::files\n- app/\n  - layout.tsx\n  - page.tsx\n- package.json\n:::',
+      },
+      Links: {
+        raw: ':::files\n- [modpack/](/docs/modern/modpack "Modpack guides")\n  - [optional-mods.md](/docs/modern/modpack/optional-mods "Extra compatible mods")\n  - kubejs/\n    - server_scripts\n    - startup_scripts\n- [pakku.json](https://pakku.readthedocs.io "Pakku config")\n:::',
+      },
+      Deep: {
+        raw: ':::files\n- content/\n  - docs/\n    - dev/\n      - components/\n        - index.md\n        - item.md\n        - meta.json\n      - meta.json\n  - index.mdx\n:::',
+      },
+      Fenced: {
+        raw: '```files\nTerraFirmaGreg\n├── mods\n└── config\n```',
+      },
+    },
   },
   code: {
     fence: 'ts',
@@ -322,12 +371,30 @@ const DIRECTIVE_META: Record<string, DirectiveMeta> = {
     },
   },
   math: {
-    body: ':math[e = mc^2]',
-    props: ['children', 'block'],
+    props: ['format', 'children', 'block'],
     multiline: ['children'],
     descriptions: {
-      children: 'KaTeX source, the `:math[…]` label',
-      block: 'Display block (`::math`/`:::math`) instead of inline `:math`',
+      format:
+        'Input syntax — inline: :math[…] or $…$; block: ::math[…] leaf, :::math container, ```math fence or $$…$$',
+      children: 'KaTeX source',
+      block: 'Display block instead of inline',
+    },
+    variants: {
+      Inline: { raw: ':math[e = mc^2]' },
+      Dollar: { raw: '$e = mc^2$' },
+      Leaf: {
+        raw: '::math[\\int_0^\\infty e^{-x^2}\\,dx = \\frac{\\sqrt{\\pi}}{2}]',
+      },
+      Block: {
+        raw: ':::math\n\\int_0^\\infty e^{-x^2}\\,dx = \\frac{\\sqrt{\\pi}}{2}\n:::',
+      },
+      Fenced: {
+        raw: '```math\n\\int_0^\\infty e^{-x^2}\\,dx = \\frac{\\sqrt{\\pi}}{2}\n```',
+      },
+      Aligned: {
+        raw: ':::math\n\\begin{aligned}\n\\nabla \\cdot \\vec{E} &= \\frac{\\rho}{\\varepsilon_0} \\\\\n\\nabla \\times \\vec{B} &= \\mu_0 \\vec{J}\n\\end{aligned}\n:::',
+      },
+      Display: { raw: '$$e = mc^2$$' },
     },
   },
 };
@@ -401,11 +468,10 @@ export function remarkFor(
   if (key === 'accordions') {
     return md`
       :::accordions${args.multiple ? '{multiple}' : ''}
-      ::accordion[Title one]
-      …
-
-      ::accordion[Title two]
-      …
+      ::accordion[First]
+      Content one.
+      ::accordion[Second]
+      Content two.
       :::
     `;
   }
@@ -460,9 +526,9 @@ export function remarkFor(
       ? `[${String(args[meta.label])}]`
       : '';
   const head = `${':'.repeat(meta.colon ?? 2)}${name}${label}${attrs ? `{${attrs}}` : ''}`;
-  if (meta.colon !== 3 || meta.solo) return head;
+  if (meta.solo || (meta.colon !== 3 && !meta.paired)) return head;
   const inner =
     typeof args.children === 'string' && args.children ? args.children : '…';
-  return `${head}\n${inner}\n:::`;
+  return `${head}\n${inner}\n${':'.repeat(meta.colon ?? 3)}`;
 }
 

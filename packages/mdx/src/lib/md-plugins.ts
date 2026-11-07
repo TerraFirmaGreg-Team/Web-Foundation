@@ -1,7 +1,6 @@
 import { rehypeCode } from 'fumadocs-core/mdx-plugins/rehype-code';
 import {
   rehypeCodeDefaultOptions,
-  remarkDirectiveAdmonition,
   remarkMdxFiles,
   remarkMdxMermaid,
   remarkSteps,
@@ -16,11 +15,13 @@ import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
 import { remarkAccordions } from './mdx/accordions';
 import { remarkBanner } from './mdx/banner';
+import { remarkCallouts } from './mdx/callouts';
+import { remarkDirectiveFallback } from './mdx/directive-fallback';
 import { remarkDirectives } from './mdx/directives';
-import { remarkHtmlStyle } from './mdx/html-style';
-import { remarkGameExport } from './mdx/game-export';
+import { filesToMdx, remarkFilesDirective } from './mdx/files';
+import { remarkEntries } from './mdx/entries/index.ts';
+import { remarkGithubAutolinks } from './mdx/github-autolinks';
 import { remarkPreview } from './mdx/preview';
-import { remarkChangelogReferences } from './mdx/references';
 import { remarkTabs } from './mdx/tabs';
 import type { PluggableList } from 'unified';
 
@@ -64,31 +65,18 @@ export const mdOptions = (
       remarkAccordions,
       remarkBanner,
       remarkDirectives,
-      remarkHtmlStyle,
-      remarkGameExport,
-      [remarkChangelogReferences, { datasetConfig }],
+      remarkEntries,
+      [remarkGithubAutolinks, { datasetConfig }],
       [remarkDocGen, { generators: [fileGenerator()] }],
       remarkShow,
       remarkAutoTypeTable,
-      [
-        remarkDirectiveAdmonition,
-        {
-          types: {
-            note: 'note',
-            tip: 'tip',
-            info: 'info',
-            warn: 'warning',
-            warning: 'warning',
-            danger: 'error',
-            success: 'success',
-            idea: 'idea',
-          },
-        },
-      ],
+      remarkCallouts,
       remarkMath,
       remarkSteps,
-      remarkMdxFiles,
+      [remarkMdxFiles, { toMdx: filesToMdx }],
+      remarkFilesDirective,
       remarkMdxMermaid,
+      remarkDirectiveFallback,
       [remarkBlockId, { addDataAttribute: 'feedback' }],
     ] as PluggableList,
     remarkRehypeOptions: { allowDangerousHtml: true },

@@ -1,8 +1,13 @@
 {
+  "cached(kit.stale_badge)": "кэш",
+  "Dismiss(kit.dismiss)": "Скрыть",
   "Failed to copy(ui.copy_error)": "Не удалось скопировать",
+  "Retry now(kit.retry_now)": "Повторить",
+  "retrying in {seconds}s(kit.retrying_in)": "повтор через {seconds} с",
   "Section data is temporarily unavailable. Try again later.(kit.section_unavailable)": "Данные раздела временно недоступны. Попробуйте позже.",
   "Select dataset(ui.select_dataset)": "Выберите набор данных",
   "Select section(ui.select_section)": "Выберите раздел",
   "View as Markdown(ui.view_markdown)": "Просмотр Markdown",
+  "{datasets} data is temporarily unavailable(kit.dump_unavailable)": "Данные {datasets} временно недоступны",
   "latest(ui.version_latest)": "последняя"
 }

@@ -193,8 +193,8 @@ export function createSectionRoutes<
       render(
         await source.getSource(),
         slug,
-        await trees?.(),
-        await datasetCatalog(),
+        await trees?.().catch(() => undefined),
+        await datasetCatalog().catch((): DatasetCatalog => ({}) as DatasetCatalog),
         page,
         lang,
       ),
@@ -203,8 +203,10 @@ export function createSectionRoutes<
   async function SectionLayout({ children }: { children?: ReactNode }) {
     const { slots } = baseOptions();
     const [resolvedTrees, catalog] = await Promise.all([
-      trees ? trees() : Promise.resolve<SectionTrees>({}),
-      datasetCatalog(),
+      trees
+        ? trees().catch((): SectionTrees => ({}))
+        : Promise.resolve<SectionTrees>({}),
+      datasetCatalog().catch((): DatasetCatalog => ({}) as DatasetCatalog),
     ]);
     return (
       <LayoutView
@@ -237,8 +239,8 @@ export function createSectionRoutes<
     }
 
     const [resolvedTrees, catalog] = await Promise.all([
-      trees?.(),
-      datasetCatalog(),
+      trees?.().catch(() => undefined),
+      datasetCatalog().catch((): DatasetCatalog => ({}) as DatasetCatalog),
     ]);
     const content = langContent(
       slug,

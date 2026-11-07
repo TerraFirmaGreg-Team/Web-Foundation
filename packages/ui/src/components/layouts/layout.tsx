@@ -29,6 +29,8 @@ export type LayoutProps = {
   sidebar?: ReactNode;
   navTitle?: ComponentType<ComponentProps<'a'>>;
   header?: ReactNode;
+  banner?: ReactNode;
+  defaultOpenLevel?: number;
   children?: ReactNode;
 };
 
@@ -41,23 +43,27 @@ export function Layout({
   sidebar,
   navTitle: Title = EmptyTitle,
   header = <LayoutHeader />,
+  banner,
+  defaultOpenLevel = 0,
   children,
 }: LayoutProps) {
   return (
     <LayoutContext value={useMemo(() => ({ navTitle: Title }), [Title])}>
       <TreeContextProvider tree={tree}>
-        <SidebarProvider>
+        <SidebarProvider defaultOpenLevel={defaultOpenLevel}>
           <LeftSidebarPortalProvider>
             <div
               id="spacious-layout"
               data-slot="layout"
               className="relative grid min-h-(--layout-height) bg-card transition-[grid-template-columns] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none [--layout-height:calc(100dvh_-_var(--banner-height,0px))] [--header-height:--spacing(14)] [--page-width:100%] [--sidebar-width:0px] [--sidebar-col:var(--sidebar-width)] [--toc-width:0px] max-md:[--docs-row-3:calc(var(--banner-height,0px)+var(--header-height)+var(--toc-popover-height,0px))] md:h-(--layout-height) md:overflow-clip print:h-auto print:overflow-visible"
               style={{
-                gridTemplate: `"sidebar header right" auto
+                gridTemplate: `"banner banner banner" auto
+"sidebar header right" auto
 "sidebar toc-popover right" var(--toc-popover-height, 0px)
 "sidebar main right" 1fr / var(--sidebar-col) minmax(0, 1fr) auto`,
               }}
             >
+              {banner}
               {sidebar}
               {header}
               <RightSidebar>{children}</RightSidebar>

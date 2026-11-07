@@ -24,7 +24,7 @@ export function walkContainers(
   );
 }
 
-const DIRECTIVE_TYPES = [
+export const DIRECTIVE_TYPES = [
   'containerDirective',
   'leafDirective',
   'textDirective',

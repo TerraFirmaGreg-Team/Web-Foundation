@@ -5,6 +5,7 @@ import type * as PageTree from 'fumadocs-core/page-tree';
 import { useLocationSearchParams } from '@terrafirmagreg-team/ui/hooks/page/use-location-search';
 import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { useLastValue } from '@terrafirmagreg-team/ui/hooks/use-last-value';
+import { skeletonTree } from '@terrafirmagreg-team/ui/lib/tree';
 import { useGuideTree } from '@terrafirmagreg-team/guide/hooks/use-tree';
 import { guideQueryFromParams } from '@terrafirmagreg-team/guide/lib/nav/query';
 import { parseSectionLocation } from '@terrafirmagreg-team/sites/location';
@@ -19,10 +20,8 @@ export function useGuideLeftSidebarTree(tree: PageTree.Root): PageTree.Root {
     () => (datasetId ? { id: datasetId, version } : undefined),
     [datasetId, version],
   );
-  const runtime = useLastValue(
-    useGuideTree(dataset, lang, bookId),
-    dataset?.id ?? '',
-  );
+  const result = useGuideTree(dataset, lang, bookId);
+  const runtime = useLastValue(result.value, dataset?.id ?? '');
+  if (!runtime && result.pending) return skeletonTree();
   return runtime ?? tree;
 }
-

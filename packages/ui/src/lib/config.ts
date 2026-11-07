@@ -56,8 +56,10 @@ export const DEFAULT_EXTERNAL_META_PROVIDERS: ExternalMetaProvider[] = [
   },
   {
     host: /.*/,
-    url: 'https://api.allorigins.win/raw?url={href}',
-    kind: 'html',
+    url: 'https://api.microlink.io?url={href}',
+    kind: 'json',
+    title: 'data.title',
+    description: 'data.description',
   },
 ];
 

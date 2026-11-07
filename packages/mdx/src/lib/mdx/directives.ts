@@ -3,15 +3,15 @@ import {
   extractDirectiveLabel,
   extractLeafLabel,
   jsxAttr,
-  jsxExpression,
   toJsxAttributes,
   walkDirectives,
+  DIRECTIVE_TYPES,
   type DirectiveNode,
   type MdastNode,
 } from './directive-utils.ts';
-import { gradientImage } from '@terrafirmagreg-team/ui/lib/mdx/gradient';
 import { createRequire } from 'node:module';
 import { join, relative } from 'node:path';
+import { visit } from 'unist-util-visit';
 
 const require = createRequire(join(process.cwd(), '_'));
 
@@ -22,6 +22,11 @@ function resolvePkgPath(spec: string) {
 
 export function remarkDirectives() {
   return (tree: MdastNode, file?: { value?: unknown }) => {
+    pairGradients(tree);
+    visit(tree as never, 'code', (node: MdastNode) => {
+      if (node.lang === 'math')
+        Object.assign(node, mathNode(String(node.value ?? ''), true));
+    });
     walkDirectives(tree, (node) => {
       const { type, name } = node;
       if (
@@ -38,35 +43,14 @@ export function remarkDirectives() {
         Object.assign(node, mathNode(tex, block));
         return false;
       }
-      if (type === 'textDirective' && name === 'gradient') {
+      if (type === 'leafDirective' && name === 'video') {
         Object.assign(node, {
-          type: 'mdxJsxTextElement',
-          name: 'span',
-          attributes: [
-            styleAttr(gradientStyle(node)),
-            { type: 'mdxJsxAttribute', name: 'data-md', value: 'gradient' },
-          ],
+          type: 'mdxJsxFlowElement',
+          name: 'Video',
+          attributes: toJsxAttributes(node),
+          children: [],
         });
-        return;
-      }
-      if (
-        name === 'glow' &&
-        (type === 'textDirective' ||
-          type === 'leafDirective' ||
-          type === 'containerDirective')
-      ) {
-        Object.assign(node, {
-          type:
-            type === 'textDirective'
-              ? 'mdxJsxTextElement'
-              : 'mdxJsxFlowElement',
-          name: 'span',
-          attributes: [
-            styleAttr(glowStyle(node)),
-            { type: 'mdxJsxAttribute', name: 'data-md', value: 'glow' },
-          ],
-        });
-        return type === 'containerDirective' ? undefined : false;
+        return false;
       }
       if (type === 'textDirective' && name === 'icon') {
         Object.assign(node, {
@@ -95,7 +79,6 @@ export function remarkDirectives() {
           children:
             type === 'containerDirective' ? contentChildren(node) : [],
         });
-        return false;
       }
       if (type === 'containerDirective' && name === 'cards') {
         Object.assign(node, {
@@ -114,22 +97,6 @@ export function remarkDirectives() {
           type: 'mdxJsxFlowElement',
           name: 'auto-type-table',
           attributes: toJsxAttributes(node),
-          children: [],
-        });
-        return false;
-      }
-      if (type === 'leafDirective' && name === 'recipe') {
-        Object.assign(node, {
-          type: 'mdxJsxFlowElement',
-          name: 'Recipe',
-          attributes: [
-            {
-              type: 'mdxJsxAttribute',
-              name: 'id',
-              value: extractLeafLabel(node).trim(),
-            },
-            ...toJsxAttributes(node),
-          ],
           children: [],
         });
         return false;
@@ -182,80 +149,54 @@ function containerBody(
     .trim();
 }
 
-function estreeObject(entries: [string, string][]): unknown {
-  return {
-    type: 'ObjectExpression',
-    properties: entries.map(([key, value]) => ({
-      type: 'Property',
-      key: { type: 'Literal', value: key },
-      value: { type: 'Literal', value, raw: JSON.stringify(value) },
-      kind: 'init',
-      computed: false,
-      shorthand: false,
-    })),
-  };
+function stripClose(node: MdastNode): boolean {
+  if (node.type !== 'paragraph') return false;
+  const children = (node.children ?? []) as { type?: string; value?: string }[];
+  const last = children.at(-1);
+  if (last?.type !== 'text' || typeof last.value !== 'string') return false;
+  if (!/\s*::$/.test(last.value)) return false;
+  last.value = last.value.replace(/\s*::$/, '');
+  if (!last.value) children.pop();
+  return true;
 }
 
-function styleAttr(entries: [string, string][]) {
-  return {
-    type: 'mdxJsxAttribute' as const,
-    name: 'style',
-    value: jsxExpression(estreeObject(entries)),
-  };
-}
-
-function attr(node: DirectiveNode, name: string) {
-  const value = node.attributes?.[name];
-  return typeof value === 'string' && value ? value : undefined;
-}
-
-function hasFlag(node: DirectiveNode, name: string) {
-  return node.attributes?.[name] !== undefined;
-}
-
-function gradientStyle(node: DirectiveNode): [string, string][] {
-  return [
-    ['backgroundImage', gradientImage(attrObject(node))],
-    ['WebkitBackgroundClip', 'text'],
-    ['backgroundClip', 'text'],
-    ['WebkitTextFillColor', 'transparent'],
-    ['color', 'transparent'],
-  ];
-}
-
-function glowStyle(node: DirectiveNode): [string, string][] {
-  const from = attr(node, 'from') ?? '#fa18cf';
-  const to = attr(node, 'to') ?? '#ff7967';
-  const gradient = gradientImage(attrObject(node));
-  const boxBg = `radial-gradient(color-mix(in srgb, ${from} 18%, transparent), color-mix(in srgb, ${to} 8%, transparent))`;
-  const style: [string, string][] = [
-    ['display', 'block'],
-    ['borderRadius', '20px'],
-    ['border', '1px solid transparent'],
-    ['padding', '0.625rem 1rem'],
-    ['marginBottom', '1.5rem'],
-    ['textAlign', 'center'],
-    ['backgroundImage', hasFlag(node, 'gradient') ? `${gradient}, ${boxBg}` : boxBg],
-    ['boxShadow', `0 10px 20px color-mix(in srgb, ${from} 25%, transparent)`],
-  ];
-  if (hasFlag(node, 'gradient')) {
-    style.push(
-      ['WebkitBackgroundClip', 'text, border-box'],
-      ['backgroundClip', 'text, border-box'],
-      ['WebkitTextFillColor', 'transparent'],
-      ['color', 'transparent'],
-    );
+function pairGradients(parent: MdastNode): void {
+  const children = parent.children;
+  if (!children) return;
+  for (let i = 0; i < children.length; i++) {
+    const child = children[i];
+    if (
+      child.type === 'leafDirective' &&
+      (child as DirectiveNode).name === 'gradient'
+    ) {
+      const body: MdastNode[] = [];
+      let closed = false;
+      for (let j = i + 1; j < children.length; j++) {
+        const sib = children[j];
+        if (DIRECTIVE_TYPES.includes(sib.type)) break;
+        body.push(sib);
+        if (stripClose(sib)) {
+          closed = true;
+          break;
+        }
+      }
+      if (closed) {
+        while (
+          body.length &&
+          body.at(-1)!.type === 'paragraph' &&
+          !(body.at(-1)!.children as unknown[])?.length
+        )
+          body.pop();
+        Object.assign(child, {
+          type: 'mdxJsxFlowElement',
+          name: 'Gradient',
+          attributes: toJsxAttributes(child as DirectiveNode),
+          children: body,
+        });
+        children.splice(i + 1, body.length);
+      }
+    }
+    pairGradients(child);
   }
-  if (hasFlag(node, 'fade')) style.push(['borderImage', `${gradient} 1`]);
-  return style;
-}
-
-function attrObject(node: DirectiveNode) {
-  return {
-    from: attr(node, 'from'),
-    to: attr(node, 'to'),
-    dir: attr(node, 'dir'),
-    image: attr(node, 'image'),
-  };
 }
 

@@ -6,7 +6,11 @@ import {
   useAsyncResult,
   useAsyncValue,
 } from '@terrafirmagreg-team/ui/hooks/use-async-value';
+import { useLastResult } from '@terrafirmagreg-team/ui/hooks/use-last-result';
 import { useVersionedDataset } from '@terrafirmagreg-team/kit/hooks/use-versioned-dataset';
+import { useDumpRetryNonce } from '@terrafirmagreg-team/kit/hooks/use-dump-status';
+import { DumpUnavailable } from '@terrafirmagreg-team/kit/components/views/unavailable';
+import { StaleBadge } from '@terrafirmagreg-team/kit/components/dump-status/stale-badge';
 import { useLangMap } from '@terrafirmagreg-team/game/hooks/use-lang-map';
 import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
@@ -63,9 +67,13 @@ export function GuideBrowser({
     [params],
   );
   const source = getGuideSource();
-  const books = useAsyncResult(
-    () => source.books(dataset, lang),
-    [dataset, lang],
+  const nonce = useDumpRetryNonce();
+  const books = useLastResult(
+    useAsyncResult(
+      () => source.books(dataset, lang),
+      [dataset, lang, nonce],
+    ),
+    dataset.id,
   );
   const langMap = useLangMap(dataset, lang);
   const messages = useMemo<GuideMessages>(
@@ -107,20 +115,23 @@ export function GuideBrowser({
     if (canonical) router.replace(canonical);
   }, [canonical, router]);
 
-  const payload = useAsyncResult(
-    langMap && bookId
-      ? () =>
-          source.payload(
-            dataset,
-            lang,
-            bookId,
-            entryId,
-            categoryId,
-            langMap,
-            messages,
-          )
-      : undefined,
-    [dataset, lang, bookId, entryId, categoryId, langMap, messages],
+  const payload = useLastResult(
+    useAsyncResult(
+      langMap && bookId
+        ? () =>
+            source.payload(
+              dataset,
+              lang,
+              bookId,
+              entryId,
+              categoryId,
+              langMap,
+              messages,
+            )
+        : undefined,
+      [dataset, lang, bookId, entryId, categoryId, langMap, messages, nonce],
+    ),
+    `${dataset.id}:${bookId ?? ''}`,
   );
 
   useEffect(() => {
@@ -131,11 +142,11 @@ export function GuideBrowser({
 
   const unavailable = (
     <WorkspaceBody>
-      <EmptyState variant="missing">
+      <DumpUnavailable>
         {t('Guide data is temporarily unavailable. Try again later.', {
           note: 'guide.unavailable',
         })}
-      </EmptyState>
+      </DumpUnavailable>
     </WorkspaceBody>
   );
 
@@ -156,6 +167,11 @@ export function GuideBrowser({
       </WorkspaceBody>
     );
   }
-  return <GuidePageView payload={payload.value} langMap={langMap} />;
+  return (
+    <div className="relative flex-1">
+      {books.stale || payload.stale ? <StaleBadge /> : null}
+      <GuidePageView payload={payload.value} langMap={langMap} />
+    </div>
+  );
 }
 

@@ -24,7 +24,6 @@ export function remarkBanner() {
         ],
         children: directive.children,
       });
-      return false;
     });
   };
 }

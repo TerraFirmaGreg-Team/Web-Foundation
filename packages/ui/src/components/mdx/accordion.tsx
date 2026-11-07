@@ -13,6 +13,7 @@ import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-transl
 export function AccordionRoot({ className, ...props }: ComponentProps<typeof Primitive.Root>) {
   return (
     <Primitive.Root
+      data-md="accordions"
       className={(s) =>
         cn(
           'divide-y divide-border overflow-hidden rounded-lg border bg-card',
@@ -98,6 +99,12 @@ export function Accordions({
   const rootRef = useRef<HTMLDivElement>(null);
   const composedRef = mergeRefs(ref, rootRef);
   const [value, setValue] = useState<unknown[]>(defaultValue ?? []);
+  const initial = JSON.stringify(defaultValue);
+
+  useEffect(() => {
+    setValue(defaultValue ?? []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initial]);
 
   useEffect(() => {
     const id = window.location.hash.substring(1);
@@ -144,7 +151,7 @@ export function Accordion({
         {id ? <CopyButton id={id} /> : null}
       </AccordionHeader>
       <AccordionContent hiddenUntilFound>
-        <div className="px-4 pb-2 text-[0.9375rem] prose-no-margin [&[hidden]:not([hidden='until-found'])]:hidden">
+        <div className="px-4 pb-2 text-[0.9375rem] prose-no-margin [&[hidden]:not([hidden='until-found'])]:hidden [&_[data-md=accordions]]:ms-1 [&_[data-md=accordions]]:border-s-2 [&_[data-md=accordions]]:bg-muted/40 [&_.fd-steps]:bg-muted/40 [&_.fd-steps]:rounded-md [&_.fd-steps]:pe-3">
           {children}
         </div>
       </AccordionContent>

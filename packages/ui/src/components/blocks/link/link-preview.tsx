@@ -2,7 +2,7 @@
 import { useContext, useState } from 'react';
 import type { ComponentProps } from 'react';
 import { useUiComponents } from '@terrafirmagreg-team/ui/provider';
-import { Globe } from 'lucide-react';
+import { Globe, SquareArrowOutUpRight } from 'lucide-react';
 import { cn } from '@terrafirmagreg-team/ui/lib/utils/cn';
 import { buttonVariants } from '@terrafirmagreg-team/ui/components/ui/button';
 import { Skeleton } from '@terrafirmagreg-team/ui/components/ui/skeleton';
@@ -86,6 +86,7 @@ function ExternalAnchor({
         }
       >
         {children}
+        <SquareArrowOutUpRight className="ms-0.5 inline-block size-3 align-baseline text-muted-foreground" />
       </HoverCardTrigger>
       <HoverCardContent className="w-fit max-w-[min(18rem,90vw)]">
         <div className="flex w-full min-w-0 items-center gap-2 font-medium">

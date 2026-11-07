@@ -14,7 +14,6 @@ export function remarkTabs() {
     walkContainers(tree, (directive) => {
       if (directive.name !== 'tabs') return;
       toTabs(directive);
-      return false;
     });
   };
 }

@@ -37,6 +37,7 @@ import { LangLocalesScope } from '@terrafirmagreg-team/translate/provider';
 import { localeItems } from '@terrafirmagreg-team/translate/create';
 import { siteLinks } from '@terrafirmagreg-team/sites';
 import { useCurrentDataset } from '@terrafirmagreg-team/kit/hooks/use-current-dataset';
+import { useFailedDatasets } from '@terrafirmagreg-team/kit/hooks/use-dump-status';
 import { useDatasetAccent } from '@terrafirmagreg-team/kit/hooks/use-dataset-accent';
 import { useNavOptions } from '@terrafirmagreg-team/kit/hooks/use-nav-options';
 import { pinTreeDataset } from '@terrafirmagreg-team/kit/lib/pin-tree';
@@ -57,6 +58,7 @@ export type LayoutProps = {
   useTree?: (tree: PageTree.Root) => PageTree.Root;
   sidebar?: Pick<LeftSidebarSlotProps, 'feature'>;
   navTitle?: ComponentType<ComponentProps<'a'>>;
+  defaultOpenLevel?: number;
   children?: ReactNode;
 };
 
@@ -78,15 +80,19 @@ export function Layout({
   useTree = identityTree,
   sidebar,
   navTitle,
+  defaultOpenLevel,
   children,
 }: LayoutProps) {
   const t = useTranslations();
   const { defaultLanguage } = useLocaleRegistry();
   const lang: Lang = useResolvedLang();
-  const current = useCurrentDataset(catalog[section]);
+  const sectionDatasets = catalog[section] ?? [];
+  const current = useCurrentDataset(sectionDatasets);
   const baseId = current ? current.id : undefined;
   const pinned = current ? current.version : undefined;
-  const meta = catalog[section].find((item) => item.id === baseId);
+  const meta = sectionDatasets.find((item) => item.id === baseId);
+  const failedDatasets = useFailedDatasets();
+  const featureHidden = baseId !== undefined && failedDatasets.includes(baseId);
   useDatasetAccent(meta?.accent);
   const nav = useNavOptions({ section, catalog });
   const pathname = usePathname();
@@ -139,6 +145,7 @@ export function Layout({
     <UiLayout
       tree={pinnedTree}
       navTitle={navTitle}
+      defaultOpenLevel={defaultOpenLevel}
       sidebar={
         <LeftSidebar
           navKeys={NAV_KEYS}
@@ -170,7 +177,7 @@ export function Layout({
               <LeftSidebarSearch />
               <Switcher {...nav.section} />
               <Switcher {...nav.dataset} />
-              {Feature ? (
+              {Feature && !featureHidden ? (
                 <>
                   <LeftSidebarSeparator />
                   <Feature />

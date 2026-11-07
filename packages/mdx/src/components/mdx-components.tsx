@@ -39,9 +39,9 @@ import { Callout, CalloutContainer } from '@terrafirmagreg-team/ui/components/md
 import { Input, Output, Preview } from '@terrafirmagreg-team/ui/components/mdx/preview';
 import { DocsImage } from './docs-image';
 import { Multiblock } from '@terrafirmagreg-team/ui/components/mdx/multiblock';
-import { GradientText } from '@terrafirmagreg-team/ui/components/mdx/gradient-text';
-import { GlowHeader } from '@terrafirmagreg-team/ui/components/mdx/glow-header';
 import { Icon } from '@terrafirmagreg-team/ui/components/mdx/icon';
+import { Video } from '@terrafirmagreg-team/ui/components/mdx/video';
+import { Gradient } from '@terrafirmagreg-team/ui/components/mdx/gradient';
 import { LinkPreview } from '@terrafirmagreg-team/ui/components/blocks/link/link-preview';
 import type { MDXComponents } from 'mdx/types';
 import type { ComponentProps, HTMLAttributes } from 'react';
@@ -87,9 +87,9 @@ export function getMDXComponents(components?: MDXComponents) {
     Output,
     DocsImage,
     Multiblock,
-    GradientText,
-    GlowHeader,
     Icon,
+    Video,
+    Gradient,
     a: LinkPreview,
     pre: (props: HTMLAttributes<HTMLPreElement>) => (
       <CodeBlock {...props}>

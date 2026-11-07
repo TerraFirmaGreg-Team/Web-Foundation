@@ -25,6 +25,29 @@ import {
   LeftSidebarItem,
   LeftSidebarLabel,
 } from './items';
+import { isSkeletonTree } from '@terrafirmagreg-team/ui/lib/tree';
+import { Skeleton } from '@terrafirmagreg-team/ui/components/ui/skeleton';
+
+const TREE_SKELETON_ROWS = [
+  'w-3/5',
+  'w-4/5 ms-4',
+  'w-2/3 ms-4',
+  'w-1/2 ms-4',
+  'w-3/4',
+  'w-1/2 ms-4',
+  'w-2/3 ms-4',
+  'w-3/5',
+];
+
+export function LeftSidebarTreeSkeleton() {
+  return (
+    <div aria-hidden className="flex flex-col gap-1 px-1 py-2">
+      {TREE_SKELETON_ROWS.map((width, i) => (
+        <Skeleton key={i} className={`h-7 ${width}`} />
+      ))}
+    </div>
+  );
+}
 
 type TreeRenderer = (props: {
   item: PageTree.Node;
@@ -61,6 +84,7 @@ export function LeftSidebarTree({
   const search = useLocationSearch();
   const { languages } = useLocaleRegistry();
   const resolved = tree ?? root;
+  if (isSkeletonTree(resolved)) return <LeftSidebarTreeSkeleton />;
   return (
     <RendererContext
       value={useMemo(

@@ -18,12 +18,15 @@ const SKIP = new Set([
   'html',
 ]);
 
-const CHANGELOG_PATH = /[/\\]changelog[/\\]([^/\\]+)[/\\]/;
+const DEFAULT_PATH = /[/\\]changelog[/\\]([^/\\]+)[/\\]/;
 
-export function remarkChangelogReferences(options: { datasetConfig?: Record<string, { repo?: string }> } = {}) {
-  const datasetConfig = options.datasetConfig ?? {};
+export function remarkGithubAutolinks(options: {
+  datasetConfig?: Record<string, { repo?: string }>;
+  path?: RegExp;
+} = {}) {
+  const { datasetConfig = {}, path = DEFAULT_PATH } = options;
   return (tree: MdastNode, file: { path?: string }) => {
-    const pack = CHANGELOG_PATH.exec(file.path ?? '')?.[1];
+    const pack = path.exec(file.path ?? '')?.[1];
     const repo = pack ? datasetConfig[pack]?.repo : undefined;
     if (!repo) return;
     const repoUrl = `https://github.com/${repo}`;
@@ -54,4 +57,3 @@ export function remarkChangelogReferences(options: { datasetConfig?: Record<stri
     visit(tree);
   };
 }
-

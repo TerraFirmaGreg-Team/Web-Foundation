@@ -144,7 +144,7 @@ function Content() {
       )}
       <div className="bg-fd-background p-4 not-last:border-b">
         <PreviewBoundary resetKey={args}>
-          {createElement(Component, args)}
+          {createElement(Component, { ...args, key: variant })}
         </PreviewBoundary>
       </div>
       {preset && (

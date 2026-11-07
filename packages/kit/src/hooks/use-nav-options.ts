@@ -17,6 +17,8 @@ import type {
   SwitcherProps,
 } from '@terrafirmagreg-team/ui/types/nav';
 
+const EMPTY_DATASETS: never[] = [];
+
 function datasetIcon(dataset: { icon?: IconName }): ReactNode {
   if (!dataset.icon) return undefined;
   return createElement(DynamicIcon, {
@@ -31,7 +33,8 @@ export function useNavOptions({ section, catalog }: LeftSidebarScope): {
 } {
   const t = useTranslations();
   const sectionNames = useSectionNames();
-  const current = useCurrentDataset(catalog[section]);
+  const sectionDatasets = catalog[section] ?? EMPTY_DATASETS;
+  const current = useCurrentDataset(sectionDatasets);
   const baseId = current ? current.id : undefined;
   const pinned = current ? current.version : undefined;
   const preferred = useVersionPreference(baseId);
@@ -41,7 +44,7 @@ export function useNavOptions({ section, catalog }: LeftSidebarScope): {
     () =>
       sectionTabs.map(({ key, icon: Icon }) => {
         const meta = baseId
-          ? catalog[key].find(({ id }) => id === baseId)
+          ? catalog[key]?.find(({ id }) => id === baseId)
           : undefined;
         const pinned =
           isDumpSection(key) && baseId
@@ -61,14 +64,14 @@ export function useNavOptions({ section, catalog }: LeftSidebarScope): {
 
   const datasetOptions: SwitcherOption[] = useMemo(
     () =>
-      catalog[section].map((datasetItem) => ({
+      sectionDatasets.map((datasetItem) => ({
         value: datasetItem.id,
         title: datasetItem.title ?? datasetItem.id,
         description: datasetItem.description,
         icon: datasetIcon(datasetItem),
         url: sectionUrl(section, datasetItem.id),
       })),
-    [section, catalog],
+    [section, sectionDatasets],
   );
 
   return {

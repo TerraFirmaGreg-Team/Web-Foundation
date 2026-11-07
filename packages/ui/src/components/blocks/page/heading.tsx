@@ -37,7 +37,7 @@ export function Heading({
         props.className,
       )}
     >
-      {props.children}
+      <span className="min-w-0">{props.children}</span>
       <button
         aria-live="polite"
         className={cn(

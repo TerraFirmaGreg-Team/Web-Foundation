@@ -5,15 +5,29 @@
   "description": "Git page history",
   "license": "LGPL-3.0-only",
   "exports": {
+    "./components/*": [
+      "./src/components/*.tsx",
+      "./src/components/*/index.tsx",
+      "./src/components/*/index.ts"
+    ],
     "./lib": "./src/lib/index.ts",
     "./lib/*": [
       "./src/lib/*.ts",
       "./src/lib/*/index.ts"
+    ],
+    "./types/*": [
+      "./src/types/*.ts",
+      "./src/types/*/index.ts"
     ]
   },
   "dependencies": {
+    "@types/mdast": "^4.0.4",
+    "estree-util-value-to-estree": "^3.5.0",
     "fumadocs-page-history": "0.4.2",
-    "server-only": "catalog:"
+    "github-slugger": "^2.0.0",
+    "mdast-util-to-string": "^4.0.0",
+    "server-only": "catalog:",
+    "unified": "^11.0.5"
   },
   "peerDependencies": {
     "next": "catalog:",

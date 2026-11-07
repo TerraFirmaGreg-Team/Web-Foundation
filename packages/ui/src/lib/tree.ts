@@ -1,5 +1,15 @@
 import type * as PageTree from '@terrafirmagreg-team/translate/types/tree';
 
+export function skeletonTree(id = 'sidebar:skeleton'): PageTree.Root {
+  return { name: '', children: [], $id: id, $skeleton: true } as PageTree.Root;
+}
+
+export function isSkeletonTree(
+  tree: PageTree.Root | PageTree.Folder | undefined,
+): boolean {
+  return (tree as { $skeleton?: boolean } | undefined)?.$skeleton === true;
+}
+
 export function normalizeUrl(url: string): string {
   if (url.startsWith('http://') || url.startsWith('https://')) return url;
   if (!url.startsWith('/')) url = `/${url}`;

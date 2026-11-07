@@ -440,9 +440,21 @@ importers:
 
   packages/history:
     dependencies:
+      '@types/mdast':
+        specifier: ^4.0.4
+        version: 4.0.4
+      estree-util-value-to-estree:
+        specifier: ^3.5.0
+        version: 3.5.0
       fumadocs-page-history:
         specifier: 0.4.2
         version: 0.4.2(835eb8649082c17173177f61ce8006f1)
+      github-slugger:
+        specifier: ^2.0.0
+        version: 2.0.0
+      mdast-util-to-string:
+        specifier: ^4.0.0
+        version: 4.0.0
       next:
         specifier: 'catalog:'
         version: 16.4.4(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@26.6.6)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -452,6 +464,9 @@ importers:
       server-only:
         specifier: 'catalog:'
         version: 0.0.1
+      unified:
+        specifier: ^11.0.5
+        version: 11.0.5
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -547,9 +562,15 @@ importers:
       fumadocs-typescript:
         specifier: 5.6.0
         version: 5.6.0(b266e6a39a74ecb9203d849e2a4caf5e)
+      gemoji:
+        specifier: ^8.1.0
+        version: 8.1.0
       lucide-react:
         specifier: 'catalog:'
         version: 1.67.0(@types/react@19.3.0)(react@19.3.1)
+      mdast-util-to-string:
+        specifier: ^4.0.0
+        version: 4.0.0
       next:
         specifier: 'catalog:'
         version: 16.4.4(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@26.6.6)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -3766,6 +3787,9 @@ packages:
 
   functions-have-names@1.2.3:
     resolution: {integrity: sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==}
+
+  gemoji@8.1.0:
+    resolution: {integrity: sha512-HA4Gx59dw2+tn+UAa7XEV4ufUKI4fH1KgcbenVA9YKSj1QJTT0xh5Mwv5HMFNN3l2OtUe3ZIfuRwSyZS5pLIWw==}
 
   generator-function@2.0.1:
     resolution: {integrity: sha512-SFdFmIJi+ybC0vjlHN0ZGVGHc3lgE0DxPAT0djjVg+kjOnSqclqmj0KQ7ykTOLP6YxoqOvuAODGdcHJn+43q3g==}
@@ -7972,6 +7996,8 @@ snapshots:
       is-document.all: 1.0.0
 
   functions-have-names@1.2.3: {}
+
+  gemoji@8.1.0: {}
 
   generator-function@2.0.1: {}
 

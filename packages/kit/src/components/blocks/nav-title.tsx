@@ -13,10 +13,12 @@ import {
 } from '@terrafirmagreg-team/sites/location';
 import { setVersionPreference } from '@terrafirmagreg-team/kit/hooks/use-version-pref';
 import { useVersionedDataset } from '@terrafirmagreg-team/kit/hooks/use-versioned-dataset';
+import { useSectionNames } from '@terrafirmagreg-team/kit/hooks/use-section-names';
 import { VersionMenu } from '@terrafirmagreg-team/kit/components/version-menu';
 
 export function NavTitle({ className, ...props }: ComponentProps<'a'>) {
   const { section, dataset } = parseSectionLocation(usePathname());
+  const sectionNames = useSectionNames();
   const datasetId = dataset;
 
   const gameData = isDumpSection(section) && datasetId;
@@ -52,6 +54,8 @@ export function NavTitle({ className, ...props }: ComponentProps<'a'>) {
             versions={versions}
             onSelect={(next) => setVersionPreference(datasetId, next)}
           />
+        ) : section ? (
+          sectionNames[section]?.title
         ) : undefined
       }
       className={className}
