@@ -84,14 +84,13 @@ export function LeftSidebarTree({
   const search = useLocationSearch();
   const { languages } = useLocaleRegistry();
   const resolved = tree ?? root;
+  const ctxValue = useMemo(
+    () => ({ Separator, Item, Folder, pathname, search, match, navKeys }),
+    [Separator, Item, Folder, pathname, search, match, navKeys],
+  );
   if (isSkeletonTree(resolved)) return <LeftSidebarTreeSkeleton />;
   return (
-    <RendererContext
-      value={useMemo(
-        () => ({ Separator, Item, Folder, pathname, search, match, navKeys }),
-        [Separator, Item, Folder, pathname, search, match, navKeys],
-      )}
-    >
+    <RendererContext value={ctxValue}>
       <Fragment key={langScopeKey(resolved.$id, languages)}>
         {resolved.children.map((node, i) => (
           <LeftSidebarTreeItem key={i} node={node} />

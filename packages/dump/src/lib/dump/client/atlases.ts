@@ -48,25 +48,17 @@ const loadClientModAtlas = createDatasetCache(
         'block',
       );
     }
+    const [items, fluids] = await Promise.all([
+      has('items') ? modEntries(dataset, modId, 'items') : undefined,
+      has('fluids') ? modEntries(dataset, modId, 'fluids') : undefined,
+    ]);
     return mergeAtlases(
       [
-        has('items')
-          ? iconAtlasFromEntries(
-              await modEntries(dataset, modId, 'items'),
-              dataset,
-              modId,
-              'items',
-              'item',
-            )
+        items
+          ? iconAtlasFromEntries(items, dataset, modId, 'items', 'item')
           : null,
-        has('fluids')
-          ? iconAtlasFromEntries(
-              await modEntries(dataset, modId, 'fluids'),
-              dataset,
-              modId,
-              'fluids',
-              'item',
-            )
+        fluids
+          ? iconAtlasFromEntries(fluids, dataset, modId, 'fluids', 'item')
           : null,
       ],
       dataset,
@@ -77,9 +69,12 @@ const loadClientModAtlas = createDatasetCache(
 );
 
 export const loadClientModAtlases = createDatasetCache(
-  async (dataset: DatasetRef, modId: string): Promise<AtlasBundle> => ({
-    items: await loadClientModAtlas(dataset, modId, 'items'),
-    blocks: await loadClientModAtlas(dataset, modId, 'blocks'),
-  }),
+  async (dataset: DatasetRef, modId: string): Promise<AtlasBundle> => {
+    const [items, blocks] = await Promise.all([
+      loadClientModAtlas(dataset, modId, 'items'),
+      loadClientModAtlas(dataset, modId, 'blocks'),
+    ]);
+    return { items, blocks };
+  },
 );
 

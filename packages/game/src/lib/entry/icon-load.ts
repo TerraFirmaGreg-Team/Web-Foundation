@@ -88,18 +88,20 @@ const fetchTagMembersList = createDatasetCache(
       return members;
     }
     const spriteKind = TAG_ICON_SPRITE_KIND[memberKind];
-    const out: string[] = [];
-    for (const member of members) {
-      const itemId =
-        memberKind === 'block'
-          ? await fetchBlockItem(dataset, member)
-          : member;
-      const ns = itemId.split(':', 1)[0];
-      const bundle = ns ? await fetchAtlases(dataset, ns) : null;
-      if (lookupSpriteInBundle(bundle, { id: itemId, kind: spriteKind })) {
-        out.push(member);
-      }
-    }
+    const found = await Promise.all(
+      members.map(async (member) => {
+        const itemId =
+          memberKind === 'block'
+            ? await fetchBlockItem(dataset, member)
+            : member;
+        const ns = itemId.split(':', 1)[0];
+        const bundle = ns ? await fetchAtlases(dataset, ns) : null;
+        return lookupSpriteInBundle(bundle, { id: itemId, kind: spriteKind })
+          ? member
+          : null;
+      }),
+    );
+    const out = found.filter((member): member is string => member !== null);
     return out.length ? out : [members[0]];
   },
 );

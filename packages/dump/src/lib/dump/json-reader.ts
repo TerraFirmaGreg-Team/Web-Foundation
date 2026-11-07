@@ -10,7 +10,11 @@ import {
   createAsyncCache,
   type AsyncCache,
 } from '@terrafirmagreg-team/data/lib/async-cache';
-import { markDumpResult } from '@terrafirmagreg-team/data/lib/dump-status';
+import {
+  dumpRetryDelay,
+  dumpStatusSnapshot,
+  markDumpResult,
+} from '@terrafirmagreg-team/data/lib/dump-status';
 
 const SAFE_LANG_CODE = /^[a-z0-9]+(_[a-z0-9]+)*$/i;
 
@@ -65,26 +69,40 @@ async function request(url: string): Promise<Response | undefined> {
 
 export const DUMP_POINTER_TTL = 60_000;
 
+const REQUIRED_FILE = /\/(?:versions|manifest|objects)\.json(?:\.gz)?$/;
+
 function markDumpFetch(
   datasetId: string | undefined,
+  url: string,
   res: Response | undefined,
   ok: boolean,
 ) {
   if (!datasetId) return;
-  if (res?.status === 404) return;
+  if (res?.status === 404 && !REQUIRED_FILE.test(url)) return;
   markDumpResult(datasetId, ok);
+}
+
+function circuitOpen(datasetId: string | undefined): boolean {
+  if (!datasetId) return false;
+  const state = dumpStatusSnapshot().statuses[datasetId];
+  return (
+    state?.status === 'failed' &&
+    state.fails >= 2 &&
+    Date.now() - state.lastFail < dumpRetryDelay(state.fails)
+  );
 }
 
 const fetchJsonLoader = async (
   url: string,
   high: boolean,
   datasetId?: string,
-) =>
-  fetchLane(async () => {
+) => {
+  if (circuitOpen(datasetId)) return undefined;
+  return fetchLane(async () => {
     try {
       const res = await request(url);
       const ok = res?.ok === true;
-      markDumpFetch(datasetId, res, ok);
+      markDumpFetch(datasetId, url, res, ok);
       if (!ok) return undefined;
       return (await res.json()) as unknown;
     } catch {
@@ -92,17 +110,19 @@ const fetchJsonLoader = async (
       return undefined;
     }
   }, high);
+};
 
 const fetchJsonGzLoader = async (
   url: string,
   high: boolean,
   datasetId?: string,
-) =>
-  fetchLane(async () => {
+) => {
+  if (circuitOpen(datasetId)) return undefined;
+  return fetchLane(async () => {
     try {
       const res = await request(url);
       const ok = res?.ok === true && Boolean(res.body);
-      markDumpFetch(datasetId, res, ok);
+      markDumpFetch(datasetId, url, res, ok);
       if (!ok) return undefined;
       const text = await new Response(
         res!.body!.pipeThrough(new DecompressionStream('gzip')),
@@ -113,6 +133,7 @@ const fetchJsonGzLoader = async (
       return undefined;
     }
   }, high);
+};
 
 const fetchJson = createAsyncCache(
   fetchJsonLoader,
@@ -154,13 +175,14 @@ export class JsonDumpReader implements DumpReader {
   private langRawCache = createAsyncCache((code: string) =>
     this.loadLangRaw(code),
   );
+  private readonly dataset: DatasetRef;
   private readonly packId: string;
   private readonly version?: string;
 
-  constructor(private dataset: DatasetRef) {
-    const ref = dataset;
-    this.packId = ref.id;
-    this.version = ref.version;
+  constructor(dataset: DatasetRef) {
+    this.dataset = dataset;
+    this.packId = dataset.id;
+    this.version = dataset.version;
   }
 
   getJson(path: string, priority?: 'high'): Promise<unknown | undefined> {
@@ -225,13 +247,12 @@ export class JsonDumpReader implements DumpReader {
     if (versions?.latest) {
       const root = `${this.packId}/${versions.latest}`;
 
-      const exists = await fetchJson(
-        dumpStorageUrl(`${root}/manifest.json`),
-        false,
-        this.packId,
-      );
+      const [exists, files] = await Promise.all([
+        fetchJson(dumpStorageUrl(`${root}/manifest.json`), false, this.packId),
+        this.objectsIndex(root),
+      ]);
       if (exists) {
-        const loc: DumpLocation = { root, files: await this.objectsIndex(root) };
+        const loc: DumpLocation = { root, files };
         registerDumpLocation(this.dataset, loc);
         registerDumpLocation({ id: this.packId, version: versions.latest }, loc);
         return loc;

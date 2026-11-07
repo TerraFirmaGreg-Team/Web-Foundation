@@ -32,24 +32,24 @@ export async function discoverDumpDatasets(
       );
       const latest = asString(versions?.latest);
       if (!versions || !latest) return [];
-      const manifest = await dumpReader({ id }).then((reader) =>
-        reader.getJson('manifest.json'),
-      );
-      if (!manifest) return [];
       const listed = Array.isArray(versions.versions)
         ? versions.versions.filter(
             (row): row is string => typeof row === 'string',
           )
         : [];
-      const published = await Promise.all(
-        listed.map(async (version): Promise<DatasetRef | null> => {
-          const ref = { id, version };
-          const ok = await dumpReader(ref).then((reader) =>
-            reader.getJson('manifest.json'),
-          );
-          return ok ? ref : null;
-        }),
-      );
+      const [manifest, published] = await Promise.all([
+        dumpReader({ id }).then((reader) => reader.getJson('manifest.json')),
+        Promise.all(
+          listed.map(async (version): Promise<DatasetRef | null> => {
+            const ref = { id, version };
+            const ok = await dumpReader(ref).then((reader) =>
+              reader.getJson('manifest.json'),
+            );
+            return ok ? ref : null;
+          }),
+        ),
+      ]);
+      if (!manifest) return [];
       return [{ id }, ...published.filter((row): row is DatasetRef => row !== null)];
     }),
   );
