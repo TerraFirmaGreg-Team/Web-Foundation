@@ -3,6 +3,7 @@ type MdastNode = {
   value?: string;
   url?: string;
   children?: MdastNode[];
+  data?: { hProperties?: Record<string, unknown> };
 };
 
 const ISSUE_REF = /^#\d+$/;
@@ -18,15 +19,21 @@ const SKIP = new Set([
   'html',
 ]);
 
-const DEFAULT_PATH = /[/\\]changelog[/\\]([^/\\]+)[/\\]/;
+const DEFAULT_PATHS = [
+  /[/\\]changelog[/\\]([^/\\]+)[/\\]/,
+  /[/\\]docs[/\\]([^/\\]+)[/\\][^/\\]+[/\\]major-changelogs[/\\]/,
+];
 
 export function remarkGithubAutolinks(options: {
   datasetConfig?: Record<string, { repo?: string }>;
-  path?: RegExp;
+  paths?: RegExp[];
 } = {}) {
-  const { datasetConfig = {}, path = DEFAULT_PATH } = options;
+  const { datasetConfig = {}, paths = DEFAULT_PATHS } = options;
   return (tree: MdastNode, file: { path?: string }) => {
-    const pack = path.exec(file.path ?? '')?.[1];
+    const filePath = file.path ?? '';
+    const pack = paths
+      .map((pattern) => pattern.exec(filePath)?.[1])
+      .find(Boolean);
     const repo = pack ? datasetConfig[pack]?.repo : undefined;
     if (!repo) return;
     const repoUrl = `https://github.com/${repo}`;
@@ -43,12 +50,14 @@ export function remarkGithubAutolinks(options: {
                 type: 'link',
                 url: `${repoUrl}/issues/${part.slice(1)}`,
                 children: [{ type: 'text', value: part }],
+                data: { hProperties: { className: 'gh-issue' } },
               }
             : USER_REF.test(part)
               ? {
                   type: 'link',
                   url: `https://github.com/${part.slice(1)}`,
                   children: [{ type: 'text', value: part }],
+                  data: { hProperties: { className: 'gh-mention' } },
                 }
               : { type: 'text', value: part },
         );

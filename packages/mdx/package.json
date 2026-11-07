@@ -16,7 +16,8 @@
       "./src/components/*/index.ts"
     ],
     "./types/*": "./src/types/*.ts",
-    "./types": "./src/types/index.ts"
+    "./types": "./src/types/index.ts",
+    "./lib/markdown": "./src/lib/markdown/index.ts"
   },
   "dependencies": {
     "@fumadocs/story": "^1.5.3",

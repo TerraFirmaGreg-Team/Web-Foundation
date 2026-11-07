@@ -17,6 +17,8 @@ import type {
 } from '@terrafirmagreg-team/kit/types/features';
 import type { SectionPage } from '@terrafirmagreg-team/kit/types';
 import { sectionConfig } from '@terrafirmagreg-team/kit/lib/config';
+import { pageFeatureNodes } from '@terrafirmagreg-team/kit/components/page-features';
+import { docsPageFeatures } from '@terrafirmagreg-team/docs/components/page-features';
 import { GithubInfo } from '@terrafirmagreg-team/ui/components/blocks/git/github-info';
 import { UntranslatedCallout } from '@terrafirmagreg-team/ui/components/blocks/lang/untranslated-callout';
 import { getMDXComponents } from '@terrafirmagreg-team/mdx/components/mdx-components';
@@ -90,6 +92,11 @@ export function DocsBrowser({
   const dataset = ctx.datasetId
     ? sectionConfig().datasetConfig[ctx.datasetId]
     : undefined;
+  const slots = pageFeatureNodes(
+    ctx,
+    { ...docsPageFeatures, ...features },
+    body,
+  );
   return (
     <>
       <UntranslatedCallout copied={copied} />
@@ -105,7 +112,7 @@ export function DocsBrowser({
           mdUrl={mdUrl}
           githubUrl={features.fileUrl?.(ctx.filePath)}
         />
-        {features.actionsRight?.(ctx)}
+        {slots.actionsRight}
       </div>
       {repoSlug ? (
         <GithubInfo
@@ -114,17 +121,9 @@ export function DocsBrowser({
           className="not-prose mb-6 w-full"
         />
       ) : null}
-      <WorkspaceBody>
-        {features.wrapBody ? (
-          features.wrapBody(body, ctx)
-        ) : (
-          <div data-md-root className="contents">
-            {body}
-          </div>
-        )}
-      </WorkspaceBody>
-      {features.footer?.(ctx)}
-      {page.data.comments !== false ? features.comments?.(ctx) : null}
+      <WorkspaceBody>{slots.body}</WorkspaceBody>
+      {slots.footer}
+      {page.data.comments !== false ? slots.comments : null}
     </>
   );
 }

@@ -21,6 +21,7 @@ import {
 } from '@terrafirmagreg-team/ui/components/blocks/nav/site-menu';
 import { buttonVariants } from '@terrafirmagreg-team/ui/components/ui/button';
 import { cn } from '@terrafirmagreg-team/ui/lib/utils/cn';
+import { skeletonTree } from '@terrafirmagreg-team/ui/lib/tree';
 import { Globe } from 'lucide-react';
 import {
   SiCurseforge,
@@ -92,7 +93,7 @@ export function Layout({
   const pinned = current ? current.version : undefined;
   const meta = sectionDatasets.find((item) => item.id === baseId);
   const failedDatasets = useFailedDatasets();
-  const featureHidden = baseId !== undefined && failedDatasets.includes(baseId);
+  const datasetFailed = baseId !== undefined && failedDatasets.includes(baseId);
   useDatasetAccent(meta?.accent);
   const nav = useNavOptions({ section, catalog });
   const pathname = usePathname();
@@ -110,12 +111,14 @@ export function Layout({
     $id: `${section}:empty`,
   };
   const tree = useTree(serverTree);
+  const effectiveTree =
+    datasetFailed && !tree.children.length ? skeletonTree() : tree;
   const pinnedTree = useMemo(
     () =>
       pinned && baseId
-        ? pinTreeDataset(tree, section, baseId, pinned)
-        : tree,
-    [tree, section, baseId, pinned],
+        ? pinTreeDataset(effectiveTree, section, baseId, pinned)
+        : effectiveTree,
+    [effectiveTree, section, baseId, pinned],
   );
   const locales = meta?.languages ? localeItems(meta.languages) : undefined;
   const links = baseId
@@ -177,7 +180,7 @@ export function Layout({
               <LeftSidebarSearch />
               <Switcher {...nav.section} />
               <Switcher {...nav.dataset} />
-              {Feature && !featureHidden ? (
+              {Feature ? (
                 <>
                   <LeftSidebarSeparator />
                   <Feature />

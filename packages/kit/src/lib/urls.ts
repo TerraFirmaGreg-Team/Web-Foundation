@@ -15,3 +15,12 @@ export function getDatasetImageUrl(section: string, dataset: string) {
   };
 }
 
+export function createGitFileUrl(git: {
+  user: string;
+  repo: string;
+  branch: string;
+}) {
+  return (filePath: string) =>
+    `https://github.com/${git.user}/${git.repo}/blob/${git.branch}/${filePath}`;
+}
+

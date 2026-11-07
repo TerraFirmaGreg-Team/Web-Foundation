@@ -16,11 +16,11 @@ export function PageHistory({ data }: { data: PageHistoryData }) {
 }
 
 export function PageHistoryFooter({
-  exports,
+  ctx,
 }: {
-  exports?: Record<string, unknown>;
+  ctx: { exports?: Record<string, unknown> };
 }) {
-  const data = exports?.[PAGE_HISTORY_EXPORT] as
+  const data = ctx.exports?.[PAGE_HISTORY_EXPORT] as
     | PageHistoryData
     | undefined;
   return data ? <PageHistory data={data} /> : null;

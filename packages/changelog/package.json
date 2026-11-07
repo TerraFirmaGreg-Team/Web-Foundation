@@ -18,6 +18,9 @@
     "./types": "./src/types/index.ts"
   },
   "dependencies": {
+    "@terrafirmagreg-team/analytics": "workspace:^",
+    "@terrafirmagreg-team/discussions": "workspace:^",
+    "@terrafirmagreg-team/history": "workspace:^",
     "@terrafirmagreg-team/kit": "workspace:^",
     "@terrafirmagreg-team/mdx": "workspace:^",
     "@terrafirmagreg-team/translate": "workspace:^",

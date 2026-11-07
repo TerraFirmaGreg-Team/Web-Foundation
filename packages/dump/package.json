@@ -18,7 +18,8 @@
     "@terrafirmagreg-team/sites": "workspace:^",
     "@terrafirmagreg-team/translate": "workspace:^",
     "aws4fetch": "^1.0.20",
-    "fumadocs-core": "catalog:"
+    "fumadocs-core": "catalog:",
+    "server-only": "catalog:"
   },
   "repository": {
     "type": "git",

@@ -34,7 +34,8 @@
     "@terrafirmagreg-team/translate": "workspace:^",
     "@terrafirmagreg-team/ui": "workspace:^",
     "fumadocs-core": "catalog:",
-    "lucide-react": "catalog:"
+    "lucide-react": "catalog:",
+    "server-only": "catalog:"
   },
   "peerDependencies": {
     "next": "catalog:",

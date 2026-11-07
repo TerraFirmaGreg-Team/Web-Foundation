@@ -20,6 +20,8 @@ import type {
   SectionPageContext,
 } from '@terrafirmagreg-team/kit/types/features';
 import { sectionConfig } from '@terrafirmagreg-team/kit/lib/config';
+import { pageFeatureNodes } from '@terrafirmagreg-team/kit/components/page-features';
+import { changelogPageFeatures } from '@terrafirmagreg-team/changelog/components/page-features';
 import { UntranslatedCallout } from '@terrafirmagreg-team/ui/components/blocks/lang/untranslated-callout';
 import { getMDXComponents } from '@terrafirmagreg-team/mdx/components/mdx-components';
 import { loadLocaleRegistry } from '@terrafirmagreg-team/translate/server';
@@ -59,6 +61,11 @@ export function ChangelogPageChrome({
   features: ChangelogPageFeatures;
 }) {
   const { languages } = loadLocaleRegistry();
+  const slots = pageFeatureNodes(
+    ctx,
+    { ...changelogPageFeatures, ...features },
+    body,
+  );
   return (
     <>
       <UntranslatedCallout copied={copied} />
@@ -76,19 +83,11 @@ export function ChangelogPageChrome({
           }`}
           githubUrl={features.fileUrl?.(ctx.filePath)}
         />
-        {features.actionsRight?.(ctx)}
+        {slots.actionsRight}
       </div>
-      <WorkspaceBody>
-        {features.wrapBody ? (
-          features.wrapBody(body, ctx)
-        ) : (
-          <div data-md-root className="contents">
-            {body}
-          </div>
-        )}
-      </WorkspaceBody>
-      {features.footer?.(ctx)}
-      {page.data.comments !== false ? features.comments?.(ctx) : null}
+      <WorkspaceBody>{slots.body}</WorkspaceBody>
+      {slots.footer}
+      {page.data.comments !== false ? slots.comments : null}
     </>
   );
 }

@@ -111,6 +111,7 @@
   "Quick totals(recipe.alloy.presets)": "Quick totals",
   "Recipe cycle: the recipe needs itself upstream(recipe.calc.hint.cycle)": "Recipe cycle: the recipe needs itself upstream",
   "Recipe cycle(recipe.calc.help.cycle)": "Recipe cycle",
+  "Recipe data is temporarily unavailable. Try again later.(recipe.unavailable)": "Recipe data is temporarily unavailable. Try again later.",
   "Recipe not found in this dump. Select another alloy.(recipe.alloy.missing)": "Recipe not found in this dump. Select another alloy.",
   "Recipe not found in this dump. Select another recipe.(recipe.forge.missing)": "Recipe not found in this dump. Select another recipe.",
   "Recipe preview(recipe.calc.help.hover)": "Recipe preview",

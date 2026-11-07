@@ -43,6 +43,7 @@ export type SectionConfigInput = {
         url: string;
         icon?: string;
       }[];
+      sections?: readonly SectionKey[];
       guide?: { bookOrder?: readonly string[] };
     }
   >;

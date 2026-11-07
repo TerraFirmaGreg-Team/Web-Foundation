@@ -65,6 +65,8 @@
   "Original width(ui.readability.layout.original)": "Original width",
   "Output(ui.output)": "Output",
   "Page not found(ui.not_found)": "Page not found",
+  "The page you're looking for doesn't exist or was moved.(ui.not_found_description)": "The page you're looking for doesn't exist or was moved.",
+  "Go home(ui.go_home)": "Go home",
   "Page width slider(ui.readability.page_width.slider)": "Page width slider",
   "Page width(ui.readability.page_width)": "Page width",
   "Parameters(ui.parameters)": "Parameters",

@@ -38,6 +38,7 @@ import { Mermaid } from '@terrafirmagreg-team/ui/components/mdx/mermaid';
 import { Callout, CalloutContainer } from '@terrafirmagreg-team/ui/components/mdx/callout';
 import { Input, Output, Preview } from '@terrafirmagreg-team/ui/components/mdx/preview';
 import { DocsImage } from './docs-image';
+import { MdxStory } from './mdx-story';
 import { Multiblock } from '@terrafirmagreg-team/ui/components/mdx/multiblock';
 import { Icon } from '@terrafirmagreg-team/ui/components/mdx/icon';
 import { Video } from '@terrafirmagreg-team/ui/components/mdx/video';
@@ -86,6 +87,7 @@ export function getMDXComponents(components?: MDXComponents) {
     Input,
     Output,
     DocsImage,
+    Story: MdxStory,
     Multiblock,
     Icon,
     Video,

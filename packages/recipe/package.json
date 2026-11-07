@@ -32,12 +32,13 @@
     "@terrafirmagreg-team/sites": "workspace:^",
     "@terrafirmagreg-team/translate": "workspace:^",
     "@terrafirmagreg-team/ui": "workspace:^",
+    "@types/pathfinding": "^0.1.0",
     "comlink": "^4.4.2",
     "fflate": "0.8.3",
     "fumadocs-core": "catalog:",
     "lucide-react": "catalog:",
     "pathfinding": "0.4.18",
-    "@types/pathfinding": "^0.1.0"
+    "server-only": "catalog:"
   },
   "peerDependencies": {
     "next": "catalog:",

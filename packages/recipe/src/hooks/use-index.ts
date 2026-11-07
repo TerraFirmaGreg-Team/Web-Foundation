@@ -4,6 +4,7 @@ import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { startTransition, useMemo, useState } from 'react';
 import { useLang } from '@terrafirmagreg-team/translate/provider';
 import { useAsyncEffect } from '@terrafirmagreg-team/ui/hooks/use-async-value';
+import { useDumpRetryNonce } from '@terrafirmagreg-team/kit/hooks/use-dump-status';
 import {
   loadRecipeChromeClient,
   loadRecipeCompactIndex,
@@ -28,6 +29,7 @@ export function useRecipeIndex(dataset: DatasetRef | undefined, lang: string) {
   const [loaded, setLoaded] = useState<LoadedIndex | null>(null);
   const [complete, setComplete] = useState<string | null>(null);
   const [lastFull, setLastFull] = useState<RecipeCompactIndex | null>(null);
+  const nonce = useDumpRetryNonce();
   const { locales: items } = useLang();
   const locales = useMemo(
     () => items?.map((item) => item.locale) ?? [lang],
@@ -50,7 +52,7 @@ export function useRecipeIndex(dataset: DatasetRef | undefined, lang: string) {
       setLastFull(index);
     });
     publishRecipeIndex(dataset, lang, index);
-  }, [dataset, lang]);
+  }, [dataset, lang, nonce]);
 
   useAsyncEffect(async (isCancelled) => {
     if (!dataset) return;

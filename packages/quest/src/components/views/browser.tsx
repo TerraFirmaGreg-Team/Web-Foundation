@@ -10,8 +10,14 @@ import {
 } from '@terrafirmagreg-team/ui/hooks/use-async-value';
 import { useLastResult } from '@terrafirmagreg-team/ui/hooks/use-last-result';
 import { useVersionedDataset } from '@terrafirmagreg-team/kit/hooks/use-versioned-dataset';
-import { useDumpRetryNonce } from '@terrafirmagreg-team/kit/hooks/use-dump-status';
-import { DumpUnavailable } from '@terrafirmagreg-team/kit/components/views/unavailable';
+import {
+  useDumpRetryNonce,
+  useFailedDatasets,
+} from '@terrafirmagreg-team/kit/hooks/use-dump-status';
+import {
+  DumpUnavailable,
+  DumpUnavailableOverlay,
+} from '@terrafirmagreg-team/kit/components/views/unavailable';
 import { StaleBadge } from '@terrafirmagreg-team/kit/components/dump-status/stale-badge';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
 import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
@@ -55,14 +61,20 @@ const QUEST_SKELETON_NODES = [
   { x: '78%', y: '82%' },
 ];
 
-const QUEST_SKELETON_EDGES = [
-  { x: '18%', y: '20%', w: '14%' },
-  { x: '36%', y: '19%', w: '16%' },
-  { x: '55%', y: '20%', w: '14%' },
-  { x: '28%', y: '48%', w: '12%' },
-  { x: '50%', y: '50%', w: '14%' },
-  { x: '24%', y: '76%', w: '12%' },
-  { x: '48%', y: '78%', w: '14%' },
+const QUEST_SKELETON_EDGES: [number, number][] = [
+  [0, 1],
+  [1, 2],
+  [2, 3],
+  [0, 4],
+  [4, 5],
+  [5, 6],
+  [6, 3],
+  [6, 7],
+  [4, 8],
+  [8, 9],
+  [5, 10],
+  [9, 10],
+  [7, 11],
 ];
 
 function QuestPanelSkeleton() {
@@ -77,9 +89,30 @@ function QuestPanelSkeleton() {
   );
 }
 
-export function QuestBrowserFallback() {
+function QuestCanvasSkeleton() {
+  const center = (v: string) => `${parseFloat(v) + 1.5}%`;
   return (
-    <div aria-hidden className="viewport-body relative min-h-0 flex-1 overflow-hidden">
+    <div aria-hidden className="absolute inset-0 overflow-hidden">
+      <svg
+        className="absolute inset-0 size-full text-muted-foreground/20"
+        fill="none"
+        preserveAspectRatio="none"
+        viewBox="0 0 100 100"
+      >
+        {QUEST_SKELETON_EDGES.map(([from, to], i) => (
+          <line
+            key={i}
+            className="animate-pulse"
+            stroke="currentColor"
+            strokeDasharray="2 2"
+            strokeWidth="0.4"
+            x1={center(QUEST_SKELETON_NODES[from].x)}
+            x2={center(QUEST_SKELETON_NODES[to].x)}
+            y1={center(QUEST_SKELETON_NODES[from].y)}
+            y2={center(QUEST_SKELETON_NODES[to].y)}
+          />
+        ))}
+      </svg>
       {QUEST_SKELETON_NODES.map((node, i) => (
         <Skeleton
           key={i}
@@ -87,13 +120,14 @@ export function QuestBrowserFallback() {
           style={{ left: node.x, top: node.y }}
         />
       ))}
-      {QUEST_SKELETON_EDGES.map((edge, i) => (
-        <Skeleton
-          key={`e${i}`}
-          className="absolute h-px -translate-y-1/2 rotate-45 opacity-60"
-          style={{ left: edge.x, top: edge.y, width: edge.w }}
-        />
-      ))}
+    </div>
+  );
+}
+
+export function QuestBrowserFallback() {
+  return (
+    <div className="viewport-body relative min-h-0 flex-1 overflow-hidden">
+      <QuestCanvasSkeleton />
       <RightSidebarPortal>
         <RightSidebarPanel>
           <QuestPanelSkeleton />
@@ -126,6 +160,7 @@ export function QuestBrowser({
 
   const source = getQuestSource();
   const nonce = useDumpRetryNonce();
+  const failed = useFailedDatasets().includes(dataset.id);
   const index = useLastResult(
     useAsyncResult(
       () => source.index(dataset, lang),
@@ -256,14 +291,19 @@ export function QuestBrowser({
     <EntryProvider dataset={dataset} lang={lang} langMap={langMap}>
       <div className="viewport-shell quest-viewport relative">
         {index.stale || chapter.stale ? <StaleBadge /> : null}
-        {index.error || (!index.pending && !index.value) ? (
-          <div className="absolute inset-0 flex items-center justify-center p-6">
-            <DumpUnavailable>
-              {t('Quest data is temporarily unavailable. Try again later.', {
-                note: 'quest.unavailable',
-              })}
-            </DumpUnavailable>
-          </div>
+        {index.error ||
+        (!index.pending && !index.value) ||
+        (failed && !index.value?.quests?.length) ? (
+          <>
+            <QuestCanvasSkeleton />
+            <DumpUnavailableOverlay>
+              <DumpUnavailable>
+                {t('Quest data is temporarily unavailable. Try again later.', {
+                  note: 'quest.unavailable',
+                })}
+              </DumpUnavailable>
+            </DumpUnavailableOverlay>
+          </>
         ) : chapter.value && chapter.value.filename === row?.filename ? (
           <CanvasFlow
             chapter={chapter.value}
@@ -288,34 +328,28 @@ export function QuestBrowser({
             onOpenSearch={() => setSearchOpen(true)}
           />
         ) : chapter.error || (!chapter.pending && !chapter.value && row) ? (
-          <div className="absolute inset-0 flex items-center justify-center p-6">
-            <DumpUnavailable>
-              {t('Quest data is temporarily unavailable. Try again later.', {
-                note: 'quest.unavailable',
-              })}
-            </DumpUnavailable>
-          </div>
+          <>
+            <QuestCanvasSkeleton />
+            <DumpUnavailableOverlay>
+              <DumpUnavailable>
+                {t('Quest data is temporarily unavailable. Try again later.', {
+                  note: 'quest.unavailable',
+                })}
+              </DumpUnavailable>
+            </DumpUnavailableOverlay>
+          </>
         ) : (
-          <div aria-hidden className="absolute inset-0 overflow-hidden">
-            {QUEST_SKELETON_NODES.map((node, i) => (
-              <Skeleton
-                key={i}
-                className="absolute size-10 rounded-sm"
-                style={{ left: node.x, top: node.y }}
-              />
-            ))}
-            {QUEST_SKELETON_EDGES.map((edge, i) => (
-              <Skeleton
-                key={`e${i}`}
-                className="absolute h-px -translate-y-1/2 rotate-45 opacity-60"
-                style={{ left: edge.x, top: edge.y, width: edge.w }}
-              />
-            ))}
-          </div>
+          <QuestCanvasSkeleton />
         )}
         <RightSidebarPortal>
           <RightSidebarPanel>
-            {selectedId ? (
+            {index.error ||
+            (!index.pending && !index.value) ||
+            (failed && !index.value?.quests?.length) ||
+            chapter.error ||
+            (!chapter.pending && !chapter.value && row) ? (
+              <QuestPanelSkeleton />
+            ) : selectedId ? (
               questPanel
             ) : (
               <div className="p-4">

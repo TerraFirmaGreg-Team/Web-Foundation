@@ -11,6 +11,7 @@ import {
   createHistoryReader,
   resolveAuthors,
 } from 'fumadocs-page-history/git';
+import { resolveAuthorMappings } from './authors.ts';
 import type { GitChangelogProps } from 'fumadocs-page-history/ui';
 import { compactTags } from './tags.ts';
 import type { HistoryLoaderOptions } from './history.ts';
@@ -129,6 +130,7 @@ export const remarkGitChangelog: Plugin<[GitChangelogOptions], Root> = (
   options,
 ) => {
   let reader: ReturnType<typeof createHistoryReader> | undefined;
+  let authorMappings = options.authorMappings ?? [];
   const reported = new Set<string>();
   return async (tree, file) => {
     const filePath = (file as RemarkFile | undefined)?.path;
@@ -143,14 +145,23 @@ export const remarkGitChangelog: Plugin<[GitChangelogOptions], Root> = (
       shouldShowContributors(frontmatter) &&
       options.display?.showContributors !== false;
     if (!showChangelog && !showContributors) return;
-    reader ??= createHistoryReader({
-      ...options,
-      repository: {
-        ...options.repository,
-        directory:
-          options.repository.directory ?? path.dirname(absolutePath),
-      },
-    });
+    if (!reader) {
+      const directory =
+        options.repository.directory ?? path.dirname(absolutePath);
+      authorMappings = [
+        ...authorMappings,
+        ...(await resolveAuthorMappings({
+          repository: options.repository.url,
+          directory,
+          exclude: options.authorMappings,
+        })),
+      ];
+      reader = createHistoryReader({
+        ...options,
+        authorMappings,
+        repository: { ...options.repository, directory },
+      });
+    }
     const root = await reader.getRoot();
     const gitPath = resolveContentPath(
       absolutePath,
@@ -162,7 +173,7 @@ export const remarkGitChangelog: Plugin<[GitChangelogOptions], Root> = (
       commit.tags = compactTags(commit.tags, options.repository.url);
     const authors = resolveAuthors(
       (frontmatter.authors as string[] | undefined) ?? [],
-      options.authorMappings,
+      authorMappings,
     );
     if (!commits.length && !authors.length) {
       if (

@@ -31,7 +31,11 @@ import { usePanelPage } from '@terrafirmagreg-team/recipe/hooks/use-panel-page';
 import { useItemPress } from '@terrafirmagreg-team/recipe/hooks/use-item-press';
 import { usePanelCells } from '@terrafirmagreg-team/recipe/hooks/use-panel-cells';
 import { usePanelTabs } from '@terrafirmagreg-team/recipe/hooks/use-panel-tabs';
-import { PanelSkeleton } from '@terrafirmagreg-team/recipe/components/views/browser/item-panel/skeleton';
+import {
+  RecipePanelSkeleton,
+  RecipeTabsSkeleton,
+} from '@terrafirmagreg-team/recipe/components/views/browser/item-panel/skeleton';
+import { useFailedDatasets } from '@terrafirmagreg-team/kit/hooks/use-dump-status';
 import { cn } from '@terrafirmagreg-team/ui/lib/utils/cn';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import type {
@@ -133,12 +137,14 @@ export const ItemPanel = memo(function ItemPanel({
 
   const tabOptions = usePanelTabs(dIndex, dNames, dLang);
 
+  const failed = useFailedDatasets().includes(dataset.id);
+
   let body;
   const indexEmpty = !index?.items.length;
-  if (!measured || (indexLoading && indexEmpty)) {
+  if (!measured || ((indexLoading || failed) && indexEmpty)) {
     body =
-      indexLoading && indexEmpty ? (
-        <PanelSkeleton cols={cols} rows={rows} />
+      (indexLoading || failed) && indexEmpty ? (
+        <RecipePanelSkeleton cols={cols} rows={rows} />
       ) : null;
   } else if (!list.shown.length) {
     body = (
@@ -174,14 +180,18 @@ export const ItemPanel = memo(function ItemPanel({
 
   return (
     <div className={cn('not-prose flex min-h-0 flex-col gap-2', className)}>
-      <IconPager
-        value={mode === 'fav' ? 'fav' : (tab ?? '')}
-        options={tabOptions}
-        onChange={(id) => {
-          setMode('all');
-          setTab(id);
-        }}
-      />
+      {(indexLoading || failed) && indexEmpty ? (
+        <RecipeTabsSkeleton />
+      ) : (
+        <IconPager
+          value={mode === 'fav' ? 'fav' : (tab ?? '')}
+          options={tabOptions}
+          onChange={(id) => {
+            setMode('all');
+            setTab(id);
+          }}
+        />
+      )}
       <Pager
         page={list.page}
         pages={list.pages}

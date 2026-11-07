@@ -1,6 +1,12 @@
 'use client';
 
 import { useDocumentTitle } from '@terrafirmagreg-team/ui/hooks/use-document-title';
+import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
+import { useFailedDatasets } from '@terrafirmagreg-team/kit/hooks/use-dump-status';
+import {
+  DumpUnavailable,
+  DumpUnavailableOverlay,
+} from '@terrafirmagreg-team/kit/components/views/unavailable';
 import { useRecipeSession } from '@terrafirmagreg-team/recipe/hooks/use-session';
 import { recipeConfig } from '@terrafirmagreg-team/recipe/lib/config';
 import { recipeItemName } from '@terrafirmagreg-team/recipe/lib/client-index';
@@ -13,8 +19,10 @@ import { Calculator } from '@terrafirmagreg-team/recipe/components/views/calc/ca
 import { ForgeCalculator } from '@terrafirmagreg-team/recipe/components/views/forge';
 import { AlloyCalculator } from '@terrafirmagreg-team/recipe/components/views/alloy';
 import { RecipeFrame } from '@terrafirmagreg-team/recipe/components/views/browser/frame';
-import { RecipeTypeTabs } from '@terrafirmagreg-team/recipe/components/views/browser/type-tabs';
-import { ItemRow } from '@terrafirmagreg-team/ui/components/blocks/list/row';
+import {
+  RecipeHeaderSkeleton,
+  RecipeTabsSkeleton,
+} from '@terrafirmagreg-team/recipe/components/views/browser/item-panel/skeleton';
 import { Skeleton } from '@terrafirmagreg-team/ui/components/ui/skeleton';
 import { EntryProvider } from '@terrafirmagreg-team/game/hooks/use-entry-context';
 import { cn } from '@terrafirmagreg-team/ui/lib/utils/cn';
@@ -26,7 +34,10 @@ export function RecipeBrowserFallback() {
     <div className="viewport-shell recipe-viewport not-prose flex w-full flex-col gap-3">
       <div className="flex min-h-0 flex-1 gap-4">
         <main className="flex min-w-0 flex-1 flex-col">
-          <Skeleton className="mb-3 h-9 w-full rounded-md" />
+          <RecipeTabsSkeleton />
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-border pb-2 pt-2">
+            <RecipeHeaderSkeleton />
+          </div>
           <div className="flex min-h-0 flex-1 flex-col items-center justify-start gap-2 pt-2">
             {Array.from({ length: 6 }, (_, i) => (
               <Skeleton
@@ -59,9 +70,12 @@ export function RecipeBrowser({
     lang,
     versions: versions as string[] | undefined,
   };
+  const t = useTranslations();
   const session = useRecipeSession(page);
   const { dataset, item, fluid, names } = session;
   const focusId = item ?? fluid;
+  const failed =
+    useFailedDatasets().includes(id) && !session.index?.items.length;
 
   const focusTitle = focusId
     ? recipeItemName(names, lang, focusId)
@@ -70,8 +84,28 @@ export function RecipeBrowser({
 
   const isCalc = session.place?.kind === 'calc';
 
+  const frameSkeleton = (
+    <RecipeFrame
+      session={session}
+      strip={<RecipeTabsSkeleton />}
+      header={<RecipeHeaderSkeleton />}
+    >
+      <div className="flex min-h-0 flex-1 flex-col items-center justify-start gap-2 pt-2">
+        {Array.from({ length: 6 }, (_, i) => (
+          <Skeleton
+            key={i}
+            className="h-24 rounded-md"
+            style={{ width: 240 + (i % 3) * 70 }}
+          />
+        ))}
+      </div>
+    </RecipeFrame>
+  );
+
   let main;
-  if (focusId) {
+  if (failed) {
+    main = frameSkeleton;
+  } else if (focusId) {
     main = <ItemView session={session} />;
   } else if (isCalc) {
     main = <Calculator session={session} />;
@@ -82,23 +116,7 @@ export function RecipeBrowser({
   } else if (session.place?.kind === 'type') {
     main = <TypeView session={session} />;
   } else {
-    main = (
-      <RecipeFrame
-        session={session}
-        strip={<RecipeTypeTabs session={session} ids={[]} />}
-        header={<ItemRow layout="header" title={page.title} />}
-      >
-        <div className="flex min-h-0 flex-1 flex-col items-center justify-start gap-2 pt-2">
-          {Array.from({ length: 6 }, (_, i) => (
-            <Skeleton
-              key={i}
-              className="h-24 rounded-md"
-              style={{ width: 240 + (i % 3) * 70 }}
-            />
-          ))}
-        </div>
-      </RecipeFrame>
-    );
+    main = frameSkeleton;
   }
 
   return (
@@ -111,7 +129,19 @@ export function RecipeBrowser({
         )}
       >
         <div className="flex min-h-0 flex-1 gap-4">
-          <main className="flex min-w-0 flex-1 flex-col">{main}</main>
+          <main className="relative flex min-w-0 flex-1 flex-col">
+            {main}
+            {failed ? (
+              <DumpUnavailableOverlay>
+                <DumpUnavailable>
+                  {t(
+                    'Recipe data is temporarily unavailable. Try again later.',
+                    { note: 'recipe.unavailable' },
+                  )}
+                </DumpUnavailable>
+              </DumpUnavailableOverlay>
+            ) : null}
+          </main>
         </div>
         <RightSidebarPortal>
           <ItemPanel

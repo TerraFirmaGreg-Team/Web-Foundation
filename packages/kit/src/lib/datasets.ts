@@ -4,6 +4,7 @@ import { sectionConfig } from './config';
 import { sections } from './sources';
 import { datasetId } from './tree';
 import { createAsyncCache } from '@terrafirmagreg-team/data/lib/async-cache';
+import { dumpStatusSnapshot } from '@terrafirmagreg-team/data/lib/dump-status';
 import { loadLocaleRegistry, sortLangCodes } from '@terrafirmagreg-team/translate/server';
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { sectionTabs } from '@terrafirmagreg-team/sites/sections';
@@ -79,6 +80,30 @@ async function datasetMeta(
   return meta ? metaFields(meta) : {};
 }
 
+async function sectionDatasetMeta(
+  section: SectionKey,
+  id: string,
+): Promise<Omit<SectionDataset, 'id' | 'languages'>> {
+  const meta = await datasetMeta(section, id);
+  return Object.values(meta).some((value) => value !== undefined)
+    ? meta
+    : datasetMeta('docs', id);
+}
+
+const lastGoodDatasets = new Map<SectionKey, Map<string, SectionDataset>>();
+
+function rememberDataset(section: SectionKey, row: SectionDataset) {
+  let good = lastGoodDatasets.get(section);
+  if (!good) lastGoodDatasets.set(section, (good = new Map()));
+  good.set(row.id, row);
+}
+
+function datasetMembership(section: SectionKey, id: string): boolean {
+  const declared = sectionConfig().datasetConfig[id]?.sections;
+  if (declared) return declared.includes(section);
+  return lastGoodDatasets.get(section)?.has(id) === true;
+}
+
 function metaFields(
   meta: Record<string, unknown>,
 ): Omit<SectionDataset, 'id' | 'languages'> {
@@ -144,47 +169,59 @@ async function dumpDatasets(
 ): Promise<SectionDataset[]> {
   const dump = sectionConfig().dump;
   if (!dump) return [];
-  const refs = await dump.discoverDatasets();
+  const refs = await dump.discoverDatasets().catch(() => [] as DatasetRef[]);
   const versions = new Map<string, string[]>();
-  for (const ref of refs) {
-    const { id, version } = ref;
-    if (version) {
-      const list = versions.get(id) ?? [];
-      list.push(version);
-      versions.set(id, list);
+  const ids: string[] = [];
+  if (refs.length) {
+    for (const ref of refs) {
+      const { id, version } = ref;
+      if (version) {
+        const list = versions.get(id) ?? [];
+        list.push(version);
+        versions.set(id, list);
+      } else {
+        ids.push(id);
+      }
+    }
+  } else {
+    for (const id of Object.keys(sectionConfig().datasetConfig)) {
+      if (datasetMembership(section, id)) ids.push(id);
     }
   }
-  const ids = refs.filter((ref) => !ref.version);
-  const usable = await Promise.all(
-    ids.map(async (ref) => {
-      const { id } = ref;
-      const index = await dump.loadDataset(ref).catch(() => null);
-      if (!index || !hasContent(index)) return null;
-      return {
-        id,
-        languages: datasetLanguages(index.manifest.languages ?? []),
-      };
-    }),
-  );
   return (
     await Promise.all(
-      usable
-        .filter((row): row is { id: string; languages: Lang[] } => row !== null)
-        .map(async ({ id, languages }) => ({
+      ids.map(async (id): Promise<SectionDataset | null> => {
+        const index = await dump.loadDataset({ id }).catch(() => null);
+        if (!index) {
+          if (dumpStatusSnapshot().statuses[id]?.status !== 'failed')
+            return null;
+          const good = lastGoodDatasets.get(section)?.get(id);
+          if (good) return good;
+          if (!datasetMembership(section, id)) return null;
+          return {
+            id,
+            languages: datasetLanguages([]),
+            ...(await sectionDatasetMeta(section, id)),
+            ...datasetAppearance(id),
+          };
+        }
+        if (!hasContent(index)) return null;
+        const row: SectionDataset = {
           id,
-          languages,
+          languages: datasetLanguages(index.manifest.languages ?? []),
           ...(versions.get(id)?.length
             ? { versions: versions.get(id)!.sort(compareVersions).reverse() }
             : {}),
-          ...(await datasetMeta(section, id).then((meta) =>
-            Object.values(meta).some((value) => value !== undefined)
-              ? meta
-              : datasetMeta('docs', id),
-          )),
+          ...(await sectionDatasetMeta(section, id)),
           ...datasetAppearance(id),
-        })),
-      )
-  ).sort(datasetOrder);
+        };
+        rememberDataset(section, row);
+        return row;
+      }),
+    )
+  )
+    .filter((row): row is SectionDataset => row !== null)
+    .sort(datasetOrder);
 }
 
 export function sectionDatasets(
