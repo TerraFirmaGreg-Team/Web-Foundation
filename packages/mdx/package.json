@@ -1,6 +1,6 @@
 {
   "name": "@terrafirmagreg-team/mdx",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "type": "module",
   "description": "MDX/markdown pipeline",
   "license": "LGPL-3.0-only",
