@@ -1,6 +1,6 @@
 {
   "name": "@terrafirmagreg-team/docs",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "private": false,
   "publishConfig": {
     "access": "public"
