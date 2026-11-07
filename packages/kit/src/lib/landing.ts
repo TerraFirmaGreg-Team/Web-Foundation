@@ -1,5 +1,9 @@
 import 'server-only';
+import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { loadLocaleRegistry } from '@terrafirmagreg-team/translate/server';
+import { sectionUrl } from '@terrafirmagreg-team/sites/location';
+import { canonicalUrl, getDatasetImageUrl } from './urls';
 import { datasetSlugs, findDataset } from './datasets';
 import type {
   DatasetLanding,
@@ -27,6 +31,36 @@ export function getDatasetLanding(
     datasetTitle: meta.title ?? meta.id,
     lang,
     ...(meta.versions ? { versions: meta.versions } : {}),
+  };
+}
+
+export function datasetLandingMetadata(
+  section: SectionKey,
+  slug: string[] | undefined,
+  datasets: readonly SectionDataset[],
+): Metadata {
+  const page = getDatasetLanding(section, slug, 'en_us', datasets);
+  if (!page) notFound();
+  const meta = findDataset(datasets, { id: slug?.[0] ?? '' });
+  const description = page.description ?? meta?.description;
+  const title = page.datasetTitle ?? page.title;
+  const url = canonicalUrl(`${sectionUrl(section)}/${(slug ?? []).join('/')}`);
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      type: 'website',
+      url,
+      title,
+      description,
+      images: getDatasetImageUrl(section, slug?.[0] ?? '').url,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+    },
   };
 }
 

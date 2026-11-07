@@ -1,30 +1,16 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { createGetUrl } from 'fumadocs-core/source';
 import { firstLocalizedPage } from '@terrafirmagreg-team/translate/server';
 import { loadLocaleRegistry } from '@terrafirmagreg-team/translate/server';
 import { stripLangFromUrl, toInternalSlugs, toPublicSlug } from '@terrafirmagreg-team/translate/lib/slug';
 import { sectionConfig } from './config';
 import { sectionDatasets } from './datasets';
+import { canonicalUrl, getPageImageUrl } from './urls';
 import type { SectionKey, SectionPage, SectionSource } from '@terrafirmagreg-team/kit/types';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 
 export type { SectionSource } from '@terrafirmagreg-team/kit/types';
-
-const canonicalUrl = (pathname: string): string =>
-  new URL(
-    pathname.startsWith('/') ? pathname : `/${pathname}`,
-    sectionConfig().siteUrl,
-  ).toString();
-
-let imageUrl: ReturnType<typeof createGetUrl> | undefined;
-const getImageUrl = () =>
-  (imageUrl ??= createGetUrl(sectionConfig().previewRoute));
-
-function getDatasetImageUrl(section: string, dataset: string) {
-  const segments = [section, dataset, 'image.png'];
-  return { segments, url: getImageUrl()(segments) };
-}
+export { getDatasetImageUrl } from './urls';
 
 export function getPage<S extends SectionSource>(
   source: S,
@@ -97,7 +83,7 @@ export async function sectionMetadata(
       url,
       title: doc.data.title,
       description: doc.data.description,
-      images: getDatasetImageUrl(section, doc.slugs[0]).url,
+      images: getPageImageUrl(section, doc.slugs).url,
     },
     twitter: {
       card: 'summary_large_image',

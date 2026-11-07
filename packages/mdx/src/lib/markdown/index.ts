@@ -1,4 +1,3 @@
-export * from './dom';
 export * from './providers';
 
 export async function renderSectionMarkdown(page: {

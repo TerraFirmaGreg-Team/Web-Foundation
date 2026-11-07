@@ -260,7 +260,6 @@ export function GuidePageView({
           <PageActions
             copied={copied}
             crowdinUrl={datasetConf?.crowdin}
-            title={payload.title}
             mdUrl={mdUrl}
             githubUrl={
               datasetConf?.repo

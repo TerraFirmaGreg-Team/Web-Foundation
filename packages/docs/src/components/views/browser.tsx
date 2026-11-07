@@ -108,7 +108,6 @@ export function DocsBrowser({
         <PageActions
           copied={copied}
           crowdinUrl={dataset?.crowdin}
-          title={page.data.title}
           mdUrl={mdUrl}
           githubUrl={features.fileUrl?.(ctx.filePath)}
         />

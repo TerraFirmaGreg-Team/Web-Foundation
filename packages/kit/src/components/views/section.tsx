@@ -10,11 +10,13 @@ import {
 import { loadLocaleRegistry } from '@terrafirmagreg-team/translate/server';
 import { readPageSource, translationState } from '@terrafirmagreg-team/translate/server';
 import { resolvePage, type SectionSource } from '@terrafirmagreg-team/kit/lib/page';
+import { pageJsonLd } from '@terrafirmagreg-team/kit/lib/jsonld';
 import { findNeighbour } from 'fumadocs-core/page-tree';
 import { stripLangFromUrl } from '@terrafirmagreg-team/translate/lib/slug';
 import { sectionConfig } from '@terrafirmagreg-team/kit/lib/config';
 import type {
   DatasetCatalog,
+  SectionKey,
   SectionPage,
   SectionTrees,
 } from '@terrafirmagreg-team/kit/types';
@@ -53,6 +55,7 @@ export type SectionPageViewFn = (
 ) => SectionPageView | Promise<SectionPageView>;
 
 export async function renderSectionWorkspace({
+  section,
   source,
   slug,
   contentDir,
@@ -64,6 +67,7 @@ export async function renderSectionWorkspace({
   page,
   lang,
 }: {
+  section: SectionKey;
   source: SectionSource;
   slug: string[] | undefined;
   contentDir: string;
@@ -117,6 +121,18 @@ export async function renderSectionWorkspace({
     history,
     features,
   });
-  return renderSectionView(view);
+  const jsonLd = JSON.stringify(pageJsonLd({ section, page, crumbs, lang }));
+  return renderSectionView({
+    ...view,
+    node: (
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLd }}
+        />
+        {view.node}
+      </>
+    ),
+  });
 }
 

@@ -24,7 +24,6 @@
     "@fumari/stf": "^1.1.2",
     "@terrafirmagreg-team/translate": "workspace:^",
     "@terrafirmagreg-team/ui": "workspace:^",
-    "@types/turndown": "^5.0.6",
     "fumadocs-core": "catalog:",
     "fumadocs-docgen": "^3.2.0",
     "fumadocs-twoslash": "^4.0.4",
@@ -38,8 +37,6 @@
     "remark-gfm": "catalog:",
     "remark-math": "^6.0.0",
     "remark-parse": "catalog:",
-    "turndown": "^7.2.5",
-    "turndown-plugin-gfm": "^1.0.2",
     "unified": "catalog:",
     "unist-util-visit": "^5.2.0"
   },

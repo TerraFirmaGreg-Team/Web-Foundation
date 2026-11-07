@@ -20,6 +20,7 @@ import {
   sectionDatasets,
 } from '@terrafirmagreg-team/kit/lib/datasets';
 import {
+  datasetLandingMetadata,
   generateDatasetLandingParams,
   getDatasetLanding,
 } from '@terrafirmagreg-team/kit/lib/landing';
@@ -33,7 +34,6 @@ import {
   localeLoader,
   registerLocaleRenderer,
 } from '@terrafirmagreg-team/kit/lib/locale/renderer';
-import { canonicalUrl } from '@terrafirmagreg-team/kit/lib/urls';
 import { sectionUrl } from '@terrafirmagreg-team/sites/location';
 import { langContent, loadLocaleRegistry } from '@terrafirmagreg-team/translate/server';
 import type {
@@ -170,6 +170,7 @@ export function createSectionRoutes<
     }
     if (!PageView) return null;
     return renderSectionWorkspace({
+      section,
       source: src as SectionSource,
       slug,
       contentDir: source.contentDir ?? `content/${section}`,
@@ -275,22 +276,12 @@ export function createSectionRoutes<
 
   async function generateMetadata({ params }: RouteParams): Promise<Metadata> {
     const { slug } = await params;
-    if (slug?.length === 1 && landing) {
-      const page = getDatasetLanding(
+    if (slug?.length === 1 && landing)
+      return datasetLandingMetadata(
         section,
         slug,
-        'en_us',
         await sectionDatasets(section),
       );
-      if (!page) notFound();
-      return {
-        title: page.title,
-        description: page.description,
-        alternates: {
-          canonical: canonicalUrl(`${sectionUrl(section)}/${slug.join('/')}`),
-        },
-      };
-    }
     if (!PageView) return {};
     const src = (await source.getSource()) as SectionSource | undefined;
     if (src) {

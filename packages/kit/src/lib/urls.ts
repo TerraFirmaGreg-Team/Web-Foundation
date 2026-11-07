@@ -15,6 +15,15 @@ export function getDatasetImageUrl(section: string, dataset: string) {
   };
 }
 
+export function getPageImageUrl(section: string, slugs: string[]) {
+  const segments = [section, ...slugs, 'image.png'];
+
+  return {
+    segments,
+    url: createGetUrl(sectionConfig().previewRoute)(segments),
+  };
+}
+
 export function createGitFileUrl(git: {
   user: string;
   repo: string;

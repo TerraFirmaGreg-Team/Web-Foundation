@@ -3,13 +3,11 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { LangContentSwitch } from '@terrafirmagreg-team/ui/components/blocks/lang/content';
 import {
+  datasetLandingMetadata,
   generateDatasetLandingParams,
-  getDatasetLanding,
   resolveDatasetLanding,
 } from '@terrafirmagreg-team/kit/lib/landing';
 import { sectionDatasets } from '@terrafirmagreg-team/kit/lib/datasets';
-import { sectionUrl } from '@terrafirmagreg-team/sites/location';
-import { canonicalUrl } from '@terrafirmagreg-team/kit/lib/urls';
 import type { DatasetLanding, SectionKey } from '@terrafirmagreg-team/kit/types';
 import {
   localeLoader,
@@ -58,22 +56,11 @@ export function createDatasetLandingPage<S extends SectionKey>(
     params,
   }: DatasetPageParams): Promise<Metadata> {
     const { slug } = await params;
-    const page = getDatasetLanding(
+    return datasetLandingMetadata(
       section,
       slug,
-      'en_us',
       await sectionDatasets(section),
     );
-    if (!page) notFound();
-    return {
-      title: page.title,
-      description: page.description,
-      alternates: {
-        canonical: canonicalUrl(
-          `${sectionUrl(section)}/${(slug ?? []).join('/')}`,
-        ),
-      },
-    };
   }
 
   return { Page, generateStaticParams, generateMetadata };

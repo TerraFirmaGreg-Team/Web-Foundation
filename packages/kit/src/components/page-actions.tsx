@@ -20,10 +20,6 @@ import { ItemRow } from '@terrafirmagreg-team/ui/components/blocks/list/row';
 import { useUntranslated } from '@terrafirmagreg-team/ui/hooks/use-lang';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
 import { useCopyButton } from '@terrafirmagreg-team/ui/hooks/use-copy-button';
-import {
-  openPageMarkdown,
-  pageMarkdown,
-} from '@terrafirmagreg-team/mdx/lib/markdown';
 import type { TranslationState } from '@terrafirmagreg-team/translate/server';
 
 function ActionButton({
@@ -70,12 +66,10 @@ export function MarkdownCopyButton({
   );
 }
 
-export function CopyPageMarkdown({ title }: { title: string }) {
+export function CopyPageMarkdown({ mdUrl }: { mdUrl: string }) {
   return (
     <MarkdownCopyButton
-      getMarkdown={() =>
-        pageMarkdown(document.querySelector('[data-md-root]'), title)
-      }
+      getMarkdown={() => fetch(mdUrl).then((res) => res.text())}
     />
   );
 }
@@ -107,12 +101,10 @@ export function UntranslatedActions({
 
 export function ViewOptionsPopover({
   githubUrl,
-  title,
   mdUrl,
   ...props
 }: ComponentProps<typeof PopoverTrigger> & {
   githubUrl?: string;
-  title?: string;
   mdUrl?: string;
 }) {
   const t = useTranslations();
@@ -122,17 +114,9 @@ export function ViewOptionsPopover({
       href: githubUrl,
       icon: <SiGithub color="currentColor" className="size-4" />,
     },
-    (mdUrl || title !== undefined) && {
+    mdUrl && {
       title: t('View as Markdown', { note: 'ui.view_markdown' }),
-      ...(mdUrl
-        ? { href: mdUrl }
-        : {
-            onClick: () =>
-              void openPageMarkdown(
-                document.querySelector('[data-md-root]'),
-                title!,
-              ),
-          }),
+      href: mdUrl,
       icon: <TextIcon className="size-4" />,
     },
   ].filter((v) => !!v);
@@ -163,9 +147,9 @@ export function ViewOptionsPopover({
         {items.map((item) => (
           <ItemRow
             key={item.title}
-            {...('href' in item
-              ? { href: item.href, target: '_blank', rel: 'noreferrer noopener' }
-              : { onClick: item.onClick })}
+            href={item.href}
+            target="_blank"
+            rel="noreferrer noopener"
             media={item.icon}
             title={item.title}
             trailing={
@@ -181,20 +165,18 @@ export function ViewOptionsPopover({
 export function PageActions({
   copied,
   crowdinUrl,
-  title,
   mdUrl,
   githubUrl,
 }: {
   copied?: TranslationState;
   crowdinUrl?: string;
-  title: string;
   mdUrl?: string;
   githubUrl?: string;
 }) {
   return (
     <>
-      <CopyPageMarkdown title={title} />
-      <ViewOptionsPopover title={title} mdUrl={mdUrl} githubUrl={githubUrl} />
+      {mdUrl ? <CopyPageMarkdown mdUrl={mdUrl} /> : null}
+      <ViewOptionsPopover mdUrl={mdUrl} githubUrl={githubUrl} />
       <UntranslatedActions copied={copied} crowdinUrl={crowdinUrl} />
     </>
   );

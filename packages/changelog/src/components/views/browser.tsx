@@ -77,7 +77,6 @@ export function ChangelogPageChrome({
         <PageActions
           copied={copied}
           crowdinUrl={dataset?.crowdin}
-          title={page.data.title}
           mdUrl={`${stripLangFromUrl(page.url, [...languages])}.md${
             page.locale ? `?lang=${page.locale}` : ''
           }`}

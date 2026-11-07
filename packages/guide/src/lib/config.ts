@@ -7,7 +7,6 @@ import '@terrafirmagreg-team/guide/lib/search/filter';
 export type GuidePageActionsProps = {
   copied?: TranslationState;
   crowdinUrl?: string;
-  title: string;
   mdUrl?: string;
   githubUrl?: string;
 };
