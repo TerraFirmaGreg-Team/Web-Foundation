@@ -8,6 +8,7 @@ import { useDumpRetryNonce } from '@terrafirmagreg-team/kit/hooks/use-dump-statu
 import {
   loadRecipeChromeClient,
   loadRecipeCompactIndex,
+  loadRecipeEntityNames,
   loadRecipeSkeletonIndex,
 } from '@terrafirmagreg-team/recipe/lib/client-index';
 import { publishRecipeIndex } from '@terrafirmagreg-team/recipe/lib/client-index/store';
@@ -52,6 +53,15 @@ export function useRecipeIndex(dataset: DatasetRef | undefined, lang: string) {
       setLastFull(index);
     });
     publishRecipeIndex(dataset, lang, index);
+    const entityNames = await loadRecipeEntityNames(dataset, chrome, lang);
+    if (isCancelled()) return;
+    publishRecipeIndex(dataset, lang, {
+      ...index,
+      names: {
+        ...index.names,
+        [lang]: { ...entityNames, ...index.names[lang] },
+      },
+    });
   }, [dataset, lang, nonce]);
 
   useAsyncEffect(async (isCancelled) => {

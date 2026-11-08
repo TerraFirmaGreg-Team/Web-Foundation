@@ -38,7 +38,10 @@ import { LangLocalesScope } from '@terrafirmagreg-team/translate/provider';
 import { localeItems } from '@terrafirmagreg-team/translate/create';
 import { siteLinks } from '@terrafirmagreg-team/sites';
 import { useCurrentDataset } from '@terrafirmagreg-team/kit/hooks/use-current-dataset';
-import { useFailedDatasets } from '@terrafirmagreg-team/kit/hooks/use-dump-status';
+import {
+  isDatasetFailed,
+  useFailedDatasets,
+} from '@terrafirmagreg-team/kit/hooks/use-dump-status';
 import { useDatasetAccent } from '@terrafirmagreg-team/kit/hooks/use-dataset-accent';
 import { useNavOptions } from '@terrafirmagreg-team/kit/hooks/use-nav-options';
 import { pinTreeDataset } from '@terrafirmagreg-team/kit/lib/pin-tree';
@@ -93,7 +96,9 @@ export function Layout({
   const pinned = current ? current.version : undefined;
   const meta = sectionDatasets.find((item) => item.id === baseId);
   const failedDatasets = useFailedDatasets();
-  const datasetFailed = baseId !== undefined && failedDatasets.includes(baseId);
+  const datasetFailed =
+    baseId !== undefined &&
+    isDatasetFailed(failedDatasets, { id: baseId, version: pinned });
   useDatasetAccent(meta?.accent);
   const nav = useNavOptions({ section, catalog });
   const pathname = usePathname();

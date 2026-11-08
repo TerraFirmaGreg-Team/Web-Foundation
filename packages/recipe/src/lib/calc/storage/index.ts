@@ -5,6 +5,7 @@ export {
 } from './entry';
 export { calcStorageKey } from './keys';
 export {
+  migrateCalcStorage,
   readCalcActive,
   readCalcHistory,
   resolveCalcActive,

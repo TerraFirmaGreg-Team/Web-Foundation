@@ -10,11 +10,11 @@ export type CalcMaterial = {
   amount: number;
 
   chance?: number;
+  tagId?: string;
 };
 
 export type CalcRecipeInput = CalcMaterial & {
   catalyst: boolean;
-  tagId?: string;
 };
 
 export type CalcRecipe = {
@@ -62,6 +62,7 @@ export type CalcNodeInput = {
   amount: number;
   catalyst: boolean;
   tagId?: string;
+  members?: string[];
   wired: boolean;
   covered: number;
 };

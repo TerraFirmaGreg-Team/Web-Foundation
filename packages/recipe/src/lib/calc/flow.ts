@@ -2,12 +2,14 @@ import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import type { Edge, Node } from '@terrafirmagreg-team/ui/lib/canvas/xyflow';
 import type { Recipe } from '@terrafirmagreg-team/recipe/lib/data/dto';
 import { PORT_IN } from '@terrafirmagreg-team/recipe/lib/calc/ports';
+import { resolveWireEnds } from '@terrafirmagreg-team/recipe/lib/calc/wire';
 import type {
   CalcKind,
   CalcNode,
   CalcRecipeSummary,
   CalcWire,
 } from '@terrafirmagreg-team/recipe/types/calc';
+import type { RecipeRelation } from '@terrafirmagreg-team/recipe/types';
 import type { FlowPoint } from '@terrafirmagreg-team/ui/types/canvas';
 
 export const CALC_NODE_W = 232;
@@ -36,12 +38,18 @@ export type CalcFlowData = {
   onRequestPicker: (node: CalcNode) => void;
   onRequestMemberPicker: (node: CalcNode) => void;
   onRequestSupply: (node: CalcNode, input: number) => void;
+  onRequestDemand: (node: CalcNode, output: number) => void;
   onSupplyInput: (
     cardId: string,
     inputIndex: number,
     recipeId: string | null,
     outputAmount?: number,
   ) => string | null;
+  onDemandOutput: (
+    cardId: string,
+    outputIndex: number,
+    recipeId: string,
+  ) => void;
   getRecipesForItem: (
     materialId: string,
     kind: CalcKind,
@@ -52,7 +60,11 @@ export type CalcFlowData = {
     kind: CalcKind,
     pos?: { x: number; y: number },
   ) => string;
-  onOpenItem: (materialId: string, kind: CalcKind) => void;
+  onOpenItem: (
+    materialId: string,
+    kind: CalcKind,
+    relation?: RecipeRelation,
+  ) => void;
   onRemoveCard: (cardId: string) => void;
   onMoveCard: (cardId: string, pos: { x: number; y: number }) => void;
   onCrafts: (cardId: string, crafts: number) => void;
@@ -125,16 +137,12 @@ export function cardsToFlow(
   const edges: Edge[] = wires.flatMap((wire, index) => {
     const src = byId.get(wire.from);
     const dst = byId.get(wire.to);
-    const input = dst?.inputs[wire.input];
-    if (!src || !dst || !input || !input.wired) return [];
-    const atIndex = src.outputs[wire.out ?? 0];
-    const outIndex =
-      atIndex && atIndex.id === input.id && atIndex.kind === input.kind
-        ? (wire.out ?? 0)
-        : src.outputs.findIndex(
-            (o) => o.id === input.id && o.kind === input.kind,
-          );
-    if (outIndex < 0) return [];
+    if (!src || !dst) return [];
+    const ends = resolveWireEnds(src, dst, wire);
+    if (!ends) return [];
+    const input = dst.inputs[ends.inputIndex];
+    if (!input?.wired) return [];
+    const outIndex = ends.outIndex;
     const mat = src.outputs[outIndex];
     return [
       {
@@ -142,7 +150,7 @@ export function cardsToFlow(
         source: wire.from,
         sourceHandle: outIndex > 0 ? `out-${outIndex}` : 'out',
         target: wire.to,
-        targetHandle: `in-${wire.input}`,
+        targetHandle: `in-${ends.inputIndex}`,
         type: 'calcEdge',
         className: 'calc-edge--wire',
         deletable: true,
@@ -176,6 +184,7 @@ function sameCalcNode(a: CalcNode, b: CalcNode): boolean {
         out.id === b.outputs[index]?.id &&
         out.kind === b.outputs[index]?.kind &&
         out.amount === b.outputs[index]?.amount &&
+        out.tagId === b.outputs[index]?.tagId &&
         out.allocated === b.outputs[index]?.allocated &&
         out.remaining === b.outputs[index]?.remaining,
     ) &&
@@ -192,7 +201,9 @@ function sameCalcNode(a: CalcNode, b: CalcNode): boolean {
         inp.amount === b.inputs[index]?.amount &&
         inp.covered === b.inputs[index]?.covered &&
         inp.wired === b.inputs[index]?.wired &&
-        inp.catalyst === b.inputs[index]?.catalyst,
+        inp.catalyst === b.inputs[index]?.catalyst &&
+        (inp.members?.join() ?? '') ===
+          (b.inputs[index]?.members?.join() ?? ''),
     ) &&
     (a.members?.join() ?? '') === (b.members?.join() ?? '') &&
     a.availableRecipes.length === b.availableRecipes.length &&
@@ -216,7 +227,9 @@ function sameFlowData(a: CalcFlowData, b: CalcFlowData): boolean {
     a.onRequestPicker === b.onRequestPicker &&
     a.onRequestMemberPicker === b.onRequestMemberPicker &&
     a.onRequestSupply === b.onRequestSupply &&
+    a.onRequestDemand === b.onRequestDemand &&
     a.onSupplyInput === b.onSupplyInput &&
+    a.onDemandOutput === b.onDemandOutput &&
     a.getRecipesForItem === b.getRecipesForItem &&
     a.ensureMaterial === b.ensureMaterial &&
     a.onAddCard === b.onAddCard &&
@@ -270,7 +283,12 @@ export function reconcileCalcNodes(
       enters += 1;
       return withDelay(node, enters);
     }
-    return node;
+    return {
+      ...node,
+      dragging: kept.dragging,
+      selected: kept.selected,
+      measured: kept.measured ?? node.measured,
+    };
   });
   return changed ? out : prev;
 }

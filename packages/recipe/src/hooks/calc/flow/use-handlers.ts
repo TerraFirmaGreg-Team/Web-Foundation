@@ -17,6 +17,8 @@ import type {
 import type {
   CalcKind,
   CalcNode,
+  CalcNodeInput,
+  CalcOutput,
 } from '@terrafirmagreg-team/recipe/types/calc';
 
 export function useFlowHandlers({
@@ -36,6 +38,14 @@ export function useFlowHandlers({
   setPickerNode: (node: CalcNode | null) => void;
 }) {
   const { screenToFlowPosition, getNode } = useReactFlow();
+  const slotAccepts = useCallback(
+    (slot: CalcNodeInput | undefined, srcOut: CalcOutput | undefined) => {
+      if (!slot || !srcOut?.id || slot.kind !== srcOut.kind) return false;
+      if (slot.id === srcOut.id) return true;
+      return !!slot.tagId && !!slot.members?.includes(srcOut.id);
+    },
+    [],
+  );
 
   const handleNodeEnter = useCallback(
     (_event: MouseEvent, node: AnyCalcFlowNode) => applyEngaged(node.id),
@@ -117,11 +127,10 @@ export function useFlowHandlers({
       const tNode = (getNode(target)?.data as CalcFlowData | undefined)?.node;
       const slot = tNode?.inputs[input];
       const srcOut = sNode?.outputs[out];
-      if (!sNode || !tNode || !slot || !srcOut) return;
-      if (slot.id !== srcOut.id || slot.kind !== srcOut.kind) return;
+      if (!sNode || !tNode || !slotAccepts(slot, srcOut)) return;
       data.onWire(source, target, input, out);
     },
-    [data, getNode],
+    [data, getNode, slotAccepts],
   );
 
   const handleReconnect = useCallback(
@@ -139,8 +148,7 @@ export function useFlowHandlers({
       const tNode = (getNode(conn.target)?.data as CalcFlowData | undefined)?.node;
       const slot = tNode?.inputs[input];
       const srcOut = sNode?.outputs[out];
-      if (!sNode || !tNode || !slot || !srcOut) return;
-      if (slot.id !== srcOut.id || slot.kind !== srcOut.kind) return;
+      if (!sNode || !tNode || !slotAccepts(slot, srcOut)) return;
       data.onRewire(wire.from, wire.to, wire.input, {
         from: conn.source,
         to: conn.target,
@@ -148,7 +156,7 @@ export function useFlowHandlers({
         out,
       });
     },
-    [data, getNode],
+    [data, getNode, slotAccepts],
   );
 
   const handleEdgesDelete = useCallback(

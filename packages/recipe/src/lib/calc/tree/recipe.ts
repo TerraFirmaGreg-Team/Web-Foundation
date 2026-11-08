@@ -80,6 +80,7 @@ export function toCalcRecipe(recipe: Recipe): CalcRecipe {
     kind: slotKind(slot),
     amount: slot.count && slot.count > 0 ? slot.count : 1,
     ...(slot.chance !== undefined ? { chance: slot.chance } : {}),
+    ...(slot.kind === 'tag' ? { tagId: slot.id } : {}),
   }));
   const tier = recipeTier(recipe);
   return {

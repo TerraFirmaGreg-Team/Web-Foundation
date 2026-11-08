@@ -42,7 +42,7 @@ export function useFlowViewport({
 }) {
   const { setCenter, getZoom } = useReactFlow();
   const userMovedRef = useRef(false);
-  const storageKey = `calc:${dataset.id}/${dataset.version ?? ''}`;
+  const storageKey = `calc:${dataset.id}`;
 
   const ready = treeReady;
 

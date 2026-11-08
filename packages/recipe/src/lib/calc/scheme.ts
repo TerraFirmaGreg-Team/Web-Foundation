@@ -11,6 +11,7 @@ import type {
   TagResolution,
 } from '@terrafirmagreg-team/recipe/types/calc';
 import { mergeAmounts } from './tree/materials';
+import { resolveWireEnds } from './wire';
 
 export type SchemeContext = {
   recipeMap: Map<string, CalcRecipe>;
@@ -34,14 +35,18 @@ function outputAmount(
 function inputMember(
   input: CalcRecipe['inputs'][number],
   ctx: SchemeContext,
-): { id?: string; kind: CalcKind } {
+): { id?: string; kind: CalcKind; members?: string[] } {
   if (!input.tagId) return { id: input.id, kind: input.kind };
   const picked = ctx.tagSelections[input.tagId];
   const resolution = ctx.tagMembers(input.tagId);
   const members = resolution?.members ?? [];
   const memberId =
     picked && members.includes(picked) ? picked : members[0];
-  return { id: memberId, kind: resolution?.kind ?? input.kind };
+  return {
+    id: memberId,
+    kind: resolution?.kind ?? input.kind,
+    members: members.length ? members : undefined,
+  };
 }
 
 export function buildScheme({
@@ -81,6 +86,9 @@ export function buildScheme({
       id: card.materialId,
       kind: card.kind,
       amount: produced,
+      ...(card.materialId.startsWith('#')
+        ? { tagId: card.materialId }
+        : {}),
       allocated: 0,
       remaining: produced,
     });
@@ -91,6 +99,7 @@ export function buildScheme({
         kind: o.kind,
         amount: o.amount * card.crafts,
         chance: o.chance,
+        ...(o.tagId !== undefined ? { tagId: o.tagId } : {}),
         allocated: 0,
         remaining: o.amount * card.crafts,
       });
@@ -115,11 +124,18 @@ export function buildScheme({
             : entry.amount * card.crafts,
           catalyst: entry.catalyst,
           tagId: entry.tagId,
+          ...(member.members ? { members: member.members } : {}),
           wired: false,
           covered: 0,
         } satisfies CalcNodeInput;
       }),
       availableRecipes,
+      ...(card.materialId.startsWith('#')
+        ? {
+            tagId: card.materialId,
+            members: ctx.tagMembers(card.materialId)?.members,
+          }
+        : {}),
       cycle: false,
       products: false,
       loading:
@@ -137,19 +153,11 @@ export function buildScheme({
     const src = byId.get(wire.from);
     const dst = byId.get(wire.to);
     if (!src || !dst || src === dst) return;
-    const input = dst.inputs[wire.input];
-    const atIndex = src.outputs[wire.out ?? 0];
-    const outIndex =
-      input && atIndex && atIndex.id === input.id && atIndex.kind === input.kind
-        ? (wire.out ?? 0)
-        : input
-          ? src.outputs.findIndex(
-              (o) => o.id === input.id && o.kind === input.kind,
-            )
-          : -1;
-    const srcOut = outIndex >= 0 ? src.outputs[outIndex] : undefined;
-    if (!input || !srcOut) return;
-    if (!input.id) return;
+    const ends = resolveWireEnds(src, dst, wire);
+    if (!ends) return;
+    const input = dst.inputs[ends.inputIndex];
+    const srcOut = src.outputs[ends.outIndex];
+    if (!input?.id || !srcOut) return;
     input.wired = true;
     const covered = Math.min(
       Math.max(srcOut.remaining, 0),
@@ -159,7 +167,7 @@ export function buildScheme({
     input.covered += covered;
     srcOut.allocated += covered;
     srcOut.remaining -= covered;
-    if (outIndex === 0) {
+    if (ends.outIndex === 0) {
       src.allocated += covered;
       src.remaining -= covered;
     }

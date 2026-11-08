@@ -1,7 +1,8 @@
 'use client';
 
-import { useCallback, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useSyncExternalStore } from 'react';
 import {
+  migrateCalcStorage,
   newCalcEntry,
   readCalcActive,
   resolveCalcActive,
@@ -26,6 +27,10 @@ const EMPTY_CALC: CalculatorState = {
 };
 
 export function useCalcStorage(storageKey: string) {
+  useEffect(() => {
+    migrateCalcStorage(storageKey);
+  }, [storageKey]);
+
   const readSnapshot = useCallback(
     () => readCalcStorage(storageKey),
     [storageKey],

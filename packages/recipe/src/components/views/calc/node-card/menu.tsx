@@ -4,6 +4,7 @@ import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import {
   ExternalLink,
   ListFilter,
+  MoveRight,
   Pin,
   PinOff,
   Plus,
@@ -159,7 +160,13 @@ export function PortContextMenu({
   lang: string;
   langMap?: Record<string, string>;
 }) {
-  const { onAddCard, onOpenItem, onRequestPicker, onRequestSupply } = data;
+  const {
+    onAddCard,
+    onOpenItem,
+    onRequestPicker,
+    onRequestSupply,
+    onRequestDemand,
+  } = data;
   const t = useTranslations();
   return (
     <ContextMenuContent>
@@ -186,6 +193,15 @@ export function PortContextMenu({
         >
           <Plus />
           {t('Keep as external source', { note: 'recipe.calc.supply.source' })}
+        </ContextMenuItem>
+      ) : null}
+      {out != null ? (
+        <ContextMenuItem
+          className="whitespace-nowrap"
+          onClick={() => onRequestDemand(node, out)}
+        >
+          <MoveRight />
+          {t('Use in downstream recipe', { note: 'recipe.calc.demand' })}
         </ContextMenuItem>
       ) : null}
       {out === 0 && !node.recipe && node.availableRecipes.length > 0 ? (

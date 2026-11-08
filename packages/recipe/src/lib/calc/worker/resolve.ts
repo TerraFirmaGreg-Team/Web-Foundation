@@ -32,6 +32,13 @@ export async function runResolve(input: ResolveInput) {
     for (const id of input.tags ?? []) {
       if (id && !state.tagMap.has(id)) wantedTag.add(id);
     }
+    for (const recipe of state.recipeMap.values()) {
+      for (const slot of recipe.inputs) {
+        if (slot.tagId && !state.tagMap.has(slot.tagId)) {
+          wantedTag.add(slot.tagId);
+        }
+      }
+    }
     wantedRecipes.forEach((id) => {
       if (state.recipeMap.has(id) || state.deadIds.has(id)) {
         wantedRecipes.delete(id);

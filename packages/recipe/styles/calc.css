@@ -197,6 +197,10 @@
   transition: transform 240ms ease;
 }
 
+.calc-flow:has(.react-flow__node.dragging) .react-flow__node {
+  transition: none;
+}
+
 .calc-flow .react-flow__node-calcMaterial[style*='--calc-delay'] {
   animation: calc-node-in 200ms ease-out both;
   animation-delay: var(--calc-delay, 0ms);

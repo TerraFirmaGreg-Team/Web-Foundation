@@ -186,6 +186,68 @@ export function writeCalcStorage(
   writeCalcTabs(key, [...tabs, entry], entry.id);
 }
 
+const migrated = new Set<string>();
+
+function mergeEntries(lists: CalcTreeEntry[][]): CalcTreeEntry[] {
+  const byId = new Map<string, CalcTreeEntry>();
+  for (const list of lists) {
+    for (const entry of list) {
+      const prev = byId.get(entry.id);
+      if (!prev || (entry.savedAt ?? 0) > (prev.savedAt ?? 0)) {
+        byId.set(entry.id, entry);
+      }
+    }
+  }
+  return [...byId.values()];
+}
+
+function legacyKeys(prefix: string): string[] {
+  const keys: string[] = [];
+  for (let i = 0; i < window.localStorage.length; i += 1) {
+    const name = window.localStorage.key(i);
+    if (name && name.startsWith(prefix)) keys.push(name);
+  }
+  return keys;
+}
+
+export function migrateCalcStorage(key: string): void {
+  if (typeof window === 'undefined' || migrated.has(key)) return;
+  migrated.add(key);
+  try {
+    const tabKeys = legacyKeys(`${key}/`);
+    const histKeys = legacyKeys(`${historyKey(key)}/`);
+    if (!tabKeys.length && !histKeys.length) return;
+    if (tabKeys.length) {
+      const lists = [readCalcTabs(key)].filter((list) => list.length);
+      for (const legacy of tabKeys) {
+        const tabs = readCalcTabs(legacy);
+        if (tabs.length) lists.push(tabs);
+      }
+      writeTabsRaw(key, mergeEntries(lists));
+    }
+    if (histKeys.length) {
+      const lists = [readCalcHistory(key)].filter((list) => list.length);
+      for (const legacy of histKeys) {
+        const entries = readJSON(
+          window.localStorage.getItem(legacy),
+          isCalcHistory,
+        );
+        if (entries) {
+          migrateEntries(entries);
+          lists.push(entries);
+        }
+      }
+      writeHistoryRaw(key, mergeEntries(lists));
+    }
+    for (const legacy of [...tabKeys, ...histKeys]) {
+      window.localStorage.removeItem(legacy);
+    }
+    emitCalcStorage();
+  } catch {
+    return;
+  }
+}
+
 export function subscribeCalcStorage(listener: () => void): () => void {
   if (typeof window === 'undefined') return () => {};
   window.addEventListener(CALC_STATE_EVENT, listener);

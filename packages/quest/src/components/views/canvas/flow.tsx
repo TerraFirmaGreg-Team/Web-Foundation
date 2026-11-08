@@ -57,7 +57,6 @@ function CanvasInner({
   selectedId,
   suppressPanRef,
   onSelectQuest,
-  onClearSelection,
   onOpenSearch,
 }: {
   chapter: Chapter;
@@ -73,7 +72,6 @@ function CanvasInner({
     filename: string,
     kind: 'quest' | 'link',
   ) => void;
-  onClearSelection?: () => void;
   onOpenSearch?: () => void;
 }) {
   const t = useTranslations();
@@ -142,7 +140,6 @@ function CanvasInner({
           return;
         }
       }
-      onClearSelection?.();
     },
     [
       screenToFlowPosition,
@@ -150,7 +147,6 @@ function CanvasInner({
       gridScale,
       questSpacing,
       onSelectQuest,
-      onClearSelection,
     ],
   );
 
@@ -224,7 +220,6 @@ export const CanvasFlow = memo(function CanvasFlow({
   selectedId,
   suppressPanRef,
   onSelectQuest,
-  onClearSelection,
   onOpenSearch,
 }: {
   chapter: Chapter;
@@ -240,7 +235,6 @@ export const CanvasFlow = memo(function CanvasFlow({
     filename: string,
     kind: 'quest' | 'link',
   ) => void;
-  onClearSelection?: () => void;
   onOpenSearch?: () => void;
 }) {
   return (
@@ -255,7 +249,6 @@ export const CanvasFlow = memo(function CanvasFlow({
         selectedId={selectedId}
         suppressPanRef={suppressPanRef}
         onSelectQuest={onSelectQuest}
-        onClearSelection={onClearSelection}
         onOpenSearch={onOpenSearch}
       />
     </ReactFlowProvider>

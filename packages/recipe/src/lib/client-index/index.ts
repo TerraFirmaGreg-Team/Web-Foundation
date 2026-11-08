@@ -3,7 +3,7 @@ export {
   loadRegistryEntrySlice,
   loadTagSlice,
 } from './registry';
-export { loadRecipeChromeClient } from './chrome';
+export { loadRecipeChromeClient, loadRecipeEntityNames } from './chrome';
 export {
   loadCategoryRecipes,
   loadTypeRows,

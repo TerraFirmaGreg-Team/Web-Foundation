@@ -92,7 +92,7 @@ export function recipeStackHref(
   dataset: DatasetRef,
   lang: Lang,
   id: string,
-  opts?: Pick<RecipeHrefOpts, 'tab' | 'search'> & {
+  opts?: Pick<RecipeHrefOpts, 'tab' | 'search' | 'relation'> & {
     kind?: 'item' | 'fluid' | 'tag';
     tagKind?: string;
   },
@@ -100,6 +100,7 @@ export function recipeStackHref(
   const kept = {
     tab: opts?.tab,
     search: opts?.search,
+    relation: opts?.relation,
   };
   if (opts?.kind === 'tag' || id.startsWith('#')) {
     const bare = id.startsWith('#') ? id.slice(1) : id;

@@ -30,3 +30,14 @@ export function useFailedDatasets(): string[] {
     .filter(([, state]) => state.status === 'failed')
     .map(([id]) => id);
 }
+
+export function isDatasetFailed(
+  failed: readonly string[],
+  dataset: { id: string; version?: string },
+): boolean {
+  return (
+    failed.includes(dataset.id) ||
+    (dataset.version !== undefined &&
+      failed.includes(`${dataset.id}@${dataset.version}`))
+  );
+}

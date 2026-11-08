@@ -35,7 +35,10 @@ import {
   RecipePanelSkeleton,
   RecipeTabsSkeleton,
 } from '@terrafirmagreg-team/recipe/components/views/browser/item-panel/skeleton';
-import { useFailedDatasets } from '@terrafirmagreg-team/kit/hooks/use-dump-status';
+import {
+  isDatasetFailed,
+  useFailedDatasets,
+} from '@terrafirmagreg-team/kit/hooks/use-dump-status';
 import { cn } from '@terrafirmagreg-team/ui/lib/utils/cn';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import type {
@@ -137,7 +140,7 @@ export const ItemPanel = memo(function ItemPanel({
 
   const tabOptions = usePanelTabs(dIndex, dNames, dLang);
 
-  const failed = useFailedDatasets().includes(dataset.id);
+  const failed = isDatasetFailed(useFailedDatasets(), dataset);
 
   let body;
   const indexEmpty = !index?.items.length;

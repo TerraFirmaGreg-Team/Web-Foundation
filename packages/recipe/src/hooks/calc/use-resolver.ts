@@ -47,6 +47,7 @@ export function useCalcResolver({
     const recipes = new Set<string>();
     const tags = new Set<string>();
     for (const card of cards) {
+      if (card.materialId.startsWith('#')) tags.add(card.materialId);
       materials.add(card.materialId);
       if (card.recipeId) recipes.add(card.recipeId);
     }

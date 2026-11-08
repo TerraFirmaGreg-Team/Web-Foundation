@@ -26,6 +26,7 @@ export function useFlowLayout({
   onRequestPicker,
   onRequestMemberPicker,
   onRequestSupply,
+  onRequestDemand,
 }: {
   nodes: CalcNode[];
   wires: CalcWire[];
@@ -38,12 +39,14 @@ export function useFlowLayout({
     | 'onRequestPicker'
     | 'onRequestMemberPicker'
     | 'onRequestSupply'
+    | 'onRequestDemand'
     | 'onCrafts'
   >;
   mode: CalcViewMode;
   onRequestPicker: (node: CalcNode) => void;
   onRequestMemberPicker: (node: CalcNode) => void;
   onRequestSupply: (node: CalcNode, input: number) => void;
+  onRequestDemand: (node: CalcNode, output: number) => void;
 }) {
   const flowData = useMemo(
     () =>
@@ -53,6 +56,7 @@ export function useFlowLayout({
         onRequestPicker,
         onRequestMemberPicker,
         onRequestSupply,
+        onRequestDemand,
       }) as Omit<CalcFlowData, 'node'>,
     [
       data,
@@ -60,6 +64,7 @@ export function useFlowLayout({
       onRequestPicker,
       onRequestMemberPicker,
       onRequestSupply,
+      onRequestDemand,
     ],
   );
   const rawFlow = useMemo(

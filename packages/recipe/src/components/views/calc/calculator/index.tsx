@@ -40,6 +40,7 @@ export function Calculator({ session }: { session: RecipeSession }) {
     setRecipeDefault,
     getRecipesForItem,
     ensureMaterial,
+    tagMembers,
     nodes,
     flows,
     summary,
@@ -80,6 +81,8 @@ export function Calculator({ session }: { session: RecipeSession }) {
     flushAmounts,
     setFocusNodeId,
     nodes: deferredNodes,
+    tagMembers,
+    ensureMaterial,
   });
 
   const iconItems = useMemo(

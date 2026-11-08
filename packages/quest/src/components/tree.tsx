@@ -7,6 +7,10 @@ import {
   langString,
 } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/load';
 import { getQuestSource } from '@terrafirmagreg-team/quest/lib/source';
+import {
+  loadDumpQuestSummary,
+  questSummaryComplete,
+} from '@terrafirmagreg-team/quest/lib/data/load';
 import { DUMP_POINTER_TTL } from '@terrafirmagreg-team/dump/lib/dump/json-reader';
 import { createAsyncCache } from '@terrafirmagreg-team/data/lib/async-cache';
 import { groupQuestChapters } from '@terrafirmagreg-team/quest/lib/data/groups';
@@ -89,7 +93,11 @@ async function buildQuestTrees(): Promise<SectionTrees> {
     for (const lang of languages ?? [defaultLanguage]) {
       const ref = { id };
       const map = await loadMergedLangMap(ref, lang);
-      const index = await getQuestSource().dumpIndex(ref);
+      const summary = await loadDumpQuestSummary(ref);
+      const index =
+        summary && questSummaryComplete(summary)
+          ? summary
+          : await getQuestSource().dumpIndex(ref);
       const groups = index ? groupQuestChapters(index) : [];
       const children: PageTree.Node[] = groups.flatMap(
         (group): PageTree.Node[] =>

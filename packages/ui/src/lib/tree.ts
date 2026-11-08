@@ -61,7 +61,9 @@ export function searchPath(
   const normalizedUrl = normalizeUrl(url);
   return findPath(
     nodes,
-    (node) => node.type === 'page' && node.url === normalizedUrl,
+    (node) =>
+      node.type === 'page' &&
+      normalizeUrl(node.url.split(/[?#]/, 1)[0] ?? node.url) === normalizedUrl,
   );
 }
 

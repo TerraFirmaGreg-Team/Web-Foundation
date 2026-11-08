@@ -58,8 +58,8 @@ export function ItemRow({
         {media}
         <div className="min-w-0 flex-1">
           {overline ? <p className="text-xs text-muted-foreground">{overline}</p> : null}
-          <p className={cn('text-sm font-medium', titleClassName)}>{title}</p>
-          {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
+          <div className={cn('text-sm font-medium', titleClassName)}>{title}</div>
+          {description ? <div className="text-sm text-muted-foreground">{description}</div> : null}
           {code ? <code className="text-xs text-muted-foreground">{code}</code> : null}
         </div>
         {trailing}

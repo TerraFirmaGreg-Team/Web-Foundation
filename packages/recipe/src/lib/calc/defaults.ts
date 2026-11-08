@@ -1,11 +1,9 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 const KEY_PREFIX = 'calc:recipe-defaults:';
 
-export function readRecipeDefaults(dataset: DatasetRef): Record<string, string> {
-  if (typeof window === 'undefined') return {};
+function parseDefaults(raw: string | null): Record<string, string> {
+  if (!raw) return {};
   try {
-    const raw = window.localStorage.getItem(`${KEY_PREFIX}${dataset.id}/${dataset.version ?? ''}`);
-    if (!raw) return {};
     const parsed = JSON.parse(raw);
     if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed))
       return {};
@@ -15,6 +13,17 @@ export function readRecipeDefaults(dataset: DatasetRef): Record<string, string> 
           typeof key === 'string' && typeof value === 'string',
       ) as [string, string][],
     );
+  } catch {
+    return {};
+  }
+}
+
+const defaultsKey = (dataset: DatasetRef) => `${KEY_PREFIX}${dataset.id}`;
+
+export function readRecipeDefaults(dataset: DatasetRef): Record<string, string> {
+  if (typeof window === 'undefined') return {};
+  try {
+    return parseDefaults(window.localStorage.getItem(defaultsKey(dataset)));
   } catch {
     return {};
   }
@@ -37,7 +46,7 @@ export function writeRecipeDefault(
   if (recipeId === null) delete next[materialId];
   else next[materialId] = recipeId;
   try {
-    window.localStorage.setItem(`${KEY_PREFIX}${dataset.id}/${dataset.version ?? ''}`, JSON.stringify(next));
+    window.localStorage.setItem(defaultsKey(dataset), JSON.stringify(next));
   } catch {
 
   }
@@ -45,3 +54,32 @@ export function writeRecipeDefault(
   return next;
 }
 
+const migrated = new Set<string>();
+
+export function migrateRecipeDefaults(dataset: DatasetRef): void {
+  if (typeof window === 'undefined') return;
+  const canonical = defaultsKey(dataset);
+  if (migrated.has(canonical)) return;
+  migrated.add(canonical);
+  try {
+    const legacy: string[] = [];
+    for (let i = 0; i < window.localStorage.length; i += 1) {
+      const name = window.localStorage.key(i);
+      if (name && name.startsWith(`${canonical}/`)) legacy.push(name);
+    }
+    if (!legacy.length) return;
+    const merged: Record<string, string> = {};
+    for (const name of legacy) {
+      Object.assign(
+        merged,
+        parseDefaults(window.localStorage.getItem(name)),
+      );
+    }
+    Object.assign(merged, readRecipeDefaults(dataset));
+    window.localStorage.setItem(canonical, JSON.stringify(merged));
+    for (const name of legacy) window.localStorage.removeItem(name);
+    window.dispatchEvent(new Event(EVENT));
+  } catch {
+    return;
+  }
+}

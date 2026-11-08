@@ -97,14 +97,17 @@ function CalcFlowInner({
     setMemberNode,
     supply,
     setSupply,
+    demand,
+    setDemand,
     onRequestPicker,
     onRequestMemberPicker,
     onRequestSupply,
+    onRequestDemand,
   } = useFlowPickers(schemeNodes);
 
   const flowData = useMemo(
-    () => ({ ...data, onRequestSupply }),
-    [data, onRequestSupply],
+    () => ({ ...data, onRequestSupply, onRequestDemand }),
+    [data, onRequestSupply, onRequestDemand],
   );
 
   const tier = useStore((s) =>
@@ -124,6 +127,7 @@ function CalcFlowInner({
     onRequestPicker,
     onRequestMemberPicker,
     onRequestSupply,
+    onRequestDemand,
   });
   const focusIdRef = useRef<string | null>(null);
   const [focusId, setFocusId] = useState<string | null>(null);
@@ -179,6 +183,7 @@ function CalcFlowInner({
     setPickerNode(null);
     setMemberNode(null);
     setSupply(null);
+    setDemand(null);
   }
 
   const {
@@ -204,6 +209,7 @@ function CalcFlowInner({
   const closePicker = useCallback(() => setPickerNode(null), [setPickerNode]);
   const closeMember = useCallback(() => setMemberNode(null), [setMemberNode]);
   const closeSupply = useCallback(() => setSupply(null), [setSupply]);
+  const closeDemand = useCallback(() => setDemand(null), [setDemand]);
   const runRelayout = useCallback(() => {
     onRelayout?.(relayout());
   }, [onRelayout, relayout]);
@@ -282,12 +288,14 @@ function CalcFlowInner({
         pickerNode={pickerNode}
         memberNode={memberNode}
         supply={supply}
+        demand={demand}
         session={session}
         dataset={dataset}
         data={data}
         onClosePicker={closePicker}
         onCloseMember={closeMember}
         onCloseSupply={closeSupply}
+        onCloseDemand={closeDemand}
       />
       </CalcTierProvider>
       </CalcFarProvider>

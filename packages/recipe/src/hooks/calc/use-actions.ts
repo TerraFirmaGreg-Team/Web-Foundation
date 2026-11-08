@@ -10,6 +10,10 @@ import { useCopyButton } from '@terrafirmagreg-team/ui/hooks/use-copy-button';
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { recipeCalcHref, recipeStackHref } from '@terrafirmagreg-team/recipe/lib/links';
 import type { Recipe } from '@terrafirmagreg-team/recipe/lib/data/dto';
+import { loadClientRecipe } from '@terrafirmagreg-team/recipe/lib/client/recipe';
+import { resolveClientTag } from '@terrafirmagreg-team/dump/lib/dump/client/tags';
+import { toCalcRecipe } from '@terrafirmagreg-team/recipe/lib/calc/tree';
+import { CALC_NODE_W } from '@terrafirmagreg-team/recipe/lib/calc/flow';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import type {
   CalcCard,
@@ -17,7 +21,9 @@ import type {
   CalcNode,
   CalculatorState,
   CalcWire,
+  TagResolution,
 } from '@terrafirmagreg-team/recipe/types/calc';
+import type { RecipeRelation } from '@terrafirmagreg-team/recipe/types';
 import type { CalcFlowData } from '@terrafirmagreg-team/recipe/lib/calc/flow';
 
 let cardSeq = 0;
@@ -38,6 +44,8 @@ export function useCalcActions({
   flushAmounts,
   setFocusNodeId,
   nodes,
+  tagMembers,
+  ensureMaterial,
 }: {
   dataset: DatasetRef;
   lang: Lang;
@@ -52,6 +60,8 @@ export function useCalcActions({
   flushAmounts: () => CalcCard[];
   setFocusNodeId: Dispatch<SetStateAction<string | null>>;
   nodes: CalcNode[];
+  tagMembers?: (tagId: string) => TagResolution | undefined;
+  ensureMaterial?: (materialId: string) => void;
 }) {
   const { checked: shared, onClick: onShare } = useCopyButton(async () => {
     const tree = encodeShare();
@@ -170,10 +180,105 @@ export function useCalcActions({
     [nodes, cards, wires, flushAmounts, persist, tagSelections],
   );
 
+  const onDemandOutput = useCallback(
+    (cardId: string, outputIndex: number, recipeId: string) => {
+      const srcNode = nodes.find((n) => n.id === cardId);
+      const srcCard = cards.find((row) => row.id === cardId);
+      const out = srcNode?.outputs[outputIndex];
+      if (!srcNode || !srcCard || !out) return;
+      const need =
+        out.remaining > 0 ? out.remaining : Math.max(1, out.amount);
+      const base = srcCard.pos;
+      void (async () => {
+        const body = await loadClientRecipe(dataset, recipeId).catch(
+          () => undefined,
+        );
+        const calc = body ? toCalcRecipe(body) : undefined;
+        const inputs = calc?.inputs ?? [];
+        let inputIndex = inputs.findIndex(
+          (slot) =>
+            !slot.catalyst && slot.id === out.id && slot.kind === out.kind,
+        );
+        let pickedTag: string | undefined;
+        if (inputIndex < 0) {
+          for (let i = 0; i < inputs.length; i += 1) {
+            const slot = inputs[i];
+            if (!slot?.tagId || slot.catalyst) continue;
+            const members =
+              tagMembers?.(slot.tagId)?.members ??
+              (
+                await resolveClientTag(dataset, slot.tagId).catch(
+                  () => undefined,
+                )
+              )?.members ??
+              [];
+            if (members.includes(out.id)) {
+              inputIndex = i;
+              pickedTag = slot.tagId;
+              break;
+            }
+          }
+        }
+        const product = calc?.outputs[0];
+        const materialId = product?.id ?? out.id;
+        const kind = product?.kind ?? out.kind;
+        const inputAmount =
+          inputIndex >= 0 ? (inputs[inputIndex]?.amount ?? 1) : 1;
+        const crafts = Math.max(1, Math.ceil(need / inputAmount));
+        const id = newCardId();
+        const card: CalcCard = {
+          id,
+          materialId,
+          kind,
+          recipeId,
+          crafts,
+          pos: base
+            ? {
+                x: base.x + CALC_NODE_W + 90,
+                y: base.y + 40 + outputIndex * 24,
+              }
+            : undefined,
+        };
+        persist({
+          cards: [...flushAmounts(), card],
+          wires:
+            inputIndex >= 0
+              ? [
+                  ...wires,
+                  {
+                    from: cardId,
+                    to: id,
+                    input: inputIndex,
+                    out: outputIndex,
+                  },
+                ]
+              : wires,
+          tagSelections: pickedTag
+            ? { ...tagSelections, [pickedTag]: out.id }
+            : tagSelections,
+        });
+        ensureMaterial?.(materialId);
+        setFocusNodeId(id);
+      })();
+    },
+    [
+      nodes,
+      cards,
+      wires,
+      flushAmounts,
+      persist,
+      tagSelections,
+      dataset,
+      tagMembers,
+      ensureMaterial,
+      setFocusNodeId,
+    ],
+  );
+
   const onOpenItem = useCallback(
-    (materialId: string, kind: CalcKind) => {
+    (materialId: string, kind: CalcKind, relation?: RecipeRelation) => {
       window.open(
-        recipeStackHref(dataset, lang, materialId, { kind }),
+        recipeStackHref(dataset, lang, materialId, { kind, relation }),
         '_blank',
         'noopener',
       );
@@ -216,9 +321,29 @@ export function useCalcActions({
     [flushAmounts, write],
   );
 
+  const tagPinFor = useCallback(
+    (
+      to: string,
+      input: number,
+      from: string,
+      out?: number,
+    ): string | undefined => {
+      const slot = nodes.find((n) => n.id === to)?.inputs[input];
+      const srcOut = nodes.find((n) => n.id === from)?.outputs[out ?? 0];
+      if (!slot?.tagId || !srcOut?.id) return undefined;
+      const member = slot.members?.includes(srcOut.id);
+      return member ?? slot.id === srcOut.id ? slot.tagId : undefined;
+    },
+    [nodes],
+  );
+
   const onWire = useCallback(
     (from: string, to: string, input: number, out?: number) => {
       if (from === to) return;
+      const pinTag = tagPinFor(to, input, from, out);
+      const srcOut = nodes
+        .find((n) => n.id === from)
+        ?.outputs[out ?? 0];
       write({
         wires: [
           ...wires.filter(
@@ -226,9 +351,13 @@ export function useCalcActions({
           ),
           { from, to, input, out: out || undefined },
         ],
+        tagSelections:
+          pinTag && srcOut?.id
+            ? { ...tagSelections, [pinTag]: srcOut.id }
+            : tagSelections,
       });
     },
-    [wires, write],
+    [wires, write, nodes, tagSelections, tagPinFor],
   );
 
   const onUnwire = useCallback(
@@ -256,6 +385,10 @@ export function useCalcActions({
       next: { from: string; to: string; input: number; out?: number },
     ) => {
       if (next.from === next.to) return;
+      const pinTag = tagPinFor(next.to, next.input, next.from, next.out);
+      const srcOut = nodes
+        .find((n) => n.id === next.from)
+        ?.outputs[next.out ?? 0];
       write({
         wires: [
           ...wires.filter(
@@ -265,9 +398,13 @@ export function useCalcActions({
           ),
           next,
         ],
+        tagSelections:
+          pinTag && srcOut?.id
+            ? { ...tagSelections, [pinTag]: srcOut.id }
+            : tagSelections,
       });
     },
-    [wires, write],
+    [wires, write, nodes, tagSelections, tagPinFor],
   );
 
   const onWireAmount = useCallback(
@@ -300,6 +437,7 @@ export function useCalcActions({
       | 'onRequestPicker'
       | 'onRequestMemberPicker'
       | 'onRequestSupply'
+      | 'onRequestDemand'
       | 'onCrafts'
       | 'getRecipesForItem'
       | 'ensureMaterial'
@@ -311,6 +449,7 @@ export function useCalcActions({
       onSelectRecipe,
       onSelectTagMember,
       onSupplyInput,
+      onDemandOutput,
       onAddCard,
       onOpenItem,
       onRemoveCard,
@@ -328,6 +467,7 @@ export function useCalcActions({
       onSelectRecipe,
       onSelectTagMember,
       onSupplyInput,
+      onDemandOutput,
       onAddCard,
       onOpenItem,
       onRemoveCard,

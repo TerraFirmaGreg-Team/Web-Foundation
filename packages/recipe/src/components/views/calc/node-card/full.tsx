@@ -301,7 +301,6 @@ export const CalcNodeCardFull = memo(function CalcNodeCardFull({
         langMap={langMap}
         names={names}
         connectable={interactive}
-        onOpen={() => onRequestPicker(node)}
       />
       {interactive ? <NodeActions data={data} nodeId={id} /> : null}
       <NodeBadges node={node} />

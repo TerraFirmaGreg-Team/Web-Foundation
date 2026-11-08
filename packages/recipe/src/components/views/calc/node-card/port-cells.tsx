@@ -6,6 +6,7 @@ import {
   Position,
 } from '@terrafirmagreg-team/ui/lib/canvas/xyflow';
 import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
+import { tagHashId } from '@terrafirmagreg-team/dump/lib/dump/paths';
 import {
   ContextMenu,
   ContextMenuTrigger,
@@ -43,10 +44,8 @@ export function OutputCell({
   langMap,
   names,
   connectable,
-  onOpen,
 }: CellProps & {
   out: CalcOutput;
-  onOpen?: () => void;
 }) {
   const name = recipeItemName(names, lang, out.id);
   const count = out.remaining;
@@ -68,13 +67,19 @@ export function OutputCell({
             )}
             onClick={(e) => {
               e.stopPropagation();
-              if (index === 0) onOpen?.();
+              data.onRequestDemand(node, index);
             }}
           >
             <span className="calc-port-inner">
               <Entry
                 id={out.id}
-                kind={out.kind}
+                kind={
+                  out.tagId
+                    ? out.kind === 'fluid'
+                      ? 'fluidTag'
+                      : 'itemTag'
+                    : out.kind
+                }
                 dataset={dataset}
                 lang={lang}
                 langMap={langMap}
@@ -160,6 +165,18 @@ export function InputCell({
                   href={false}
                   tooltip="adaptive"
                 />
+              ) : inp.tagId ? (
+                <Entry
+                  id={tagHashId(inp.tagId)}
+                  kind={inp.kind === 'fluid' ? 'fluidTag' : 'itemTag'}
+                  dataset={dataset}
+                  lang={lang}
+                  langMap={langMap}
+                  name={`${name} ×${qty}`}
+                  size="sm"
+                  href={false}
+                  tooltip="adaptive"
+                />
               ) : (
                 <span className="text-[9px]">?</span>
               )}
@@ -168,12 +185,12 @@ export function InputCell({
           </Handle>
         }
       />
-      {id ? (
+      {id || inp.tagId ? (
         <PortContextMenu
           data={data}
           node={node}
           input={index}
-          id={id}
+          id={id ?? tagHashId(inp.tagId!)}
           kind={inp.kind}
           dataset={dataset}
           lang={lang}

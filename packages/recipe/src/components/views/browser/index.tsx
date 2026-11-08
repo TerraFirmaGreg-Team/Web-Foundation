@@ -2,7 +2,10 @@
 
 import { useDocumentTitle } from '@terrafirmagreg-team/ui/hooks/use-document-title';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
-import { useFailedDatasets } from '@terrafirmagreg-team/kit/hooks/use-dump-status';
+import {
+  isDatasetFailed,
+  useFailedDatasets,
+} from '@terrafirmagreg-team/kit/hooks/use-dump-status';
 import {
   DumpUnavailable,
   DumpUnavailableOverlay,
@@ -75,7 +78,8 @@ export function RecipeBrowser({
   const { dataset, item, fluid, names } = session;
   const focusId = item ?? fluid;
   const failed =
-    useFailedDatasets().includes(id) && !session.index?.items.length;
+    isDatasetFailed(useFailedDatasets(), dataset) &&
+    !session.index?.items.length;
 
   const focusTitle = focusId
     ? recipeItemName(names, lang, focusId)

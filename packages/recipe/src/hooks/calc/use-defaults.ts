@@ -3,12 +3,16 @@ import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 
 import { useCallback, useEffect, useState } from 'react';
 import {
+  migrateRecipeDefaults,
   readRecipeDefaults,
   subscribeRecipeDefaults,
   writeRecipeDefault,
 } from '@terrafirmagreg-team/recipe/lib/calc/defaults';
 
 export function useRecipeDefaults(dataset: DatasetRef) {
+  useEffect(() => {
+    migrateRecipeDefaults(dataset);
+  }, [dataset]);
   const [defaultsState, setDefaultsState] = useState<{
     dataset: DatasetRef;
     map: Record<string, string>;

@@ -22,7 +22,7 @@ function calcTabId(): string {
 
 export function calcStorageKey(section: string, dataset: DatasetRef): string {
   void calcTabId();
-  return `calc:tabs:${section}:${dataset.id}/${dataset.version ?? ''}`;
+  return `calc:tabs:${section}:${dataset.id}`;
 }
 
 export function activeKey(key: string): string {

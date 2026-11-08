@@ -192,11 +192,15 @@ export class JsonDumpReader implements DumpReader {
   );
   private readonly dataset: DatasetRef;
   private readonly packId: string;
+  private readonly statusKey: string;
   private readonly version?: string;
 
   constructor(dataset: DatasetRef) {
     this.dataset = dataset;
     this.packId = dataset.id;
+    this.statusKey = dataset.version
+      ? `${dataset.id}@${dataset.version}`
+      : dataset.id;
     this.version = dataset.version;
   }
 
@@ -213,8 +217,8 @@ export class JsonDumpReader implements DumpReader {
       const key = loc.files?.[path];
       if (key) {
         return key.endsWith('.gz')
-          ? fetchJsonGz(dumpStorageUrl(`${key}`), high, this.packId)
-          : fetchJson(dumpStorageUrl(`${key}`), high, this.packId);
+          ? fetchJsonGz(dumpStorageUrl(`${key}`), high, this.statusKey)
+          : fetchJson(dumpStorageUrl(`${key}`), high, this.statusKey);
       }
 
       if (loc.files) return undefined;
@@ -224,8 +228,8 @@ export class JsonDumpReader implements DumpReader {
           ? [fetchJsonMutable, fetchJsonGzMutable]
           : [fetchJson, fetchJsonGz];
       return COMPRESSED_TREE.test(path)
-        ? jsonGz(dumpStorageUrl(`${rel}.gz`), high, this.packId)
-        : json(dumpStorageUrl(`${rel}`), high, this.packId);
+        ? jsonGz(dumpStorageUrl(`${rel}.gz`), high, this.statusKey)
+        : json(dumpStorageUrl(`${rel}`), high, this.statusKey);
     });
   }
 
@@ -266,7 +270,7 @@ export class JsonDumpReader implements DumpReader {
         headOk(dumpStorageUrl(`${root}/objects.json.gz`)).then(
           async (ok) => ok || (await headOk(dumpStorageUrl(`${root}/manifest.json`))),
         ),
-        this.objectsIndex(root),
+        this.objectsIndex(root).catch(() => undefined),
       ]);
       if (exists) {
         const loc: DumpLocation = { root, files };
@@ -282,7 +286,7 @@ export class JsonDumpReader implements DumpReader {
 
   private async objectsIndex(
     root: string,
-  ): Promise<Record<string, string> | undefined> {
+  ): Promise<Record<string, string>> {
     const raw = await fetchJsonGz(
       dumpStorageUrl(`${root}/objects.json.gz`),
       true,
@@ -293,7 +297,7 @@ export class JsonDumpReader implements DumpReader {
         ? (raw as Record<string, unknown>).files
         : undefined;
     if (!files || typeof files !== 'object' || Array.isArray(files)) {
-      return undefined;
+      throw new Error(`objects index missing: ${root}`);
     }
     const out: Record<string, string> = {};
     for (const [rel, key] of Object.entries(files)) {

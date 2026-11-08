@@ -112,49 +112,30 @@ async function clientRecipeGroups(
 
 const loadChrome = createDatasetCache(
   async (dataset: DatasetRef, lang: string): Promise<RecipeChrome> => {
-    const [items, fluids, creative, categories, usedIds, itemTags, blockTags] =
-      await Promise.all([
-        loadClientRegistryOrder(dataset, 'item'),
-        loadClientRegistryOrder(dataset, 'fluid'),
-        loadClientTabs(dataset),
-        loadDatasetRecipeCategories(dataset),
-        clientUsedIds(dataset),
-        loadClientTagMembers(dataset, 'item'),
-        loadClientTagMembers(dataset, 'block'),
-      ]);
+    const [items, fluids, creative, categories, usedIds] = await Promise.all([
+      loadClientRegistryOrder(dataset, 'item'),
+      loadClientRegistryOrder(dataset, 'fluid'),
+      loadClientTabs(dataset),
+      loadDatasetRecipeCategories(dataset),
+      clientUsedIds(dataset),
+    ]);
     const tabs = creative.tabs;
     const tabItems = Object.keys(creative.members).length
       ? creative.members
       : undefined;
     const types = categories.map((row) => row.id);
-    const tagIds = new Set([
-      ...Object.keys(itemTags ?? {}),
-      ...Object.keys(blockTags ?? {}),
+    const [groups, mods, categoryNames, tabNames] = await Promise.all([
+      clientRecipeGroups(dataset, lang),
+      loadClientModNames(dataset, lang),
+      clientNamedCategories(dataset, lang, types, categories),
+      clientDumpLang(dataset, lang).then((map) => {
+        const names: Record<string, string> = {};
+        for (const tab of tabs) {
+          names[tab.id] = creativeTabName(map, tab.display.name ?? tab.id);
+        }
+        return names;
+      }),
     ]);
-    const nameIds = [
-      ...items,
-      ...fluids,
-      ...tagIds,
-      ...(usedIds ?? []),
-      ...Object.values(tabItems ?? {}).flat(),
-      ...tabs.flatMap((tab) =>
-        tab.icon ? [stackIdFromRef(tab.icon)] : [],
-      ),
-    ];
-    const [groups, mods, entityNames, categoryNames, tabNames] =
-      await Promise.all([
-        clientRecipeGroups(dataset, lang),
-        loadClientModNames(dataset, lang),
-        clientEntityNames(dataset, lang, nameIds),
-        clientNamedCategories(dataset, lang, types, categories),
-        clientDumpLang(dataset, lang).then((map) => {
-          const names: Record<string, string> = {};
-          for (const tab of tabs) {
-            names[tab.id] = creativeTabName(map, tab.display.name ?? tab.id);
-          }
-          return names;
-        }),
-      ]);
     return {
       items,
       ...(usedIds.length ? { usedIds } : {}),
@@ -165,10 +146,39 @@ const loadChrome = createDatasetCache(
       ...(groups.length ? { groups } : {}),
       mods,
       names: {
-        [lang]: { ...tabNames, ...categoryNames, ...entityNames },
+        [lang]: { ...tabNames, ...categoryNames },
       },
     };
   },
+);
+
+const loadEntityNames = createDatasetCache(
+  async (
+    dataset: DatasetRef,
+    chrome: RecipeChrome,
+    lang: string,
+  ): Promise<Record<string, string>> => {
+    const [itemTags, blockTags] = await Promise.all([
+      loadClientTagMembers(dataset, 'item'),
+      loadClientTagMembers(dataset, 'block'),
+    ]);
+    const tagIds = new Set([
+      ...Object.keys(itemTags ?? {}),
+      ...Object.keys(blockTags ?? {}),
+    ]);
+    const nameIds = [
+      ...chrome.items,
+      ...(chrome.fluids ?? []),
+      ...tagIds,
+      ...(chrome.usedIds ?? []),
+      ...Object.values(chrome.tabItems ?? {}).flat(),
+      ...(chrome.tabs ?? []).flatMap((tab) =>
+        tab.icon ? [stackIdFromRef(tab.icon)] : [],
+      ),
+    ];
+    return clientEntityNames(dataset, lang, nameIds);
+  },
+  (dataset, _chrome, lang) => `${dataset.id}/${dataset.version ?? ''} ${lang}`,
 );
 
 export function loadRecipeChromeClient(
@@ -176,5 +186,13 @@ export function loadRecipeChromeClient(
   lang: string,
 ): Promise<RecipeChrome> {
   return loadChrome(dataset, lang);
+}
+
+export function loadRecipeEntityNames(
+  dataset: DatasetRef,
+  chrome: RecipeChrome,
+  lang: string,
+): Promise<Record<string, string>> {
+  return loadEntityNames(dataset, chrome, lang);
 }
 

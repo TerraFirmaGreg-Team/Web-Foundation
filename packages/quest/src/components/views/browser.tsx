@@ -11,6 +11,7 @@ import {
 import { useLastResult } from '@terrafirmagreg-team/ui/hooks/use-last-result';
 import { useVersionedDataset } from '@terrafirmagreg-team/kit/hooks/use-versioned-dataset';
 import {
+  isDatasetFailed,
   useDumpRetryNonce,
   useFailedDatasets,
 } from '@terrafirmagreg-team/kit/hooks/use-dump-status';
@@ -164,7 +165,7 @@ export function QuestBrowser({
 
   const source = getQuestSource();
   const nonce = useDumpRetryNonce();
-  const failed = useFailedDatasets().includes(dataset.id);
+  const failed = isDatasetFailed(useFailedDatasets(), dataset);
   const index = useLastResult(
     useAsyncResult(
       () => source.index(dataset, lang),
@@ -328,7 +329,6 @@ export function QuestBrowser({
                 id,
               });
             }}
-            onClearSelection={() => replaceQuest({ category: row?.filename })}
             onOpenSearch={() => setSearchOpen(true)}
           />
         ) : chapter.error || (!chapter.pending && !chapter.value && row) ? (

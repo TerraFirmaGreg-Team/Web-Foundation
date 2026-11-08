@@ -171,8 +171,7 @@ export function PortRailOut({
   langMap,
   names,
   connectable = true,
-  onOpen,
-}: RailProps & { onOpen?: () => void }) {
+}: RailProps) {
   const {
     ref,
     start,
@@ -222,7 +221,6 @@ export function PortRailOut({
           langMap={langMap}
           names={names}
           connectable={connectable}
-          onOpen={onOpen}
         />
       ))}
       {below > 0 ? (

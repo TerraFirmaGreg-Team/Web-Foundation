@@ -9,6 +9,7 @@ import {
 import { useLastResult } from '@terrafirmagreg-team/ui/hooks/use-last-result';
 import { useVersionedDataset } from '@terrafirmagreg-team/kit/hooks/use-versioned-dataset';
 import {
+  isDatasetFailed,
   useDumpRetryNonce,
   useFailedDatasets,
 } from '@terrafirmagreg-team/kit/hooks/use-dump-status';
@@ -119,7 +120,7 @@ export function GuideBrowser({
   );
   const source = getGuideSource();
   const nonce = useDumpRetryNonce();
-  const failed = useFailedDatasets().includes(dataset.id);
+  const failed = isDatasetFailed(useFailedDatasets(), dataset);
   const books = useLastResult(
     useAsyncResult(
       () => source.books(dataset, lang),

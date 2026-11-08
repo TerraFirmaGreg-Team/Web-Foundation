@@ -11,13 +11,16 @@ import {
   SheetTitle,
 } from '@terrafirmagreg-team/ui/components/ui/sheet';
 import { ItemPanel } from '@terrafirmagreg-team/recipe/components/views/browser/item-panel';
-import { useFailedDatasets } from '@terrafirmagreg-team/kit/hooks/use-dump-status';
+import {
+  isDatasetFailed,
+  useFailedDatasets,
+} from '@terrafirmagreg-team/kit/hooks/use-dump-status';
 import type { RecipeSession } from '@terrafirmagreg-team/recipe/types';
 
 export function RecipeToolbar({ session }: { session: RecipeSession }) {
   const t = useTranslations();
   const [itemsOpen, setItemsOpen] = useState(false);
-  const failed = useFailedDatasets().includes(session.dataset.id);
+  const failed = isDatasetFailed(useFailedDatasets(), session.dataset);
   if ((session.indexLoading || failed) && !session.index?.items.length)
     return null;
 

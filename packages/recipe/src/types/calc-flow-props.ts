@@ -26,6 +26,7 @@ export type CalcFlowProps = {
     | 'onRequestPicker'
     | 'onRequestMemberPicker'
     | 'onRequestSupply'
+    | 'onRequestDemand'
   >;
   mode: CalcViewMode;
   onModeChange: (mode: CalcViewMode) => void;

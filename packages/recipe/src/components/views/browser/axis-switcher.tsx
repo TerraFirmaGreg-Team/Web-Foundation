@@ -9,7 +9,10 @@ import { recipePlaceFromParams } from '@terrafirmagreg-team/recipe/lib/links';
 import { recipeCalcHref, recipeHref } from '@terrafirmagreg-team/recipe/lib/links';
 import { parseSectionLocation } from '@terrafirmagreg-team/sites/location';
 import { Switcher } from '@terrafirmagreg-team/ui/components/blocks/nav/switcher';
-import { useFailedDatasets } from '@terrafirmagreg-team/kit/hooks/use-dump-status';
+import {
+  isDatasetFailed,
+  useFailedDatasets,
+} from '@terrafirmagreg-team/kit/hooks/use-dump-status';
 import { useVersionPreference } from '@terrafirmagreg-team/kit/hooks/use-version-pref';
 
 export function RecipeAxisSwitcher() {
@@ -24,7 +27,7 @@ export function RecipeAxisSwitcher() {
     id: datasetId ?? '',
     version: params.get('version') ?? preferred,
   };
-  if (!datasetId || failed.includes(datasetId)) return null;
+  if (!datasetId || isDatasetFailed(failed, dataset)) return null;
   return (
     <Switcher
       options={[
