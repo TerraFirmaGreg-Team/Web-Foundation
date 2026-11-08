@@ -60,7 +60,13 @@ export const ItemPanelGrid = memo(function ItemPanelGrid({
     >
       {shown.map((cell) => (
         <PanelCell
-          key={cell.kind === 'recipe' ? `R:${cell.fav.id}` : cell.id}
+          key={
+            cell.kind === 'recipe'
+              ? `R:${cell.fav.id}`
+              : cell.kind === 'group'
+                ? `G:${cell.id}`
+                : cell.id
+          }
           cell={cell}
           dataset={dataset}
           lang={lang}

@@ -33,6 +33,10 @@ export function pinTreeDataset(
     }
     return node;
   };
-  return { ...tree, children: tree.children.map(pinNode) };
+  return {
+    ...tree,
+    $id: `${tree.$id ?? `${section}/${datasetId}`}@${version}`,
+    children: tree.children.map(pinNode),
+  };
 }
 

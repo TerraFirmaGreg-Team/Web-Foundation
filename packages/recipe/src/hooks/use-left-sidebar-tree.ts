@@ -10,13 +10,16 @@ import { useRecipeModNames } from '@terrafirmagreg-team/recipe/hooks/use-mod-nam
 import { useSidebarGroup } from '@terrafirmagreg-team/recipe/hooks/use-sidebar-group';
 import { groupRecipeSidebarByMod } from '@terrafirmagreg-team/recipe/lib/browser/sidebar';
 import { parseSectionLocation } from '@terrafirmagreg-team/sites/location';
+import { useVersionPreference } from '@terrafirmagreg-team/kit/hooks/use-version-pref';
 
 export function useRecipeLeftSidebarTree(tree: PageTree.Root): PageTree.Root {
   const { dataset: datasetId } = parseSectionLocation(usePathname());
   const lang = useResolvedLang();
   const { sidebarGroup } = useSidebarGroup();
   const scopeKey = datasetId ?? '';
-  const version = useLocationSearchParams().get('version') ?? undefined;
+  const versionParam = useLocationSearchParams().get('version') ?? undefined;
+  const preferred = useVersionPreference(datasetId);
+  const version = versionParam ?? preferred;
   const dataset = useMemo(
     () => (datasetId ? { id: datasetId, version } : undefined),
     [datasetId, version],

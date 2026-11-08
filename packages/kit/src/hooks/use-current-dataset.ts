@@ -7,6 +7,7 @@ import {
   parseSectionLocation,
   resolveDatasetRef,
 } from '@terrafirmagreg-team/sites/location';
+import { useVersionPreference } from '@terrafirmagreg-team/kit/hooks/use-version-pref';
 import type { SectionDataset } from '@terrafirmagreg-team/kit/types';
 
 export function useCurrentDataset(
@@ -16,9 +17,11 @@ export function useCurrentDataset(
   const versionParam = useLocationSearchParams().get('version') ?? undefined;
   const { dataset } = parseSectionLocation(pathname);
   const meta = datasets.find((row) => row.id === dataset);
+  const preferred = useVersionPreference(dataset);
+  const version = versionParam ?? preferred;
   return useMemo(
-    () => dataset && meta ? resolveDatasetRef(dataset, versionParam, meta).ref : undefined,
-    [dataset, versionParam, meta],
+    () => dataset && meta ? resolveDatasetRef(dataset, version, meta).ref : undefined,
+    [dataset, version, meta],
   );
 }
 
