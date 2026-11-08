@@ -29,7 +29,7 @@ const registrySliceCache = createDatasetCache(
     kind: string,
   ): Promise<Record<string, Record<string, unknown>>> => {
     const field = registryField(kind);
-    const raw = await clientDumpJson(dataset, `registry/${field}.json`);
+    const raw = await clientDumpJson(dataset, `registry/${field}.json`, 'high');
     const map = asRecord(raw);
     return map ? resolveEdgeRows(map) : {};
   },

@@ -263,7 +263,9 @@ export class JsonDumpReader implements DumpReader {
       const root = `${this.packId}/${versions.latest}`;
 
       const [exists, files] = await Promise.all([
-        headOk(dumpStorageUrl(`${root}/manifest.json`)),
+        headOk(dumpStorageUrl(`${root}/objects.json.gz`)).then(
+          async (ok) => ok || (await headOk(dumpStorageUrl(`${root}/manifest.json`))),
+        ),
         this.objectsIndex(root),
       ]);
       if (exists) {
@@ -281,13 +283,11 @@ export class JsonDumpReader implements DumpReader {
   private async objectsIndex(
     root: string,
   ): Promise<Record<string, string> | undefined> {
-    const raw =
-      (await fetchJsonGz(
-        dumpStorageUrl(`${root}/objects.json.gz`),
-        false,
-        this.packId,
-      )) ??
-      (await fetchJson(dumpStorageUrl(`${root}/objects.json`), false, this.packId));
+    const raw = await fetchJsonGz(
+      dumpStorageUrl(`${root}/objects.json.gz`),
+      true,
+      this.packId,
+    );
     const files =
       raw && typeof raw === 'object' && !Array.isArray(raw)
         ? (raw as Record<string, unknown>).files
