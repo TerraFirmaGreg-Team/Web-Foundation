@@ -88,9 +88,13 @@ const chapterCache = createDatasetCache<
     defaultQuestShape?: string,
   ): Promise<Chapter | undefined> => {
     const raw = await clientDumpJson(dataset, file, 'high');
-    return raw
+    const chapter = raw
       ? parseChapter(raw, { filename, defaultQuestShape })
       : undefined;
+    if (!chapter) {
+      throw new Error(`quest chapter unavailable: ${file}`);
+    }
+    return chapter;
   },
   (dataset, _file, filename) => `${dataset.id}/${dataset.version ?? ''}${filename}`,
 );

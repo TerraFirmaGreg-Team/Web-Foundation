@@ -114,15 +114,21 @@ const fetchJsonLoader = async (
 ) => {
   if (circuitOpen(datasetId)) return undefined;
   return fetchLane(async () => {
+    const res = await request(url);
+    if (res?.status === 404) {
+      markDumpFetch(datasetId, url, res, false);
+      return undefined;
+    }
+    if (!res?.ok) {
+      markDumpFetch(datasetId, url, res, false);
+      throw new Error(`dump fetch failed: ${url}`);
+    }
+    markDumpFetch(datasetId, url, res, true);
     try {
-      const res = await request(url);
-      const ok = res?.ok === true;
-      markDumpFetch(datasetId, url, res, ok);
-      if (!ok) return undefined;
       return (await res.json()) as unknown;
     } catch {
       if (datasetId) markDumpResult(datasetId, false);
-      return undefined;
+      throw new Error(`dump parse failed: ${url}`);
     }
   }, high);
 };
@@ -134,18 +140,24 @@ const fetchJsonGzLoader = async (
 ) => {
   if (circuitOpen(datasetId)) return undefined;
   return fetchLane(async () => {
+    const res = await request(url);
+    if (res?.status === 404) {
+      markDumpFetch(datasetId, url, res, false);
+      return undefined;
+    }
+    if (!res?.ok || !res.body) {
+      markDumpFetch(datasetId, url, res, false);
+      throw new Error(`dump fetch failed: ${url}`);
+    }
+    markDumpFetch(datasetId, url, res, true);
     try {
-      const res = await request(url);
-      const ok = res?.ok === true && Boolean(res.body);
-      markDumpFetch(datasetId, url, res, ok);
-      if (!ok) return undefined;
       const text = await new Response(
-        res!.body!.pipeThrough(new DecompressionStream('gzip')),
+        res.body.pipeThrough(new DecompressionStream('gzip')),
       ).text();
       return JSON.parse(text) as unknown;
     } catch {
       if (datasetId) markDumpResult(datasetId, false);
-      return undefined;
+      throw new Error(`dump parse failed: ${url}`);
     }
   }, high);
 };

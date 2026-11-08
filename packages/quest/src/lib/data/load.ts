@@ -42,15 +42,20 @@ type QuestMeta = {
 
 async function questMeta(dataset: DatasetRef): Promise<QuestMeta | undefined> {
   const dump = await loadDatasetDump(dataset);
-  const questRoots = dump?.manifest.indexes.quests ?? {};
-  if (!dump || !Object.keys(questRoots).length) return undefined;
+  if (!dump) {
+    throw new Error(
+      `dump manifest unavailable: ${dataset.id}${dataset.version ? `/${dataset.version}` : ''}`,
+    );
+  }
+  const questRoots = dump.manifest.indexes.quests ?? {};
+  if (!Object.keys(questRoots).length) return undefined;
 
   const index: QuestCompactIndex = { groups: [], chapters: [], quests: [] };
   const chapterRels: QuestMeta['chapterRels'] = [];
   for (const dataRel of Object.values(questRoots)) {
     if (!dataRel) continue;
     const data = asRecord(await clientDumpJson(dataset, dataRel, 'high'));
-    if (!data) continue;
+    if (!data) throw new Error(`quest index unavailable: ${dataRel}`);
     const defaults = asRecord(data.defaults);
     index.book ??= questBookMeta(defaults);
     index.title ??= asString(data.title);
@@ -136,13 +141,15 @@ const indexCache = createDatasetCache(
     const chapterDocs = await Promise.all(
       chapterRels.map((row) => clientDumpJson(dataset, row.fileRel, 'high')),
     );
-    chapterRels.forEach(({ key }, i) => {
+    chapterRels.forEach(({ key, fileRel }, i) => {
       const row = index.chapters[index.chapters.length - chapterRels.length + i];
       const chapter = parseChapter(chapterDocs[i], {
         filename: key,
         defaultQuestShape: index.book?.defaultQuestShape,
       });
-      if (!chapter) return;
+      if (!chapter) {
+        throw new Error(`quest chapter unavailable: ${fileRel ?? key}`);
+      }
       if (row) {
         row.orderIndex = chapter.orderIndex;
         if (chapter.group) row.group = chapter.group;

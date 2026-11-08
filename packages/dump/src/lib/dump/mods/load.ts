@@ -10,7 +10,11 @@ const dumpCache = createDatasetCache(
   async (dataset: DatasetRef): Promise<DumpIndex | null> => {
     const reader = await dumpReader(dataset);
     const manifest = parseDumpManifest(await reader.getJson('manifest.json'));
-    if (!manifest) return null;
+    if (!manifest) {
+      throw new Error(
+        `dump manifest unavailable: ${dataset.id}${dataset.version ? `/${dataset.version}` : ''}`,
+      );
+    }
     return dumpIndexFromManifest(
       manifest,
       dumpLocation(dataset)?.root ?? dataset.id,
