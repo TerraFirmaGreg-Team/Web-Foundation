@@ -29,13 +29,6 @@ export function PagedCard({
   const inView = props.eager || observedInView;
   const [page, setPage] = useState(0);
 
-  const [imgReady, setImgReady] = useState(false);
-  const [prevSrc, setPrevSrc] = useState(src);
-  if (prevSrc !== src) {
-    setPrevSrc(src);
-    setImgReady(false);
-  }
-
   const slots = useMemo(() => recipeSlots(recipe), [recipe]);
   const visibleH = maxH ? Math.floor(maxH) : 0;
   const overflow = visibleH > 0 && natural > visibleH;
@@ -109,8 +102,7 @@ export function PagedCard({
     <div
       ref={rootRef}
       className={cn(
-        'relative w-fit overflow-hidden rounded-sm',
-        imgReady && 'bg-mc-panel',
+        'relative w-fit overflow-hidden rounded-sm bg-mc-panel',
       )}
       style={{ height: pinTop + memberH + capH }}
       {...swipe}
@@ -181,7 +173,6 @@ export function PagedCard({
           }}
           loading="lazy"
           decoding="async"
-          onLoad={() => setImgReady(true)}
         />
       </div>
       {pages > 1 && (

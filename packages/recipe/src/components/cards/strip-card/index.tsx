@@ -83,9 +83,7 @@ export function StripCard({
     <div
       ref={rootRef}
       className={cn(
-        'relative w-fit overflow-hidden rounded-sm',
-
-        measured?.src === src && 'bg-mc-panel',
+        'relative w-fit overflow-hidden rounded-sm bg-mc-panel',
       )}
       style={{
         width: imgW,

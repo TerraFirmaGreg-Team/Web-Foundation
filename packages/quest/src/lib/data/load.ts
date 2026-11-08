@@ -44,7 +44,7 @@ const indexCache = createDatasetCache(
     const index: QuestCompactIndex = { groups: [], chapters: [], quests: [] };
     for (const dataRel of Object.values(questRoots)) {
       if (!dataRel) continue;
-      const data = asRecord(await clientDumpJson(dataset, dataRel));
+      const data = asRecord(await clientDumpJson(dataset, dataRel, 'high'));
       if (!data) continue;
       const defaults = asRecord(data.defaults);
       index.book ??= questBookMeta(defaults);
@@ -52,7 +52,7 @@ const indexCache = createDatasetCache(
       index.openGuide ??= asString(defaults?.openGuide);
 
       const groupsRel = joinDumpRel(dataRel, 'chapter_groups.json');
-      const groupsDoc = asRecord(await clientDumpJson(dataset, groupsRel));
+      const groupsDoc = asRecord(await clientDumpJson(dataset, groupsRel, 'high'));
       const chapterGroups = asRecord(groupsDoc?.chapterGroups);
       for (const [key, groupRaw] of Object.entries(chapterGroups ?? {})) {
         const row = asRecord(groupRaw);
@@ -85,7 +85,7 @@ const indexCache = createDatasetCache(
         chapterRels.push({ key: chapterKey, fileRel: fileRel ?? null });
       }
       const chapterDocs = await Promise.all(
-        chapterRels.map((row) => clientDumpJson(dataset, row.fileRel)),
+        chapterRels.map((row) => clientDumpJson(dataset, row.fileRel, 'high')),
       );
       chapterRels.forEach(({ key }, i) => {
         const row = index.chapters[index.chapters.length - chapterRels.length + i];

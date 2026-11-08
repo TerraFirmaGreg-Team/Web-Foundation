@@ -67,6 +67,21 @@ async function request(url: string): Promise<Response | undefined> {
   return undefined;
 }
 
+async function headOk(url: string): Promise<boolean> {
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const res = await fetch(url, {
+        method: 'HEAD',
+        signal: AbortSignal.timeout(FETCH_TIMEOUT),
+      });
+      return res.ok;
+    } catch {
+
+    }
+  }
+  return false;
+}
+
 export const DUMP_POINTER_TTL = 60_000;
 
 const REQUIRED_FILE = /\/(?:versions|manifest|objects)\.json(?:\.gz)?$/;
@@ -248,7 +263,7 @@ export class JsonDumpReader implements DumpReader {
       const root = `${this.packId}/${versions.latest}`;
 
       const [exists, files] = await Promise.all([
-        fetchJson(dumpStorageUrl(`${root}/manifest.json`), false, this.packId),
+        headOk(dumpStorageUrl(`${root}/manifest.json`)),
         this.objectsIndex(root),
       ]);
       if (exists) {

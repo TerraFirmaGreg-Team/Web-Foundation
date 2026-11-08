@@ -1,10 +1,19 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
 import { cn } from '@terrafirmagreg-team/ui/lib/utils/cn';
 
+const SHOW_DELAY_MS = 1500;
+
 export function StaleBadge({ className }: { className?: string }) {
   const t = useTranslations();
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setVisible(true), SHOW_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, []);
+  if (!visible) return null;
   return (
     <span
       className={cn(

@@ -124,10 +124,14 @@ function QuestCanvasSkeleton() {
   );
 }
 
+function QuestCanvasEmpty() {
+  return <div aria-hidden className="absolute inset-0 overflow-hidden" />;
+}
+
 export function QuestBrowserFallback() {
   return (
     <div className="viewport-body relative min-h-0 flex-1 overflow-hidden">
-      <QuestCanvasSkeleton />
+      <QuestCanvasEmpty />
       <RightSidebarPortal>
         <RightSidebarPanel>
           <QuestPanelSkeleton />
@@ -339,7 +343,7 @@ export function QuestBrowser({
             </DumpUnavailableOverlay>
           </>
         ) : (
-          <QuestCanvasSkeleton />
+          <QuestCanvasEmpty />
         )}
         <RightSidebarPortal>
           <RightSidebarPanel>

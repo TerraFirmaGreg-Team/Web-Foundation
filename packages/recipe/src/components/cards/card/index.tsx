@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef } from 'react';
 import { SlotHitbox } from '@terrafirmagreg-team/recipe/components/cards/slot-hitbox';
 import { recipeGlareFilter } from '@terrafirmagreg-team/recipe/components/cards/glare-filter';
 import {
@@ -21,7 +21,6 @@ import { dumpRelPublicUrl } from '@terrafirmagreg-team/dump/lib/dump/paths';
 import { useDumpLocation } from '@terrafirmagreg-team/game/hooks/use-dump-location';
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { useInView } from '@terrafirmagreg-team/ui/hooks/use-in-view';
-import { cn } from '@terrafirmagreg-team/ui/lib/utils/cn';
 import { GlbEmbedViewer } from '@terrafirmagreg-team/ui/components/blocks/media/glb/viewer';
 import type { EntryTooltipLevel } from '@terrafirmagreg-team/game/components/entry/tooltip';
 import type {
@@ -100,19 +99,10 @@ export function RecipeCard({
     ? dumpRelPublicUrl(dataset, multiblock.glb)
     : undefined;
 
-  const [imgReady, setImgReady] = useState(false);
-  const [prevImgSrc, setPrevImgSrc] = useState(src);
-  if (prevImgSrc !== src) {
-    setPrevImgSrc(src);
-    setImgReady(false);
-  }
   return (
     <div
       ref={rootRef}
-      className={cn(
-        'relative w-fit overflow-hidden rounded-sm',
-        imgReady && 'bg-mc-panel',
-      )}
+      className="relative w-fit overflow-hidden rounded-sm bg-mc-panel"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
@@ -125,7 +115,6 @@ export function RecipeCard({
         decoding="async"
         draggable={false}
         onError={onFail}
-        onLoad={() => setImgReady(true)}
         style={recipeGlareFilter}
       />
       {inView && interactive && glbUrl ? (
