@@ -1,6 +1,6 @@
 {
   "name": "@terrafirmagreg-team/discussions",
-  "version": "1.2.8",
+  "version": "1.2.9",
   "type": "module",
   "description": "GitHub Discussions comments and feedback",
   "license": "LGPL-3.0-only",
