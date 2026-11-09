@@ -1,6 +1,10 @@
 import { sectionTabs } from '@terrafirmagreg-team/sites';
+import { Anvil, Feather, Flag } from 'lucide-react';
 
 type IconNode = [string, Record<string, unknown>][];
+type IconComponent = {
+  render?: (props: unknown, ref: unknown) => unknown;
+};
 
 function iconAttr(key: string, value: unknown): string {
   if (value == null || key === 'key') return '';
@@ -8,20 +12,19 @@ function iconAttr(key: string, value: unknown): string {
   return ` ${name}="${String(value).replace(/"/g, '&quot;')}"`;
 }
 
-const iconCache = new Map<string, string | undefined>();
+const iconCache = new Map<IconComponent, Map<string, string | undefined>>();
 
-export function ogSectionIcon(
-  section: string,
+function iconDataUri(
+  Icon: IconComponent,
   color: string,
 ): string | undefined {
-  const cacheKey = `${section}/${color}`;
-  if (iconCache.has(cacheKey)) return iconCache.get(cacheKey);
-  const Icon = sectionTabs.find((tab) => tab.key === section)?.icon;
-  const inner = (
-    Icon as
-      | { render?: (props: unknown, ref: unknown) => unknown }
-      | undefined
-  )?.render?.({ color, size: 24, strokeWidth: 2 }, null);
+  let colors = iconCache.get(Icon);
+  if (!colors) {
+    colors = new Map();
+    iconCache.set(Icon, colors);
+  }
+  if (colors.has(color)) return colors.get(color);
+  const inner = Icon.render?.({ color, size: 24, strokeWidth: 2 }, null);
   const node = (inner as { props?: { icon?: { node?: IconNode } } })?.props
     ?.icon?.node;
   const body = (node ?? [])
@@ -36,6 +39,30 @@ export function ogSectionIcon(
   const uri = markup
     ? `data:image/svg+xml;utf8,${encodeURIComponent(markup)}`
     : undefined;
-  iconCache.set(cacheKey, uri);
+  colors.set(color, uri);
   return uri;
+}
+
+export function ogSectionIcon(
+  section: string,
+  color: string,
+): string | undefined {
+  const Icon = sectionTabs.find((tab) => tab.key === section)?.icon as
+    | IconComponent
+    | undefined;
+  return Icon ? iconDataUri(Icon, color) : undefined;
+}
+
+const motifGlyphs: Record<string, IconComponent> = {
+  recipe: Anvil as unknown as IconComponent,
+  quest: Flag as unknown as IconComponent,
+  guide: Feather as unknown as IconComponent,
+};
+
+export function ogMotifGlyph(
+  section: string | undefined,
+  color: string,
+): string | undefined {
+  const Icon = section ? motifGlyphs[section] : undefined;
+  return Icon ? iconDataUri(Icon, color) : undefined;
 }

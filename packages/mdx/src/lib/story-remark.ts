@@ -402,7 +402,7 @@ const DIRECTIVE_META: Record<string, DirectiveMeta> = {
     remark: false,
     props: ['url', 'section', 'dataset', 'slug', 'lang', 'version'],
     descriptions: {
-      url: 'Page or image.png URL — overrides the fields below',
+      url: 'Page or image.webp URL — overrides the fields below',
       section: 'Site section the page belongs to',
       dataset: 'Dataset id within the section',
       slug: 'Page path inside the dataset, e.g. getting-started/install',

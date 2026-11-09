@@ -1,12 +1,9 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import { stripMcFormat } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names';
+import { ogStackName } from '@terrafirmagreg-team/dump/lib/dump/assets/og';
 import {
-  ogIconSprite,
-  ogRefSprite,
-  ogStackName,
-} from '@terrafirmagreg-team/dump/lib/dump/assets/og';
-import {
+  ogImageQuery,
   ogName,
   registerOgResolver,
   type OgContext,
@@ -23,34 +20,28 @@ async function questOgContext(
   if (questId) {
     const quest = index.quests.find((row) => row.id === questId);
     if (!quest) return {};
-    return {
-      entity: {
-        kind: 'quest',
-        ...ogName(quest.title ?? quest.id),
-        id: quest.id,
-      },
-      icon: () => ogIconSprite(dataset, quest.icon, quest.iconKind),
-      description: quest.subtitle
-        ? stripMcFormat(quest.subtitle).trim()
-        : undefined,
-      imageQuery: `id=${encodeURIComponent(questId)}`,
+    const entity = {
+      kind: 'quest',
+      ...ogName(quest.title ?? quest.id),
+      id: quest.id,
     };
+    const description = quest.subtitle
+      ? stripMcFormat(quest.subtitle).trim()
+      : undefined;
+    return { entity, description, imageQuery: ogImageQuery(entity, description) };
   }
   const item = search.get('item');
   if (item) {
     const count = index.quests.filter((row) =>
       row.items.includes(item),
     ).length;
-    return {
-      entity: {
-        kind: 'item',
-        name: await ogStackName(dataset, item, 'item', lang),
-        id: item,
-      },
-      icon: () => ogRefSprite(dataset, { kind: 'item', id: item }),
-      description: `${count} quest${count === 1 ? '' : 's'}`,
-      imageQuery: `item=${encodeURIComponent(item)}`,
+    const entity = {
+      kind: 'item',
+      name: await ogStackName(dataset, item, 'item', lang),
+      id: item,
     };
+    const description = `${count} quest${count === 1 ? '' : 's'}`;
+    return { entity, description, imageQuery: ogImageQuery(entity, description) };
   }
   const category = search.get('category');
   if (!category) return {};
@@ -63,17 +54,14 @@ async function questOgContext(
     ? (index.groups.find((row) => row.id === chapter.group)?.title ??
       chapter.group)
     : undefined;
-  return {
-    entity: {
-      kind: 'chapter',
-      ...ogName(chapter.title ?? chapter.filename),
-    },
-    icon: () => ogIconSprite(dataset, chapter.icon, chapter.iconKind),
-    description: [`${count} quest${count === 1 ? '' : 's'}`, group]
-      .filter(Boolean)
-      .join(' · '),
-    imageQuery: `category=${encodeURIComponent(category)}`,
+  const entity = {
+    kind: 'chapter',
+    ...ogName(chapter.title ?? chapter.filename),
   };
+  const description = [`${count} quest${count === 1 ? '' : 's'}`, group]
+    .filter(Boolean)
+    .join(' · ');
+  return { entity, description, imageQuery: ogImageQuery(entity, description) };
 }
 
 registerOgResolver('quest', questOgContext);

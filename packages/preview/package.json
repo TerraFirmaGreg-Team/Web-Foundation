@@ -21,11 +21,14 @@
     "./hooks/*": "./src/hooks/*.ts"
   },
   "dependencies": {
+    "@terrafirmagreg-team/data": "workspace:^",
     "@terrafirmagreg-team/dump": "workspace:^",
     "@terrafirmagreg-team/kit": "workspace:^",
     "@terrafirmagreg-team/sites": "workspace:^",
     "@terrafirmagreg-team/translate": "workspace:^",
-    "@terrafirmagreg-team/ui": "workspace:^"
+    "@terrafirmagreg-team/ui": "workspace:^",
+    "lucide-react": "catalog:",
+    "sharp": "catalog:"
   },
   "peerDependencies": {
     "next": "catalog:",

@@ -1,7 +1,5 @@
 import type { ReactNode } from 'react';
-import { MC_FORMAT } from '@terrafirmagreg-team/dump/lib/dump/contract/text';
-import { FormatText } from '@terrafirmagreg-team/ui/components/blocks/text/format-text';
-import type { OGSprite } from '../lib/og';
+import { ogMotifGlyph } from '../lib/og-icon';
 
 export type OgDockProps = {
   title: ReactNode;
@@ -10,12 +8,11 @@ export type OgDockProps = {
   accent: string;
   logo?: string;
   section?: string;
-  sprite?: OGSprite;
   icon?: string;
   badge?: string;
   version?: string;
   siteUrl?: string;
-  entity?: { kind: string; name: string; id?: string; format?: string };
+  entity?: { kind: string; name: string };
 };
 
 const BG = '#121212';
@@ -31,13 +28,9 @@ function cap(value?: string): string | undefined {
 }
 
 function EntityName(props: OgDockProps) {
-  if (!props.entity) return <>{props.title}</>;
   return (
     <span style={{ display: 'flex', flexWrap: 'wrap', whiteSpace: 'pre-wrap' }}>
-      <FormatText
-        text={props.entity.format ?? props.entity.name}
-        format={MC_FORMAT}
-      />
+      {props.title}
     </span>
   );
 }
@@ -59,14 +52,16 @@ function MetaChip({ children }: { children: ReactNode }) {
   );
 }
 
-export const SECTION_PAGE_KIND: Record<string, string> = {
-  changelog: 'release',
-};
-
 function BrandLogo({ logo, size = 56 }: { logo?: string; size?: number }) {
   if (!logo) return null;
   // eslint-disable-next-line @next/next/no-img-element -- ImageResponse requires img
   return <img src={logo} width={size} height={size} alt="" />;
+}
+
+function Glyph({ glyph, size }: { glyph?: string; size: number }) {
+  if (!glyph) return null;
+  // eslint-disable-next-line @next/next/no-img-element -- ImageResponse requires img
+  return <img src={glyph} width={size} height={size} alt="" />;
 }
 
 function SectionIcon({
@@ -94,28 +89,7 @@ function SectionIcon({
   );
 }
 
-function SpriteTile({ sprite, size }: { sprite: OGSprite; size: number }) {
-  return (
-    // eslint-disable-next-line @next/next/no-img-element -- ImageResponse requires img
-    <img
-      src={sprite.url}
-      width={size}
-      height={size}
-      alt=""
-      style={{ imageRendering: 'pixelated' }}
-    />
-  );
-}
-
-function ItemSlot({
-  sprite,
-  logo,
-  size = 200,
-}: {
-  sprite?: OGSprite;
-  logo?: string;
-  size?: number;
-}) {
+function ItemSlot({ logo, size = 200 }: { logo?: string; size?: number }) {
   const border = Math.max(3, Math.round(size * 0.018));
   const inner = Math.floor(size * 0.74);
   return (
@@ -131,11 +105,7 @@ function ItemSlot({
         borderRadius: Math.max(4, Math.round(size * 0.03)),
       }}
     >
-      {sprite ? (
-        <SpriteTile sprite={sprite} size={inner} />
-      ) : (
-        <BrandLogo logo={logo} size={inner} />
-      )}
+      <BrandLogo logo={logo} size={inner} />
     </div>
   );
 }
@@ -201,7 +171,6 @@ export function OgDock(props: OgDockProps) {
         >
           <SectionMotif
             section={props.section}
-            sprite={props.sprite}
             accent={props.accent}
             logo={props.logo}
           />
@@ -305,13 +274,11 @@ export function OgDock(props: OgDockProps) {
 }
 
 function MotifCraft({
-  sprite,
   accent,
-  logo,
+  glyph,
 }: {
-  sprite?: OGSprite;
   accent: string;
-  logo?: string;
+  glyph?: string;
 }) {
   const cell = 88;
   const gap = 8;
@@ -326,12 +293,7 @@ function MotifCraft({
     >
       {Array.from({ length: 9 }).map((_, i) => (
         <ChipCell key={i} size={cell} selected={i === 4} accent={accent}>
-          {i === 4 &&
-            (sprite ? (
-              <SpriteTile sprite={sprite} size={Math.floor(cell * 0.72)} />
-            ) : (
-              <BrandLogo logo={logo} size={Math.floor(cell * 0.72)} />
-            ))}
+          {i === 4 && <Glyph glyph={glyph} size={Math.floor(cell * 0.72)} />}
         </ChipCell>
       ))}
     </div>
@@ -339,13 +301,11 @@ function MotifCraft({
 }
 
 function MotifQuest({
-  sprite,
   accent,
-  logo,
+  glyph,
 }: {
-  sprite?: OGSprite;
   accent: string;
-  logo?: string;
+  glyph?: string;
 }) {
   const nodes = [
     { x: 22, y: 26, s: 38 },
@@ -417,12 +377,7 @@ function MotifQuest({
             border: `4px solid ${n.hot ? accent : CHIP_BORDER}`,
           }}
         >
-          {n.hot &&
-            (sprite ? (
-              <SpriteTile sprite={sprite} size={Math.floor(n.s * 0.55)} />
-            ) : (
-              <BrandLogo logo={logo} size={Math.floor(n.s * 0.55)} />
-            ))}
+          {n.hot && <Glyph glyph={glyph} size={Math.floor(n.s * 0.55)} />}
         </div>
       ))}
     </div>
@@ -430,13 +385,11 @@ function MotifQuest({
 }
 
 function MotifGuide({
-  sprite,
   accent,
-  logo,
+  glyph,
 }: {
-  sprite?: OGSprite;
   accent: string;
-  logo?: string;
+  glyph?: string;
 }) {
   const page = 140;
   const height = 210;
@@ -455,11 +408,7 @@ function MotifGuide({
           borderBottomLeftRadius: 10,
         }}
       >
-        {sprite ? (
-          <SpriteTile sprite={sprite} size={Math.floor(page * 0.55)} />
-        ) : (
-          <BrandLogo logo={logo} size={Math.floor(page * 0.55)} />
-        )}
+        <Glyph glyph={glyph} size={Math.floor(page * 0.55)} />
       </div>
       <div style={{ display: 'flex', width: 6, height, backgroundColor: accent }} />
       <div
@@ -607,22 +556,21 @@ function MotifDoc({ accent }: { accent: string }) {
 
 function SectionMotif({
   section,
-  sprite,
   accent,
   logo,
 }: {
   section?: string;
-  sprite?: OGSprite;
   accent: string;
   logo?: string;
 }) {
+  const glyph = ogMotifGlyph(section, accent);
   if (section === 'recipe')
-    return <MotifCraft sprite={sprite} accent={accent} logo={logo} />;
+    return <MotifCraft accent={accent} glyph={glyph} />;
   if (section === 'quest')
-    return <MotifQuest sprite={sprite} accent={accent} logo={logo} />;
+    return <MotifQuest accent={accent} glyph={glyph} />;
   if (section === 'guide')
-    return <MotifGuide sprite={sprite} accent={accent} logo={logo} />;
+    return <MotifGuide accent={accent} glyph={glyph} />;
   if (section === 'changelog') return <MotifChangelog accent={accent} />;
   if (section === 'docs') return <MotifDoc accent={accent} />;
-  return <ItemSlot sprite={sprite} logo={logo} size={210} />;
+  return <ItemSlot logo={logo} size={210} />;
 }

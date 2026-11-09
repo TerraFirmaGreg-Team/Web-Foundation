@@ -2,14 +2,13 @@ import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import { clientDumpLang } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import { loadClientTagMembers } from '@terrafirmagreg-team/dump/lib/dump/client/tags';
-import type { ReferenceKind } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 import { stripMcFormat } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names';
 import {
   ogLocalized,
-  ogRefSprite,
   ogStackName,
 } from '@terrafirmagreg-team/dump/lib/dump/assets/og';
 import {
+  ogImageQuery,
   ogName,
   registerOgResolver,
   type OgContext,
@@ -25,25 +24,23 @@ async function recipeOgContext(
 ): Promise<OgContext> {
   const tool = search.get('tool');
   if (tool) {
-    return {
-      entity: { kind: 'tool', name: recipeToolName(tool, lang) },
-      imageQuery: `tool=${encodeURIComponent(tool)}`,
-    };
+    const entity = { kind: 'tool', name: recipeToolName(tool, lang) };
+    return { entity, imageQuery: ogImageQuery(entity, tool) };
   }
   const item = search.get('item');
   const fluid = search.get('fluid');
   if (item || fluid) {
     const kind = fluid ? 'fluid' : 'item';
     const id = (item ?? fluid)!;
+    const entity = {
+      kind,
+      name: await ogStackName(dataset, id, kind, lang),
+      id,
+    };
     return {
-      entity: {
-        kind,
-        name: await ogStackName(dataset, id, kind, lang),
-        id,
-      },
-      icon: () => ogRefSprite(dataset, { kind, id }),
+      entity,
       description: id,
-      imageQuery: `${kind}=${encodeURIComponent(id)}`,
+      imageQuery: ogImageQuery(entity, id),
     };
   }
   const type = search.get('type');
@@ -57,22 +54,12 @@ async function recipeOgContext(
     const tagId = rest.length ? `${ns}:${tagPath}` : ns;
     const members = await loadClientTagMembers(dataset, tagKind);
     const list = tagId ? members?.[`#${tagId}`] : undefined;
-    const first = list?.[0];
-    return {
-      entity: { kind: 'tag', name: `#${tagId || id}`, id },
-      icon: first
-        ? () =>
-            ogRefSprite(dataset, {
-              kind: tagKind as ReferenceKind,
-              id: first,
-            })
-        : undefined,
-      description:
-        list != null
-          ? `${list.length} member${list.length === 1 ? '' : 's'}`
-          : `${tagKind} tag`,
-      imageQuery: `type=emi:tag&id=${encodeURIComponent(id)}`,
-    };
+    const entity = { kind: 'tag', name: `#${tagId || id}`, id };
+    const description =
+      list != null
+        ? `${list.length} member${list.length === 1 ? '' : 's'}`
+        : `${tagKind} tag`;
+    return { entity, description, imageQuery: ogImageQuery(entity, description) };
   }
   if (id) {
     const recipe = await loadClientRecipe(dataset, id);
@@ -96,18 +83,9 @@ async function recipeOgContext(
           lang,
         ).catch(() => recipe.id)
       : recipe.id;
-    return {
-      entity: { kind: 'recipe', name, id: recipe.id },
-      icon: out
-        ? () =>
-            ogRefSprite(dataset, {
-              kind: out.kind === 'tag' ? 'itemTag' : out.kind,
-              id: out.id,
-            })
-        : undefined,
-      description: catName ?? recipe.id,
-      imageQuery: `id=${encodeURIComponent(id)}`,
-    };
+    const entity = { kind: 'recipe', name, id: recipe.id };
+    const description = catName ?? recipe.id;
+    return { entity, description, imageQuery: ogImageQuery(entity, description) };
   }
   if (!type || type === 'all') return {};
   const [categories, map] = await Promise.all([
@@ -118,11 +96,11 @@ async function recipeOgContext(
   if (!category) return {};
   const localized =
     ogLocalized(map, category.display?.name) ?? category.id;
+  const entity = { kind: 'category', ...ogName(localized), id: category.id };
   return {
-    entity: { kind: 'category', ...ogName(localized), id: category.id },
-    icon: () => ogRefSprite(dataset, category.icon),
+    entity,
     description: category.id,
-    imageQuery: `type=${encodeURIComponent(type)}`,
+    imageQuery: ogImageQuery(entity, category.id),
   };
 }
 

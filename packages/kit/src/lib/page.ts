@@ -83,7 +83,14 @@ export async function sectionMetadata(
       url,
       title: doc.data.title,
       description: doc.data.description,
-      images: getPageImageUrl(section, doc.slugs).url,
+      images: [
+        {
+          url: canonicalUrl(getPageImageUrl(section, doc.slugs).url),
+          width: 1200,
+          height: 630,
+          type: 'image/webp',
+        },
+      ],
     },
     twitter: {
       card: 'summary_large_image',

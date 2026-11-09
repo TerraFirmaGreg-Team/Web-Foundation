@@ -30,7 +30,10 @@ import {
   resolvePage,
   sectionMetadata,
 } from '@terrafirmagreg-team/kit/lib/page';
-import { getDatasetImageUrl } from '@terrafirmagreg-team/kit/lib/urls';
+import {
+  canonicalUrl,
+  getVariantImageUrl,
+} from '@terrafirmagreg-team/kit/lib/urls';
 import {
   localeLoader,
   registerLocaleRenderer,
@@ -286,7 +289,7 @@ export function createSectionRoutes<
     const { slug } = await params;
     if (slug?.length === 1 && landing) {
       const datasets = await sectionDatasets(section);
-      const meta = datasetLandingMetadata(section, slug, datasets);
+      const meta = await datasetLandingMetadata(section, slug, datasets);
       if (deepLink) {
         const search = new URLSearchParams();
         for (const [key, value] of Object.entries(await searchParams)) {
@@ -310,14 +313,21 @@ export function createSectionRoutes<
           const imageQuery = [
             deep?.imageQuery,
             version ? `version=${encodeURIComponent(version)}` : '',
-            search.get('lang')
-              ? `lang=${encodeURIComponent(search.get('lang')!)}`
-              : '',
           ]
             .filter(Boolean)
             .join('&');
           const og = meta.openGraph as
-            | { url?: string; title?: string; description?: string; images?: string }
+            | {
+                url?: string;
+                title?: string;
+                description?: string;
+                images?: {
+                  url: string;
+                  width: number;
+                  height: number;
+                  type: string;
+                }[];
+              }
             | undefined;
           const base = og?.title as string | undefined;
           const title =
@@ -326,15 +336,31 @@ export function createSectionRoutes<
               : (deep?.title ?? base);
           const description =
             deep?.description ?? (og?.description as string | undefined);
-          const images = imageQuery
-            ? `${getDatasetImageUrl(section, slug[0]).url}?${imageQuery}`
-            : og?.images;
+          const imageUrl = imageQuery
+            ? canonicalUrl(
+                getVariantImageUrl(section, slug[0], imageQuery).url,
+              )
+            : undefined;
           if (deep || imageQuery) {
             return {
               ...meta,
               title,
               description,
-              openGraph: { ...meta.openGraph, title, description, images },
+              openGraph: {
+                ...meta.openGraph,
+                title,
+                description,
+                images: imageUrl
+                  ? [
+                      {
+                        url: imageUrl,
+                        width: 1200,
+                        height: 630,
+                        type: 'image/webp',
+                      },
+                    ]
+                  : og?.images,
+              },
               twitter: { ...meta.twitter, title, description },
             };
           }

@@ -1,7 +1,7 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
-import { ogRefSprite } from '@terrafirmagreg-team/dump/lib/dump/assets/og';
 import {
+  ogImageQuery,
   ogName,
   registerOgResolver,
   type OgContext,
@@ -17,17 +17,14 @@ async function guideOgContext(
   if (entryId) {
     const hit = await findClientGuideEntry(dataset, lang, entryId);
     if (!hit) return {};
-    return {
-      entity: {
-        kind: 'entry',
-        ...ogName(hit.entry.name ?? entryId),
-      },
-      icon: () => ogRefSprite(dataset, hit.entry.icon),
-      description:
-        [hit.bookName, hit.categoryName].filter(Boolean).join(' · ') ||
-        undefined,
-      imageQuery: `entry=${encodeURIComponent(entryId)}`,
+    const entity = {
+      kind: 'entry',
+      ...ogName(hit.entry.name ?? entryId),
     };
+    const description =
+      [hit.bookName, hit.categoryName].filter(Boolean).join(' · ') ||
+      undefined;
+    return { entity, description, imageQuery: ogImageQuery(entity, description) };
   }
   const bookId = search.get('book');
   if (!bookId) return {};
@@ -37,29 +34,23 @@ async function guideOgContext(
   if (cat) {
     const category = overview.categories.find((row) => row.id === cat);
     if (!category) return {};
-    return {
-      entity: {
-        kind: 'category',
-        ...ogName(category.name),
-      },
-      icon: () => ogRefSprite(dataset, category.icon),
-      description: [
-        overview.book?.name,
-        `${category.entries.length} entr${category.entries.length === 1 ? 'y' : 'ies'}`,
-      ]
-        .filter(Boolean)
-        .join(' · '),
-      imageQuery: `book=${encodeURIComponent(bookId)}&cat=${encodeURIComponent(cat)}`,
+    const entity = {
+      kind: 'category',
+      ...ogName(category.name),
     };
+    const description = [
+      overview.book?.name,
+      `${category.entries.length} entr${category.entries.length === 1 ? 'y' : 'ies'}`,
+    ]
+      .filter(Boolean)
+      .join(' · ');
+    return { entity, description, imageQuery: ogImageQuery(entity, description) };
   }
   const book = overview.book;
   if (!book) return {};
-  return {
-    entity: { kind: 'book', ...ogName(book.name) },
-    icon: () => ogRefSprite(dataset, book.cover ?? undefined),
-    description: `${overview.entries.length} entr${overview.entries.length === 1 ? 'y' : 'ies'}`,
-    imageQuery: `book=${encodeURIComponent(bookId)}`,
-  };
+  const entity = { kind: 'book', ...ogName(book.name) };
+  const description = `${overview.entries.length} entr${overview.entries.length === 1 ? 'y' : 'ies'}`;
+  return { entity, description, imageQuery: ogImageQuery(entity, description) };
 }
 
 registerOgResolver('guide', guideOgContext);

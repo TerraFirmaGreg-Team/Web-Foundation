@@ -13,7 +13,7 @@ function isImageUrl(url: URL): boolean {
   const api = segs.indexOf('api');
   return (
     (api >= 0 && segs[api + 1] === 'preview') ||
-    segs[segs.length - 1] === 'image.png'
+    segs[segs.length - 1] === 'image.webp'
   );
 }
 

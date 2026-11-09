@@ -13,16 +13,12 @@ export type OgPreviewProps = {
   version?: string;
 };
 
-function withParams(
-  image: string,
-  extra: { lang?: string; version?: string },
-): string {
-  const [path, search = ''] = image.split('?');
-  const params = new URLSearchParams(search);
-  if (extra.lang) params.set('lang', extra.lang);
-  if (extra.version) params.set('version', extra.version);
-  const query = params.toString();
-  return query ? `${path}?${query}` : path;
+function withVariant(image: string, query: string): string {
+  const path = image.replace(/image\.webp$/, '');
+  const trimmed = query.replace(/^[~?]+/, '');
+  return trimmed
+    ? `${path}~${encodeURIComponent(trimmed)}/image.webp`
+    : `${path}image.webp`;
 }
 
 function Frame({
@@ -94,9 +90,13 @@ export function useOgImage({
   const [slugPath, slugQuery = ''] = slug.split('?');
   const baseImage = raw
     ? meta?.image
-    : `/api/preview/${section}/${dataset}/${slugPath ? `${slugPath}/` : ''}image.png${slugQuery ? `?${slugQuery}` : ''}`;
+    : `/api/preview/${section}/${dataset}/${slugPath ? `${slugPath}/` : ''}image.webp`;
+  const params = new URLSearchParams(slugQuery);
+  if (lang) params.set('lang', lang);
+  if (version) params.set('version', version);
+  const query = params.toString();
   return {
-    src: baseImage ? withParams(baseImage, { lang, version }) : undefined,
+    src: baseImage ? withVariant(baseImage, query) : undefined,
     meta: raw ? meta : undefined,
     loading: !!raw && !meta && !failed,
     failed: raw ? failed || (!!meta && !meta.image) : !baseImage,

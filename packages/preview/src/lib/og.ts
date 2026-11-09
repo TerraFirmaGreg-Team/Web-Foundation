@@ -1,31 +1,22 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
-import type { OgSprite } from '@terrafirmagreg-team/dump/lib/dump/assets/og';
 import { stripMcFormat } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names';
-
-export type OGSprite = OgSprite;
 
 export type OgEntity = {
   kind: string;
   name: string;
   id?: string;
-  format?: string;
 };
 
-export type OgIcon = () => Promise<OGSprite | undefined>;
+export const SECTION_PAGE_KIND: Record<string, string> = {
+  changelog: 'release',
+};
 
 export type OgContext = {
   entity?: OgEntity;
-  icon?: OgIcon;
   description?: string;
   imageQuery?: string;
 };
-
-export async function ogResolveIcon(
-  icon: OgIcon | undefined,
-): Promise<OGSprite | undefined> {
-  return icon?.();
-}
 
 export type OgBrand = {
   site: string;
@@ -39,8 +30,28 @@ export type OgContextResolver = (
   lang: Lang,
 ) => Promise<OgContext>;
 
-export function ogName(raw: string): Pick<OgEntity, 'name' | 'format'> {
-  return { name: stripMcFormat(raw).trim(), format: raw };
+export function ogName(raw: string): Pick<OgEntity, 'name'> {
+  return { name: stripMcFormat(raw).trim() };
+}
+
+export function ogImageQuery(
+  entity: OgEntity,
+  description?: string,
+): string {
+  const params = new URLSearchParams();
+  params.set('kind', entity.kind);
+  params.set('name', entity.name);
+  if (description) params.set('desc', description);
+  return params.toString();
+}
+
+export function ogHumanize(value: string): string {
+  const last = value.split(/[:/#]/).filter(Boolean).pop() ?? value;
+  return last
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 const resolvers = ((globalThis as Record<symbol, unknown>)[

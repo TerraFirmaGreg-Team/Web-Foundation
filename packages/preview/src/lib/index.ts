@@ -1,4 +1,5 @@
 export {
+  ogImageQuery,
   ogName,
   registerOgResolver,
   resolveOgContext,
@@ -6,7 +7,6 @@ export {
   type OgContext,
   type OgContextResolver,
   type OgEntity,
-  type OGSprite,
 } from './og';
 export {
   getPreviewResolver,

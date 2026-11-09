@@ -45,6 +45,9 @@ export function datasetLandingMetadata(
   const description = page.description ?? meta?.description;
   const title = page.datasetTitle ?? page.title;
   const url = canonicalUrl(`${sectionUrl(section)}/${(slug ?? []).join('/')}`);
+  const image = canonicalUrl(
+    getDatasetImageUrl(section, slug?.[0] ?? '', meta?.versions?.[0]).url,
+  );
   return {
     title,
     description,
@@ -54,7 +57,9 @@ export function datasetLandingMetadata(
       url,
       title,
       description,
-      images: getDatasetImageUrl(section, slug?.[0] ?? '').url,
+      images: [
+        { url: image, width: 1200, height: 630, type: 'image/webp' },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
