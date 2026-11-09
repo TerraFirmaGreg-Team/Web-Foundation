@@ -25,6 +25,7 @@ import type { Plugin } from 'unified';
 export interface GitChangelogOptions extends HistoryLoaderOptions {
   content?: ContentLocation;
   filter?: (filePath: string) => boolean;
+  contributorsFilter?: (filePath: string) => boolean;
   display?: Omit<GitChangelogProps, 'commits' | 'authors' | 'repository'>;
 }
 
@@ -143,7 +144,10 @@ export const remarkGitChangelog: Plugin<[GitChangelogOptions], Root> = (
     const showChangelog = shouldShowChangelog(frontmatter);
     const showContributors =
       shouldShowContributors(frontmatter) &&
-      options.display?.showContributors !== false;
+      options.display?.showContributors !== false &&
+      (options.contributorsFilter
+        ? options.contributorsFilter(absolutePath)
+        : true);
     if (!showChangelog && !showContributors) return;
     if (!reader) {
       const directory =

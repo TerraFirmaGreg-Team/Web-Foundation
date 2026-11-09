@@ -1,3 +1,14 @@
 {
-  "Translators(crowdin.translators)": "Translators"
+  "Translators(crowdin.translators)": "Translators",
+  "{words} words(crowdin.words)": "{words} words",
+  "{count} languages(crowdin.languages)": "{count} languages",
+  "{pct}% approved(crowdin.approved)": "{pct}% approved",
+  "Help translate(crowdin.join)": "Help translate",
+  "since {year}(crowdin.since)": "since {year}",
+  "Owner(crowdin.role.owner)": "Owner",
+  "Manager(crowdin.role.manager)": "Manager",
+  "Developer(crowdin.role.developer)": "Developer",
+  "Coordinator(crowdin.role.coordinator)": "Coordinator",
+  "Proofreader(crowdin.role.proofreader)": "Proofreader",
+  "new(crowdin.new)": "new"
 }

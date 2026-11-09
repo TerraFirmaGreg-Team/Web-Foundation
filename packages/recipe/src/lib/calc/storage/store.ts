@@ -145,11 +145,6 @@ export function removeCalcHistory(key: string, id: string): void {
       key,
       readCalcHistory(key).filter((entry) => entry.id !== id),
     );
-    const tabs = readCalcTabs(key).filter((tab) => tab.id !== id);
-    writeTabsRaw(key, tabs);
-    if (readCalcActive(key) === id) {
-      window.sessionStorage.setItem(activeKey(key), '');
-    }
   } catch {
     return;
   }

@@ -11,7 +11,7 @@ export function FloatBar({ className, children, ...props }: ComponentProps<'div'
         role="group"
         data-slot="float-bar"
         className={cn(
-          'flex h-7 items-stretch overflow-hidden rounded-lg bg-float/92 shadow-sm ring-1 ring-foreground/10 backdrop-blur-md',
+          'no-scrollbar flex h-7 items-stretch overflow-x-auto rounded-lg bg-float/92 shadow-sm ring-1 ring-foreground/10 backdrop-blur-md',
           className,
         )}
         {...props}

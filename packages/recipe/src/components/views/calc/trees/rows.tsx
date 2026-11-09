@@ -60,7 +60,7 @@ export function TabRow({
         <button
           type="button"
           onClick={() => onOpen(entry.id)}
-          className={`${rowClass} ${
+          className={`${rowClass} flex-1 ${
             active
               ? 'bg-accent font-medium text-accent-foreground'
               : rowIdle
@@ -81,7 +81,7 @@ export function TabRow({
           ) : null}
           <IconButton
             label={t('Rename', { note: 'recipe.calc.rename' })}
-            className="opacity-0 transition-opacity group-hover:opacity-100"
+            className="opacity-0 transition-opacity group-hover:opacity-100 [@media(hover:none)]:opacity-100"
             onClick={() => {
               setName(entry.name ?? '');
               setEditing(true);
@@ -91,7 +91,7 @@ export function TabRow({
           </IconButton>
           <IconButton
             label={t('Close scheme', { note: 'recipe.calc.close_tab' })}
-            className="opacity-0 transition-opacity group-hover:opacity-100"
+            className="opacity-0 transition-opacity group-hover:opacity-100 [@media(hover:none)]:opacity-100"
             onClick={() => onClose(entry.id)}
           >
             <X className="size-3.5" />
@@ -119,7 +119,7 @@ export function HistoryRow({
       <button
         type="button"
         onClick={() => onOpen(entry)}
-        className={`${rowClass} ${rowIdle}`}
+        className={`${rowClass} ${rowIdle} flex-1`}
       >
         <TreeIcon entry={entry} {...meta} />
         <TreeLabel entry={entry} {...meta} />
@@ -128,7 +128,7 @@ export function HistoryRow({
       {onRemove && (
         <IconButton
           label={t('Remove from history', { note: 'recipe.calc.remove.history' })}
-          className="opacity-0 transition-opacity group-hover:opacity-100"
+          className="opacity-0 transition-opacity group-hover:opacity-100 [@media(hover:none)]:opacity-100"
           onClick={() => onRemove(entry.id)}
         >
           <X className="size-3.5" />

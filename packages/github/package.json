@@ -1,8 +1,8 @@
 {
-  "name": "@terrafirmagreg-team/history",
-  "version": "1.2.5",
+  "name": "@terrafirmagreg-team/github",
+  "version": "0.1.0",
   "type": "module",
-  "description": "Git page history",
+  "description": "GitHub platform features: git page history, repo contributors",
   "license": "LGPL-3.0-only",
   "exports": {
     "./components/*": [
@@ -21,10 +21,16 @@
     ]
   },
   "dependencies": {
+    "@terrafirmagreg-team/data": "workspace:^",
+    "@terrafirmagreg-team/kit": "workspace:^",
+    "@terrafirmagreg-team/sites": "workspace:^",
+    "@terrafirmagreg-team/translate": "workspace:^",
+    "@terrafirmagreg-team/ui": "workspace:^",
     "@types/mdast": "^4.0.4",
     "estree-util-value-to-estree": "^3.5.0",
     "fumadocs-page-history": "0.4.2",
     "github-slugger": "^2.0.0",
+    "lucide-react": "catalog:",
     "mdast-util-to-string": "^4.0.0",
     "server-only": "catalog:",
     "unified": "^11.0.5"
@@ -41,7 +47,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/TerraFirmaGreg-Team/Web-Foundation.git",
-    "directory": "packages/history"
+    "directory": "packages/github"
   },
   "publishConfig": {
     "access": "public"

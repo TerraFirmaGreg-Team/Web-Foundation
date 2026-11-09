@@ -11,6 +11,7 @@ import {
   TooltipTrigger,
 } from '@terrafirmagreg-team/ui/components/ui/tooltip';
 import { cn } from '@terrafirmagreg-team/ui/lib/utils/cn';
+import { readableColor } from '@terrafirmagreg-team/ui/lib/color';
 import type { GuideFormatOptions } from '@terrafirmagreg-team/guide/types';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 
@@ -86,7 +87,7 @@ export function GuideText({
       );
     }
     if (node.type === 'text' && node.color) {
-      el = <span style={{ color: node.color }}>{el}</span>;
+      el = <span style={{ color: readableColor(node.color) }}>{el}</span>;
     }
     if (node.type === 'text' && node.link) {
       const { href, external } = guideLink(node, {

@@ -57,7 +57,7 @@ export function ChangelogPageChrome({
   body: React.ReactNode;
   copied?: TranslationState;
   ctx: ChangelogPageContext;
-  dataset?: { crowdin?: string };
+  dataset?: { crowdin?: { url: string } };
   features: ChangelogPageFeatures;
 }) {
   const { languages } = loadLocaleRegistry();
@@ -73,10 +73,10 @@ export function ChangelogPageChrome({
       <WorkspaceDescription className="mb-0">
         {page.data.description}
       </WorkspaceDescription>
-      <div className="flex flex-row gap-2 items-center border-b pb-6">
+      <div className="flex flex-row flex-wrap gap-2 items-center border-b pb-6">
         <PageActions
           copied={copied}
-          crowdinUrl={dataset?.crowdin}
+          crowdinUrl={dataset?.crowdin?.url}
           mdUrl={`${stripLangFromUrl(page.url, [...languages])}.md${
             page.locale ? `?lang=${page.locale}` : ''
           }`}

@@ -8,6 +8,7 @@ import { LazyTooltip } from '@terrafirmagreg-team/ui/components/blocks/tooltip/l
 import { stackTooltip } from '@terrafirmagreg-team/game/lib/entry/tooltip';
 import { formulaRuns } from '@terrafirmagreg-team/game/lib/entry/formula';
 import { McText } from '@terrafirmagreg-team/game/components/entry/mc-text';
+import { readableColor } from '@terrafirmagreg-team/ui/lib/color';
 import { stripMcFormat } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names';
 
 const ENCHANTED_TEXT_COLOR = 'var(--color-mc-enchant)';
@@ -21,12 +22,15 @@ export type EntryTooltipLevel =
 
 function TooltipLine({ text }: { text: string }) {
   const runs = formulaRuns(stripMcFormat(text));
-  if (!runs) return <McText text={text} />;
+  if (!runs) return <McText text={text} surface="inverted" />;
   return (
     <>
       {runs.map((run, index) =>
         run.color ? (
-          <span key={index} style={{ color: run.color }}>
+          <span
+            key={index}
+            style={{ color: readableColor(run.color, 'inverted') }}
+          >
             {run.text}
           </span>
         ) : (

@@ -23,7 +23,7 @@ export function RelationPage(props: PageRendererProps) {
         const ref = entryRef(props.entryRefs, id);
         const name = entryLabel(props.entryRefs, props.langMap, id);
         return (
-          <li key={`${id}:${index}`} className="flex items-center gap-2">
+          <li key={`${id}:${index}`} className="flex min-w-0 items-center gap-2 wrap-anywhere">
             {ref?.icon ? (
               <Entry
                 id={ref.icon.id}

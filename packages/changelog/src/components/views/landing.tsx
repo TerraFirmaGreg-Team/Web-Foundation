@@ -29,7 +29,7 @@ export async function changelogLanding({
     route,
     dataset,
     lang,
-    sectionConfig().datasetConfig[dataset]?.repo,
+    sectionConfig().datasetConfig[dataset]?.github?.repo,
   );
   return {
     node: (

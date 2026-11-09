@@ -82,7 +82,7 @@ export function ChangelogNow({ items }: { items: ChangelogNowItem[] }) {
           <span className="size-3 shrink-0 rounded-full border-2 border-primary bg-background" />
           <FloatBar className="pointer-events-auto">
             <FloatBarItem className="gap-1.5">
-              <span className="font-semibold">{current.id}</span>
+              <span className="inline-block max-w-[70vw] truncate font-semibold">{current.id}</span>
               <span className={current.untranslated ? undefined : 'hidden'}>
                 <UntranslatedChip />
               </span>

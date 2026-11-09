@@ -48,7 +48,7 @@ export function RecipePage({
         }
         const name = spriteName(dataset, langMap, atlases, id);
         return (
-          <Card key={id} className="flex-row items-center gap-2 px-3 py-2">
+          <Card key={id} className="min-w-0 flex-row items-center gap-2 px-3 py-2">
             {id.includes(':') ? (
               <Entry
                 id={id}

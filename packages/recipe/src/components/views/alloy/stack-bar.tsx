@@ -31,7 +31,7 @@ export function AlloyStackBar({
   return (
     <div
       className={cn(
-        'flex h-3 w-full overflow-hidden rounded bg-secondary',
+        'flex h-3 w-full overflow-hidden rounded bg-foreground/15',
         className,
       )}
       role={label ? 'img' : undefined}

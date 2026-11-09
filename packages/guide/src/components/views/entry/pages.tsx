@@ -166,7 +166,7 @@ export function EntryPages({
                     missing="hide"
                   />
                 ) : null}
-                {heading}
+                <span className="min-w-0">{heading}</span>
               </h2>
             ) : null}
             {attachedValue ? (

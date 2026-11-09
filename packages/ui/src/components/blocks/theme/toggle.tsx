@@ -58,7 +58,7 @@ export function ThemeToggle({
               aria-label={labels?.[mode] ?? mode}
               aria-pressed={active}
               className={cn(
-                'size-6.5 p-1.5 text-muted-foreground',
+                'relative size-6.5 p-1.5 text-muted-foreground after:absolute after:-inset-1 after:content-[""]',
                 buttonClassName,
                 active && 'bg-accent text-accent-foreground',
               )}

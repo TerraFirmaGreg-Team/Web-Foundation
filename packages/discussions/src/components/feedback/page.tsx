@@ -90,7 +90,7 @@ export function Feedback({
     >
       <div
         className={cn(
-          'flex flex-row items-center gap-2',
+          'flex flex-row flex-wrap items-center gap-2',
           disabled && 'opacity-50',
         )}
       >

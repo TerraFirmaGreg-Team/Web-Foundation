@@ -196,7 +196,7 @@ export function GuidePageView({
 
   const datasetConf =
     sectionConfig().datasetConfig[dataset.id];
-  const repoSlug = datasetConf?.repo?.split('/');
+  const repoSlug = datasetConf?.github?.repo?.split('/');
   const mdQuery = new URLSearchParams();
   if (payload.modId && payload.bookPath) {
     mdQuery.set('book', `${payload.modId}:${payload.bookPath}`);
@@ -263,14 +263,14 @@ export function GuidePageView({
             />
           </WorkspaceDescription>
         ) : null}
-        <div className="flex flex-row gap-2 items-center border-b pb-6">
+        <div className="flex flex-row flex-wrap gap-2 items-center border-b pb-6">
           <PageActions
             copied={copied}
-            crowdinUrl={datasetConf?.crowdin}
+            crowdinUrl={datasetConf?.crowdin?.url}
             mdUrl={mdUrl}
             githubUrl={
-              datasetConf?.repo
-                ? `https://github.com/${datasetConf.repo}`
+              datasetConf?.github?.repo
+                ? `https://github.com/${datasetConf.github.repo}`
                 : undefined
             }
           />

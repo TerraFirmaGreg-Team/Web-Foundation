@@ -6,23 +6,15 @@
 
   html[data-layout='sidebar'] #spacious-layout,
   html[data-layout='both'] #spacious-layout {
-    --layout-width: var(--page-width, 97rem);
+    --layout-width: var(--readability-page-width, 97rem);
   }
 
   html[data-layout='both'] #spacious-layout {
-    --page-width: var(--content-width, 100%);
+    --page-width: var(--readability-content-width, 100%);
   }
 
-  html[data-layout='both'] #page-panel:has(.viewport-shell)
-    > div:has(> #page) {
-    padding-inline: max(
-      var(--spacing) * 6,
-      calc((100% - var(--page-width) - var(--toc-width)) / 2)
-    );
-  }
-
-  html[data-layout='both'] #page:has(.viewport-shell) {
-    max-width: var(--page-width);
+  html[data-layout='both'] #page {
+    max-width: none;
   }
 }
 

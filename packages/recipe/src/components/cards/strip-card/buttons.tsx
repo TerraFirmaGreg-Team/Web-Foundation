@@ -37,27 +37,36 @@ export function StripCardTagPager({
       onMouseLeave={() => setHover(false)}
       onFocus={() => setHover(true)}
       onBlur={() => setHover(false)}
-      className="absolute flex cursor-pointer items-center justify-center border-0 p-0 outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-default"
+      className="absolute flex cursor-pointer items-center justify-center border-0 bg-transparent p-0 outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-default"
       style={{
-        left,
-        top,
-        width: 12 * scale,
-        height: 12 * scale,
-        background: disabled ? 'var(--color-mc-dim)' : hover ? 'var(--color-mc-bright)' : 'var(--color-mc-panel)',
-        boxShadow: `inset ${scale}px ${scale}px 0 rgba(255,255,255,0.65), inset -${scale}px -${scale}px 0 rgba(0,0,0,0.45)`,
+        left: left - 4 * scale,
+        top: top - 4 * scale,
+        width: 20 * scale,
+        height: 20 * scale,
       }}
     >
       <span
         aria-hidden
-        className="block"
+        className="flex items-center justify-center"
         style={{
-          width: 0,
-          height: 0,
-          borderTop: `${2.5 * scale}px solid transparent`,
-          borderBottom: `${2.5 * scale}px solid transparent`,
-          ...(dir < 0 ? { borderRight: arrow } : { borderLeft: arrow }),
+          width: 12 * scale,
+          height: 12 * scale,
+          background: disabled ? 'var(--color-mc-dim)' : hover ? 'var(--color-mc-bright)' : 'var(--color-mc-panel)',
+          boxShadow: `inset ${scale}px ${scale}px 0 rgba(255,255,255,0.65), inset -${scale}px -${scale}px 0 rgba(0,0,0,0.45)`,
         }}
-      />
+      >
+        <span
+          aria-hidden
+          className="block"
+          style={{
+            width: 0,
+            height: 0,
+            borderTop: `${2.5 * scale}px solid transparent`,
+            borderBottom: `${2.5 * scale}px solid transparent`,
+            ...(dir < 0 ? { borderRight: arrow } : { borderLeft: arrow }),
+          }}
+        />
+      </span>
     </button>
   );
 }
@@ -88,18 +97,27 @@ export function StripCardTagCopy({
       onMouseLeave={() => setHover(false)}
       onFocus={() => setHover(true)}
       onBlur={() => setHover(false)}
-      className="absolute flex cursor-pointer items-center justify-center border-0 p-0 outline-none focus-visible:ring-1 focus-visible:ring-ring"
+      className="absolute flex cursor-pointer items-center justify-center border-0 bg-transparent p-0 outline-none focus-visible:ring-1 focus-visible:ring-ring"
       style={{
-        left,
-        top,
-        width: 12 * scale,
-        height: 12 * scale,
-        background: done ? 'var(--color-mc-bright)' : hover ? 'var(--color-mc-bright)' : 'var(--color-mc-panel)',
-        boxShadow: `inset ${scale}px ${scale}px 0 rgba(255,255,255,0.65), inset -${scale}px -${scale}px 0 rgba(0,0,0,0.45)`,
-        color: done ? 'var(--color-mc-done)' : hover ? 'var(--color-mc-arrow-dark)' : 'var(--color-mc-arrow)',
+        left: left - 4 * scale,
+        top: top - 4 * scale,
+        width: 20 * scale,
+        height: 20 * scale,
       }}
     >
-      <Icon width={7 * scale} height={7 * scale} strokeWidth={2.5} />
+      <span
+        aria-hidden
+        className="flex items-center justify-center"
+        style={{
+          width: 12 * scale,
+          height: 12 * scale,
+          background: done ? 'var(--color-mc-bright)' : hover ? 'var(--color-mc-bright)' : 'var(--color-mc-panel)',
+          boxShadow: `inset ${scale}px ${scale}px 0 rgba(255,255,255,0.65), inset -${scale}px -${scale}px 0 rgba(0,0,0,0.45)`,
+          color: done ? 'var(--color-mc-done)' : hover ? 'var(--color-mc-arrow-dark)' : 'var(--color-mc-arrow)',
+        }}
+      >
+        <Icon width={7 * scale} height={7 * scale} strokeWidth={2.5} />
+      </span>
     </button>
   );
 }

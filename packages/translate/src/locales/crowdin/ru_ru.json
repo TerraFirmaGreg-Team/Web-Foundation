@@ -1,3 +1,14 @@
 {
-  "Translators(crowdin.translators)": "Переводчики"
+  "Translators(crowdin.translators)": "Переводчики",
+  "{words} words(crowdin.words)": "{words} слов",
+  "{count} languages(crowdin.languages)": "{count} языков",
+  "{pct}% approved(crowdin.approved)": "{pct}% вычитано",
+  "Help translate(crowdin.join)": "Помочь с переводом",
+  "since {year}(crowdin.since)": "с {year} г.",
+  "Owner(crowdin.role.owner)": "Владелец",
+  "Manager(crowdin.role.manager)": "Менеджер",
+  "Developer(crowdin.role.developer)": "Разработчик",
+  "Coordinator(crowdin.role.coordinator)": "Координатор",
+  "Proofreader(crowdin.role.proofreader)": "Редактор",
+  "new(crowdin.new)": "новый"
 }

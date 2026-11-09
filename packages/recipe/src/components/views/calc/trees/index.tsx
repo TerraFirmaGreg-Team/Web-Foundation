@@ -95,7 +95,7 @@ export function CalcTrees({
                 <button
                   type="button"
                   onClick={onNew}
-                  className={`${rowClass} ${rowIdle}`}
+                  className={`${rowClass} ${rowIdle} w-full`}
                 >
                   <Plus className="size-4 shrink-0" />
                   <span className="min-w-0 flex-1 text-start">

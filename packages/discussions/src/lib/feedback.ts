@@ -23,11 +23,11 @@ function targetOf(pathname: string) {
     .split('/')
     .find((part) => part in datasets);
   const cfg = (seg && datasets[seg]) || datasets.dev;
-  if (!cfg?.repo || !cfg.discussions) return undefined;
+  if (!cfg?.github?.repo || !cfg.github.discussions) return undefined;
   return {
-    repo: cfg.repo,
-    repoId: cfg.discussions.repoId,
-    categoryId: cfg.discussions.categoryId,
+    repo: cfg.github.repo,
+    repoId: cfg.github.discussions.repoId,
+    categoryId: cfg.github.discussions.categoryId,
     category: 'General',
   };
 }

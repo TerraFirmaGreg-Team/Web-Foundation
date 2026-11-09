@@ -33,13 +33,13 @@ type DiscussionTarget = {
 function datasets(): DiscussionTarget[] {
   return Object.entries(discussionsConfig().datasets).flatMap(
     ([dataset, cfg]) =>
-      cfg.repo && cfg.discussions
+      cfg.github?.repo && cfg.github.discussions
         ? [
             {
               dataset,
-              repo: cfg.repo,
-              repoId: cfg.discussions.repoId,
-              categoryId: cfg.discussions.categoryId,
+              repo: cfg.github.repo,
+              repoId: cfg.github.discussions.repoId,
+              categoryId: cfg.github.discussions.categoryId,
             },
           ]
         : [],

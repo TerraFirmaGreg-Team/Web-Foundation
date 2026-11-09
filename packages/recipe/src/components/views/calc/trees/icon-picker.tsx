@@ -51,14 +51,18 @@ export function IconPicker({
             className={
               alwaysVisible
                 ? undefined
-                : 'opacity-0 transition-opacity group-hover:opacity-100'
+                : 'opacity-0 transition-opacity group-hover:opacity-100 [@media(hover:none)]:opacity-100'
             }
           />
         }
       >
         {icon ?? <Shapes className="size-3.5" />}
       </PopoverTrigger>
-      <PopoverContent side="bottom" align="start" className="w-72 p-2">
+      <PopoverContent
+        side="bottom"
+        align="start"
+        className="w-[min(18rem,calc(100vw-2rem))] p-2"
+      >
         <Input
           autoFocus
           value={query}
@@ -66,7 +70,7 @@ export function IconPicker({
           placeholder={t('Search items', { note: 'recipe.search' })}
           className="h-7 px-2 text-xs"
         />
-        <div className="mt-2 grid max-h-60 grid-cols-6 gap-1 overflow-y-auto">
+        <div className="mt-2 grid max-h-60 grid-cols-[repeat(auto-fill,minmax(2.5rem,1fr))] gap-1 overflow-y-auto">
           {results.map((item) => (
             <button
               key={`${item.kind}:${item.id}`}

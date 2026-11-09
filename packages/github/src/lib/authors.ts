@@ -146,7 +146,7 @@ async function resolve({
     root,
     'node_modules',
     '.cache',
-    'terrafirmagreg-history',
+    'terrafirmagreg-github',
   );
 
   const loginOf = new Map<string, string | null>();
@@ -167,7 +167,7 @@ async function resolve({
         const response = await fetchImpl(
           `https://github.com/${repoPath}/commit/${sha}`,
           {
-            headers: { 'user-agent': 'terrafirmagreg-history' },
+            headers: { 'user-agent': 'terrafirmagreg-github' },
             signal: AbortSignal.timeout(timeoutMs),
             redirect: 'follow',
           },

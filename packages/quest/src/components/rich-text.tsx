@@ -1,5 +1,6 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { type ReactNode } from 'react';
+import { readableColor } from '@terrafirmagreg-team/ui/lib/color';
 import { LinkPreview } from '@terrafirmagreg-team/ui/components/blocks/link/link-preview';
 import { EntryIcon } from '@terrafirmagreg-team/game/components/entry/icon';
 import { questHref } from '@terrafirmagreg-team/quest/lib/links';
@@ -21,7 +22,7 @@ function nodesToInline(nodes: RichTextNode[]): ReactNode {
           <span
             key={index}
             className={styleClassName(node.style)}
-            style={node.style.color ? { color: node.style.color } : undefined}
+            style={node.style.color ? { color: readableColor(node.style.color) } : undefined}
           >
             {node.text}
           </span>
@@ -70,7 +71,7 @@ export function renderQuestNodes(
           <span
             key={index}
             className={styleClassName(node.style)}
-            style={node.style.color ? { color: node.style.color } : undefined}
+            style={node.style.color ? { color: readableColor(node.style.color) } : undefined}
           >
             {node.text}
           </span>

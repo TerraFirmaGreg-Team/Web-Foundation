@@ -1,6 +1,8 @@
 export type DiscussionsDataset = {
-  repo?: string;
-  discussions?: { repoId: string; categoryId: string };
+  github?: {
+    repo?: string;
+    discussions?: { repoId: string; categoryId: string };
+  };
 };
 
 export type DiscussionsConfig = {

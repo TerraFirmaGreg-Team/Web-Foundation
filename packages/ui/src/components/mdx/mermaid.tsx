@@ -18,6 +18,11 @@ export function Mermaid({ chart }: { chart: string }) {
     );
   }
 
-  return <div dangerouslySetInnerHTML={{ __html: svg }} />;
+  return (
+    <div
+      className="max-w-full overflow-x-auto [&>svg]:h-auto [&>svg]:max-w-full"
+      dangerouslySetInnerHTML={{ __html: svg }}
+    />
+  );
 }
 

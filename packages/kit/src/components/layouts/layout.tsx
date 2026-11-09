@@ -46,6 +46,7 @@ import { useDatasetAccent } from '@terrafirmagreg-team/kit/hooks/use-dataset-acc
 import { useNavOptions } from '@terrafirmagreg-team/kit/hooks/use-nav-options';
 import { pinTreeDataset } from '@terrafirmagreg-team/kit/lib/pin-tree';
 import { layoutDeps, sectionConfig } from '@terrafirmagreg-team/kit/lib/config';
+import { datasetLinks } from '@terrafirmagreg-team/kit/lib/dataset-links';
 import type {
   DatasetCatalog,
   LeftSidebarSlotProps,
@@ -126,9 +127,9 @@ export function Layout({
     [effectiveTree, section, baseId, pinned],
   );
   const locales = meta?.languages ? localeItems(meta.languages) : undefined;
-  const links = baseId
-    ? sectionConfig().datasetConfig[baseId]?.links
-    : undefined;
+  const links = datasetLinks(
+    baseId ? sectionConfig().datasetConfig[baseId] : undefined,
+  );
   const menuItems: (SiteMenuItem | 'separator' | false)[] = [
     commentsItem,
     { label: t('Website', { note: 'ui.website' }), icon: <Globe />, url: siteLinks.website },

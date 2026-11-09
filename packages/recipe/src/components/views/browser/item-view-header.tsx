@@ -83,7 +83,7 @@ export function ItemViewHeader({
                       variant="ghost"
                       tooltip={false}
                       label={t('NBT', { note: 'recipe.nbt' })}
-                      className="size-7 rounded-lg text-muted-foreground hover:text-foreground [&_svg]:size-3.5"
+                      className="size-8 rounded-lg text-muted-foreground hover:text-foreground [&_svg]:size-3.5"
                     >
                       <Braces />
                     </IconButton>
@@ -115,7 +115,7 @@ export function ItemViewHeader({
               <IconButton
                 variant="ghost"
                 label={t('Add to calculator', { note: 'recipe.calc.add.title' })}
-                className="size-7 rounded-lg text-muted-foreground hover:text-foreground [&_svg]:size-3.5"
+                className="size-8 rounded-lg text-muted-foreground hover:text-foreground [&_svg]:size-3.5"
                 onClick={onAddToCalc}
               >
                 <Calculator />

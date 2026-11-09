@@ -42,7 +42,7 @@ export function Heading({
         aria-live="polite"
         className={cn(
           buttonVariants({ variant: 'ghost', size: 'icon-xs' }),
-          'not-prose shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/heading:opacity-100',
+          'not-prose shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/heading:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-60',
         )}
         onClick={onCopy}
       >

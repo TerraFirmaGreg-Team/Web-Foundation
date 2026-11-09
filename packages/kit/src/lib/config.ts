@@ -3,6 +3,7 @@ import type {
   SectionKey,
   SectionSourceEntry,
 } from '@terrafirmagreg-team/kit/types';
+import type { DatasetLink } from './dataset-links';
 
 export type SectionDump = {
   manifest: {
@@ -28,25 +29,35 @@ export type SectionConfigInput = {
 
   sectionAccent?: Partial<Record<SectionKey, string>>;
 
+  languages?: readonly string[];
+
   datasetConfig: Record<
     string,
     {
       accent?: string;
       order?: number;
 
-      repo?: `${string}/${string}`;
-
-      discussions?: { repoId: string; categoryId: string };
-
-      crowdin?: string;
-
-      links?: readonly {
-        label: string;
+      crowdin?: {
         url: string;
-        icon?: string;
-      }[];
-      sections?: readonly SectionKey[];
-      guide?: { bookOrder?: readonly string[] };
+        excludeUsers?: readonly string[];
+        minWords?: number;
+      };
+
+      github?: {
+        repo?: `${string}/${string}`;
+        url?: string;
+        excludeUsers?: readonly string[];
+        minContributions?: number;
+        discussions?: { repoId: string; categoryId: string };
+      };
+
+      links?: readonly DatasetLink[];
+
+      sections?: Partial<{
+        [K in SectionKey]: K extends 'guide'
+          ? true | { bookOrder?: readonly string[] }
+          : true | Record<string, never>;
+      }>;
     }
   >;
   sources: Partial<Record<SectionKey, SectionSourceEntry>>;

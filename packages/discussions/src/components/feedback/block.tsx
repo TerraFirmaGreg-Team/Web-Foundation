@@ -207,7 +207,7 @@ function FeedbackTextPopup({
     <div
       ref={(el) => refs.setFloating(el)}
       className={cn(
-        'not-prose z-40 text-sm bg-fd-popover text-fd-popover-foreground border overflow-hidden shadow-lg rounded-xl w-30 h-9.5 box-content transition-[width,height]',
+        'not-prose z-overlay text-sm bg-fd-popover text-fd-popover-foreground border overflow-hidden shadow-lg rounded-xl w-30 h-9.5 box-content transition-[width,height]',
         popup.mode === 'expanded' ? 'w-[300px] h-32 max-w-[98vw]' : 'select-none',
       )}
       style={floatingStyles}
@@ -336,7 +336,7 @@ function FeedbackTextForm({
         required
         value={message}
         onChange={(e) => setMessage(e.target.value)}
-        className="border rounded-lg bg-fd-secondary text-fd-secondary-foreground p-3 resize-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring placeholder:text-fd-muted-foreground"
+        className="flex-1 min-h-0 border rounded-lg bg-fd-secondary text-fd-secondary-foreground p-3 resize-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring placeholder:text-fd-muted-foreground"
         placeholder={t('Leave your feedback…', { note: 'ui.feedback.placeholder' })}
         onKeyDown={(e) => {
           if (e.nativeEvent.isComposing || e.keyCode === 229) return;

@@ -39,7 +39,7 @@ export function CardText({
           : {}),
       }}
     >
-      <McText text={content} />
+      <McText text={content} surface="dark" />
     </span>
   );
 }

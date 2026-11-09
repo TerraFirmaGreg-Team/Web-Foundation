@@ -277,29 +277,30 @@ export function QuestBrowser({
     );
   };
 
-  const questPanel = selected ? (
-    <QuestView
-      quest={selected}
-      dataset={dataset}
-      lang={lang}
-      langMap={langMap}
-      index={index.value}
-      actionsRight={actionsRight}
-      chapterJump={
-        linkTarget
-          ? { filename: linkTarget.filename, title: linkTargetTitle }
-          : undefined
-      }
-    />
-  ) : index.pending || chapter.pending ? (
-    <QuestPanelSkeleton />
-  ) : (
-    <div className="p-4">
-      <EmptyState variant="missing">
-        {t('Quest not found', { note: 'quest.not_found' })}
-      </EmptyState>
-    </div>
-  );
+  const questPanel = (viewActions = true) =>
+    selected ? (
+      <QuestView
+        quest={selected}
+        dataset={dataset}
+        lang={lang}
+        langMap={langMap}
+        index={index.value}
+        actionsRight={viewActions ? actionsRight : null}
+        chapterJump={
+          linkTarget
+            ? { filename: linkTarget.filename, title: linkTargetTitle }
+            : undefined
+        }
+      />
+    ) : index.pending || chapter.pending ? (
+      <QuestPanelSkeleton />
+    ) : (
+      <div className="p-4">
+        <EmptyState variant="missing">
+          {t('Quest not found', { note: 'quest.not_found' })}
+        </EmptyState>
+      </div>
+    );
 
   return (
     <EntryProvider dataset={dataset} lang={lang} langMap={langMap}>
@@ -363,7 +364,7 @@ export function QuestBrowser({
             (!chapter.pending && !chapter.value && row) ? (
               <QuestPanelSkeleton />
             ) : selectedId ? (
-              questPanel
+              questPanel()
             ) : (
               <div className="p-4">
                 <EmptyState>
@@ -376,17 +377,19 @@ export function QuestBrowser({
           </RightSidebarPanel>
         </RightSidebarPortal>
         {selectedId ? (
-          <aside className="absolute inset-y-0 right-0 z-20 w-full max-w-md border-l border-border bg-background shadow-lg lg:hidden ps-4">
-            <IconButton
-              variant="ghost"
-              size="icon-sm"
-              label={t('Close', { note: 'quest.close' })}
-              onClick={() => replaceQuest({ category: row?.filename })}
-              className="absolute right-2 top-2 z-10"
-            >
-              <X className="size-4" />
-            </IconButton>
-            {questPanel}
+          <aside className="absolute inset-y-0 right-0 z-20 flex w-full max-w-md flex-col border-l border-border bg-background shadow-lg lg:hidden">
+            <div className="flex shrink-0 items-center justify-end gap-1.5 border-b border-border px-2 py-1">
+              {actionsRight}
+              <IconButton
+                variant="ghost"
+                size="icon-sm"
+                label={t('Close', { note: 'quest.close' })}
+                onClick={() => replaceQuest({ category: row?.filename })}
+              >
+                <X className="size-4" />
+              </IconButton>
+            </div>
+            <div className="min-h-0 flex-1 ps-4">{questPanel(false)}</div>
           </aside>
         ) : null}
         <SearchOverlay

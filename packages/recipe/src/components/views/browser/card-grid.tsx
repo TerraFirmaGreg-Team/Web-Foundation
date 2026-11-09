@@ -268,7 +268,7 @@ export function RecipeCardGrid({
     <div
       ref={boxRef}
       {...swipe}
-      className="flex min-h-0 flex-1 flex-col items-center justify-start gap-2 overflow-x-hidden"
+      className="flex min-h-0 flex-1 flex-col items-center justify-start gap-2 overflow-x-auto"
     >
       {body}
     </div>

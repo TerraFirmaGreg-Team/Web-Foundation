@@ -100,8 +100,8 @@ let initialized = false;
 
 function writeWidths(state: ReadabilityState) {
   const root = document.documentElement;
-  root.style.setProperty('--page-width', `${state.pageWidth}%`);
-  root.style.setProperty('--content-width', `${state.contentWidth}%`);
+  root.style.setProperty('--readability-page-width', `${state.pageWidth}%`);
+  root.style.setProperty('--readability-content-width', `${state.contentWidth}%`);
 }
 
 function applyWidths(state: ReadabilityState) {
@@ -141,7 +141,7 @@ export function clearState() {
   delete root.dataset.spotlightStyle;
   root.removeAttribute('data-spotlight');
   root.removeAttribute('data-readability-anim');
-  root.style.removeProperty('--page-width');
-  root.style.removeProperty('--content-width');
+  root.style.removeProperty('--readability-page-width');
+  root.style.removeProperty('--readability-content-width');
 }
 

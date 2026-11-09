@@ -330,7 +330,7 @@ export function SearchDialogContent({
         }}
         className={(s) =>
           cn(
-            'fixed left-1/2 top-4 md:top-[calc(50%_-_250px)] z-50 w-[calc(100%_-_1rem)] max-w-screen-sm -translate-x-1/2 rounded-xl border bg-popover text-popover-foreground shadow-2xl overflow-hidden data-closed:animate-dialog-out data-open:animate-dialog-in focus-visible:outline-none',
+            'fixed left-1/2 top-4 md:top-[max(1rem,calc(50%_-_250px))] z-50 w-[calc(100%_-_1rem)] max-w-screen-sm -translate-x-1/2 rounded-xl border bg-popover text-popover-foreground shadow-2xl overflow-hidden data-closed:animate-dialog-out data-open:animate-dialog-in focus-visible:outline-none',
             '*:border-b *:has-[+:last-child[data-empty=true]]:border-b-0 *:data-[empty=true]:border-b-0 *:last:border-b-0',
             typeof className === 'function' ? className(s) : className,
           )
@@ -456,7 +456,7 @@ export function SearchDialogList({
 
         role={items?.length ? 'listbox' : undefined}
         aria-label={items?.length ? t('Search', { note: 'ui.search_dialog' }) : undefined}
-        className={cn('w-full flex flex-col overflow-y-auto max-h-[460px] p-1', !items && 'hidden')}
+        className={cn('w-full flex flex-col overflow-y-auto max-h-[min(460px,calc(100dvh-8rem))] p-1', !items && 'hidden')}
       >
         {items?.length === 0 && Empty()}
 

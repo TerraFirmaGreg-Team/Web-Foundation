@@ -6,6 +6,8 @@
   "Commit(git changelog)": "Commit",
   "Commits(git changelog)": "Commits",
   "Contributors(git changelog)": "Contributors",
+  "Contributors(github.contributors)": "Contributors",
+  "{count} commits(github.commits)": "{count} commits",
   "Last edited(git changelog)": "Last edited",
   "Link target changed(git changelog)": "Link target changed",
   "Newest first(git changelog)": "Newest first",

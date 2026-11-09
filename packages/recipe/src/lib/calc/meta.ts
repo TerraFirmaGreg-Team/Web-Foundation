@@ -11,7 +11,7 @@ export type EntryMeta = {
 };
 
 export const rowClass =
-  'flex w-full items-center gap-1.5 rounded-md px-2 py-1 text-sm transition-colors';
+  'flex min-w-0 items-center gap-1.5 rounded-md px-2 py-1 text-sm transition-colors';
 export const rowIdle =
   'text-muted-foreground hover:bg-accent hover:text-accent-foreground';
 

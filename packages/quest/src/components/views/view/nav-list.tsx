@@ -54,7 +54,7 @@ export function NavList({
               ) : null
             }
             title={compactRowDisplayTitle(row, langMap)}
-            titleClassName="font-normal"
+            titleClassName="font-normal truncate"
           />
         );
       })}

@@ -51,7 +51,7 @@ export function VersionMenu({
   }
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
-      <DropdownMenuTrigger className="inline-flex items-center gap-0.5 rounded-sm outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring">
+      <DropdownMenuTrigger className="-mx-1.5 inline-flex h-8 items-center gap-0.5 rounded-lg px-1.5 outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring">
         {text}
         <ChevronDown className="size-3" />
       </DropdownMenuTrigger>

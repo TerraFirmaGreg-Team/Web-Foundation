@@ -72,7 +72,9 @@ export async function resolveDocsPage(
     toc,
     body: <MDX components={getMDXComponents({ a: link })} />,
     ctx: { page, filePath, datasetId, copied, history, exports: _exports },
-    repoSlug: page.slugs.length === 2 ? dataset?.repo?.split('/') : undefined,
+    repoSlug: page.slugs.length === 2
+      ? dataset?.github?.repo?.split('/')
+      : undefined,
     mdUrl: `${stripLangFromUrl(page.url, [...languages])}.md${
       page.locale ? `?lang=${page.locale}` : ''
     }`,
@@ -107,7 +109,7 @@ export function DocsBrowser({
       <div className="flex flex-row gap-2 items-center border-b pb-6">
         <PageActions
           copied={copied}
-          crowdinUrl={dataset?.crowdin}
+          crowdinUrl={dataset?.crowdin?.url}
           mdUrl={mdUrl}
           githubUrl={features.fileUrl?.(ctx.filePath)}
         />

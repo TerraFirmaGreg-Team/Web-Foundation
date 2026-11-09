@@ -24,8 +24,12 @@ export function listGuideBooks(
   dataset: DatasetRef,
   lang: Lang,
 ): Promise<GuideBookSummary[]> {
-  return listClientGuideBookSummaries(dataset, lang).then((books) =>
-    orderGuideBooks(books, sectionConfig().datasetConfig[dataset.id]?.guide?.bookOrder),
-  );
+  return listClientGuideBookSummaries(dataset, lang).then((books) => {
+    const guide = sectionConfig().datasetConfig[dataset.id]?.sections?.guide;
+    return orderGuideBooks(
+      books,
+      typeof guide === 'object' ? guide.bookOrder : undefined,
+    );
+  });
 }
 

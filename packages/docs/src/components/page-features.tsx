@@ -4,7 +4,8 @@ import {
   PageComments,
   PageFooterFeedback,
 } from '@terrafirmagreg-team/discussions/components/page-features';
-import { PageHistoryFooter } from '@terrafirmagreg-team/history/components/page-history';
+import { PageHistoryFooter } from '@terrafirmagreg-team/github/components/page-history';
+import { RepoContributors } from '@terrafirmagreg-team/github/components/contributors';
 import type { SectionFeatures } from '@terrafirmagreg-team/kit/types/features';
 
 export const docsPageFeatures: SectionFeatures = {
@@ -12,6 +13,7 @@ export const docsPageFeatures: SectionFeatures = {
   wrapBody: (body) => <PageBodyFeatures>{body}</PageBodyFeatures>,
   footer: (ctx) => (
     <>
+      <RepoContributors ctx={ctx} />
       <PageHistoryFooter ctx={ctx} />
       <PageFooterFeedback />
     </>

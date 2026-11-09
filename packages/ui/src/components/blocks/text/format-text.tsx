@@ -1,4 +1,8 @@
 import { Fragment, type CSSProperties } from 'react';
+import {
+  readableColor,
+  type ColorSurface,
+} from '@terrafirmagreg-team/ui/lib/color';
 
 export type TextFormat = {
   marker: string;
@@ -15,9 +19,11 @@ type Run = { text: string; style?: CSSProperties };
 export function FormatText({
   text,
   format,
+  surface = 'normal',
 }: {
   text: string;
   format: TextFormat;
+  surface?: ColorSurface;
 }) {
   const markers = new Set([format.marker, ...(format.extraMarkers ?? [])]);
   const codes = new Set([
@@ -100,7 +106,14 @@ export function FormatText({
     <>
       {runs.map((run, index) =>
         run.style ? (
-          <span key={index} style={run.style}>
+          <span
+            key={index}
+            style={
+              run.style.color
+                ? { ...run.style, color: readableColor(run.style.color, surface) }
+                : run.style
+            }
+          >
             {run.text}
           </span>
         ) : (

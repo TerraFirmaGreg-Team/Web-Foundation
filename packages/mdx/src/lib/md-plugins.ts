@@ -54,7 +54,7 @@ const rehypeCodeOptions = {
 };
 
 export const mdOptions = (
-  datasetConfig: Record<string, { repo?: string }> = {},
+  datasetConfig: Record<string, { github?: { repo?: string } }> = {},
 ) => ({
   mdOptions: {
     remarkImageOptions: { onError: 'ignore' },

@@ -52,7 +52,7 @@ export function CardWidgetTips({
           <TooltipContent className="flex-col items-start gap-0.5 p-3 text-sm whitespace-pre-wrap">
             {(widget.tooltip ?? []).map((line, lineIndex) => (
               <p key={lineIndex}>
-                <McText text={line} />
+                <McText text={line} surface="dark" />
               </p>
             ))}
           </TooltipContent>

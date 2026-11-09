@@ -108,8 +108,8 @@ export function Banner({
       {changeLayout && open ? (
         <style>
           {globalKey
-            ? `:root:not(.${globalKey}) { --banner-height: ${height}; }`
-            : `:root { --banner-height: ${height}; }`}
+            ? `:root:not(.${globalKey}) { --banner-height: ${height ?? (glow ? '0px' : '3rem')}; }`
+            : `:root { --banner-height: ${height ?? (glow ? '0px' : '3rem')}; }`}
         </style>
       ) : null}
       {globalKey ? <style>{`.${globalKey} #${id} { display: none; }`}</style> : null}

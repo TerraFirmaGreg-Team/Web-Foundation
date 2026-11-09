@@ -91,7 +91,7 @@ function rememberDataset(section: SectionKey, row: SectionDataset) {
 
 function datasetMembership(section: SectionKey, id: string): boolean {
   const declared = sectionConfig().datasetConfig[id]?.sections;
-  if (declared) return declared.includes(section);
+  if (declared) return Boolean(declared[section]);
   return lastGoodDatasets.get(section)?.has(id) === true;
 }
 
@@ -114,6 +114,8 @@ function datasetAppearance(id: string) {
 }
 
 function datasetLanguages(languages: readonly string[]): Lang[] {
+  const central = sectionConfig().languages;
+  if (central?.length) return sortLangCodes(central) as Lang[];
   if (languages.length) return sortLangCodes(languages) as Lang[];
   return [loadLocaleRegistry().defaultLanguage as Lang];
 }

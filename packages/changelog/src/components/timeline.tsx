@@ -146,7 +146,7 @@ function ChangelogItem({
         <a
           href={`#${entry.id}`}
           aria-label="Link to this release"
-          className="text-muted-foreground opacity-0 transition-opacity hover:text-primary group-hover:opacity-100"
+          className="text-muted-foreground opacity-0 transition-opacity hover:text-primary group-hover:opacity-100 [@media(hover:none)]:opacity-60"
         >
           <LinkIcon className="size-3.5" />
         </a>

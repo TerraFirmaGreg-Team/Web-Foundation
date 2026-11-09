@@ -6,6 +6,8 @@
   "Commit(git changelog)": "Коммит",
   "Commits(git changelog)": "Коммиты",
   "Contributors(git changelog)": "Авторы",
+  "Contributors(github.contributors)": "Авторы",
+  "{count} commits(github.commits)": "{count} коммитов",
   "Last edited(git changelog)": "Последняя правка",
   "Link target changed(git changelog)": "Изменена цель ссылки",
   "Newest first(git changelog)": "Сначала новые",

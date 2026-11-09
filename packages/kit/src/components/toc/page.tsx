@@ -22,8 +22,12 @@ export function PageToc({
         data-slot="workspace-outline-popover"
         className="sticky top-[calc(var(--banner-height,0px)+var(--header-height))] z-30 [grid-area:toc-popover] self-start md:hidden"
       >
-        {popover}
-        <div className="absolute inset-x-2 top-full h-[calc(var(--layout-height)_-_var(--header-height)_-_100%)] rounded-t-2xl border-x border-t outline-8 outline-card [clip-path:inset(0_-8px_-8px)] bg-origin-border bg-linear-to-b from-background to-transparent to-[16px] pointer-events-none" />
+        {popover && (
+          <>
+            {popover}
+            <div className="absolute inset-x-2 top-full h-[calc(var(--layout-height)_-_var(--header-height)_-_100%)] rounded-t-2xl border-x border-t outline-8 outline-card [clip-path:inset(0_-8px_-8px)] bg-origin-border bg-linear-to-b from-background to-transparent to-[16px] pointer-events-none" />
+          </>
+        )}
       </div>
       {children}
       {outline}

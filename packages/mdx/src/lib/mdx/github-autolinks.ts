@@ -25,7 +25,7 @@ const DEFAULT_PATHS = [
 ];
 
 export function remarkGithubAutolinks(options: {
-  datasetConfig?: Record<string, { repo?: string }>;
+  datasetConfig?: Record<string, { github?: { repo?: string } }>;
   paths?: RegExp[];
 } = {}) {
   const { datasetConfig = {}, paths = DEFAULT_PATHS } = options;
@@ -34,7 +34,7 @@ export function remarkGithubAutolinks(options: {
     const pack = paths
       .map((pattern) => pattern.exec(filePath)?.[1])
       .find(Boolean);
-    const repo = pack ? datasetConfig[pack]?.repo : undefined;
+    const repo = pack ? datasetConfig[pack]?.github?.repo : undefined;
     if (!repo) return;
     const repoUrl = `https://github.com/${repo}`;
     const visit = (node: MdastNode) => {

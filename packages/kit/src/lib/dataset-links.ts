@@ -29,3 +29,14 @@ export const datasetLink = {
   }),
 };
 
+export function datasetLinks(entry?: {
+  github?: { repo?: `${string}/${string}` };
+  links?: readonly DatasetLink[];
+}): readonly DatasetLink[] | undefined {
+  const links = [
+    ...(entry?.github?.repo ? [datasetLink.github(entry.github.repo)] : []),
+    ...(entry?.links ?? []),
+  ];
+  return links.length ? links : undefined;
+}
+
