@@ -3,7 +3,7 @@ import { stackDisplayName } from '@terrafirmagreg-team/dump/lib/dump/assets/lang
 import { loadClientModAtlases } from '@terrafirmagreg-team/dump/lib/dump/client/atlases';
 import { loadClientKeybinds } from '@terrafirmagreg-team/dump/lib/dump/client/keybinds';
 import { sectionEmbeds } from '@terrafirmagreg-team/kit/lib/embeds';
-import { loadClientRegistry } from '@terrafirmagreg-team/dump/lib/dump/client/registry';
+import { loadClientRegistryEntry } from '@terrafirmagreg-team/dump/lib/dump/client/registry';
 import { parseStackId } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 import { spriteIdsFromEntry } from '@terrafirmagreg-team/guide/lib/kind/sprites';
 import { recipeIds } from '@terrafirmagreg-team/guide/lib/kind/recipe';
@@ -30,7 +30,8 @@ export async function entryExtras(
   const entities: GuideEntryExtras['entities'] = {};
   const entityNames: GuideEntryExtras['entityNames'] = {};
   const glbs: GuideEntryExtras['glbs'] = {};
-  const registry = await loadClientRegistry(dataset, 'entities');
+  const registryLoad = (id: string) =>
+    loadClientRegistryEntry(dataset, 'entities', id);
 
   await Promise.all(
     pages.map(async (page) => {
@@ -43,14 +44,16 @@ export async function entryExtras(
       const entityId =
         typeof page.entity === 'string' ? page.entity : undefined;
       if (entityId) {
+        const parsed = parseStackId(entityId);
+        const record = parsed?.id
+          ? await registryLoad(entityId)
+          : undefined;
         entityNames[entityId] = stackDisplayName(
           langMap,
           entityId,
           'entity',
-          registry.get(entityId)?.display?.name,
+          record?.display?.name,
         );
-        const parsed = parseStackId(entityId);
-        const record = parsed?.id ? registry.get(parsed.id) : undefined;
         if (parsed?.id && record) entities[parsed.id] = record;
       }
       await collectPageLinks(

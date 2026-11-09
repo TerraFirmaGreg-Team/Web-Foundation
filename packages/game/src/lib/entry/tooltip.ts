@@ -8,7 +8,7 @@ import {
 import { clientDumpLang } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import {
   clientRegistryKindFor,
-  loadClientRegistry,
+  loadClientRegistryEntry,
 } from '@terrafirmagreg-team/dump/lib/dump/client/registry';
 import type { DumpDisplay } from '@terrafirmagreg-team/dump/lib/dump/contract/text';
 import {
@@ -26,15 +26,19 @@ export const loadStackDisplay = createDatasetCache(
   ): Promise<DumpDisplay | undefined> => {
     const parsed = parseStackId(compactId);
     const ofKind = async (registry: 'items' | 'fluids') => {
-      const entry = (await loadClientRegistry(dataset, registry)).get(
+      const entry = await loadClientRegistryEntry(
+        dataset,
+        registry,
         parsed.id,
       );
       return entry ? displayOf(entry, parsed.nbt) : undefined;
     };
     if (kind) {
-      const entry = (
-        await loadClientRegistry(dataset, clientRegistryKindFor(kind))
-      ).get(parsed.id);
+      const entry = await loadClientRegistryEntry(
+        dataset,
+        clientRegistryKindFor(kind),
+        parsed.id,
+      );
       return entry ? displayOf(entry, parsed.nbt) : undefined;
     }
     return (await ofKind('items')) ?? (await ofKind('fluids'));

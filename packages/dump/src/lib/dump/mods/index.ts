@@ -4,11 +4,22 @@ import type {
 } from '@terrafirmagreg-team/dump/lib/dump/manifest/dto';
 import type { DumpIndex, DumpMod, GuideBookRef } from '@terrafirmagreg-team/dump/lib/dump/mods/dto';
 
+export const SHARDED_REGISTRY = new Set([
+  'items',
+  'blocks',
+  'fluids',
+  'entities',
+]);
+
 function registryRel(
   meta: NamespaceDisplay,
+  namespace: string,
   file: string,
 ): string | null {
-  return meta.registry.includes(file) ? `registry/${file}.json` : null;
+  if (!meta.registry.includes(file)) return null;
+  return SHARDED_REGISTRY.has(file)
+    ? `registry/${file}/${namespace}.json`
+    : `registry/${file}.json`;
 }
 
 function loadBooks(
@@ -35,15 +46,15 @@ function loadMod(
   return {
     namespace,
     keybindsFile: meta.keybinds ? 'keybinds.json' : null,
-    items: registryRel(meta, 'items'),
-    blocks: registryRel(meta, 'blocks'),
-    fluids: registryRel(meta, 'fluids'),
-    entities: registryRel(meta, 'entities'),
-    tabs: registryRel(meta, 'tabs'),
-    groups: registryRel(meta, 'groups'),
-    recipeCategories: registryRel(meta, 'recipe_categories'),
-    tags: registryRel(meta, 'tags'),
-    recipeIndex: registryRel(meta, 'recipes'),
+    items: registryRel(meta, namespace, 'items'),
+    blocks: registryRel(meta, namespace, 'blocks'),
+    fluids: registryRel(meta, namespace, 'fluids'),
+    entities: registryRel(meta, namespace, 'entities'),
+    tabs: registryRel(meta, namespace, 'tabs'),
+    groups: registryRel(meta, namespace, 'groups'),
+    recipeCategories: registryRel(meta, namespace, 'recipe_categories'),
+    tags: registryRel(meta, namespace, 'tags'),
+    recipeIndex: registryRel(meta, namespace, 'recipes'),
     questData: meta.quests ? `data/${namespace}/quests/data.json` : null,
     books: loadBooks(namespace, meta.guides),
   };
@@ -79,10 +90,23 @@ export function dumpRegistryRel(
   file: string,
 ): string | undefined {
   const field = REGISTRY_FIELD[file as keyof typeof REGISTRY_FIELD];
-  if (!field) return undefined;
+  if (!field || SHARDED_REGISTRY.has(file)) return undefined;
   return dump?.mods.some((mod) => mod[field] != null)
     ? `registry/${file}.json`
     : undefined;
+}
+
+export function dumpRegistryNamespaces(
+  dump: DumpIndex | null | undefined,
+  file: string,
+): string[] {
+  const field = REGISTRY_FIELD[file as keyof typeof REGISTRY_FIELD];
+  if (!field) return [];
+  return (
+    dump?.mods.flatMap((mod) =>
+      mod[field] != null ? [mod.namespace] : [],
+    ) ?? []
+  );
 }
 
 export function dumpModRegistryRel(
@@ -91,7 +115,22 @@ export function dumpModRegistryRel(
   file: string,
 ): string | undefined {
   const field = REGISTRY_FIELD[file as keyof typeof REGISTRY_FIELD];
+  if (!field) return undefined;
+  return (
+    dump?.mods.find((m) => m.namespace === namespace)?.[field] ?? undefined
+  );
+}
+
+export function dumpRegistryIconsRel(
+  dump: DumpIndex | null | undefined,
+  namespace: string,
+  file: string,
+): string | undefined {
+  if (file === 'entities') return undefined;
+  const field = REGISTRY_FIELD[file as keyof typeof REGISTRY_FIELD];
   const mod = dump?.mods.find((m) => m.namespace === namespace);
-  return field && mod?.[field] ? `registry/${file}.json` : undefined;
+  return field && SHARDED_REGISTRY.has(file) && mod?.[field]
+    ? `registry/${file}/${namespace}.icons.json`
+    : undefined;
 }
 

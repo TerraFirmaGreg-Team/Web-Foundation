@@ -10,7 +10,7 @@ import { ImageResponse } from 'next/og';
 import { sectionConfig } from '@terrafirmagreg-team/kit/lib/config';
 import { OgDock, SECTION_PAGE_KIND } from '../components/og-dock';
 import { ogSectionIcon } from './og-icon';
-import { resolveOgContext, type OgBrand } from './og';
+import { ogResolveIcon, resolveOgContext, type OgBrand } from './og';
 
 export async function ogImageResponse(
   slug: string[] | undefined,
@@ -71,7 +71,7 @@ export async function ogImageResponse(
     section,
     badge: dataset.title ?? dataset.id,
     version: ref.version,
-    sprite: ctx.icon,
+    sprite: await ogResolveIcon(ctx.icon),
     icon: ogSectionIcon(section, accent),
     siteUrl: new URL(brand.siteUrl).host,
     entity,

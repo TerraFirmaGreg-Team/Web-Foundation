@@ -22,7 +22,7 @@ async function guideOgContext(
         kind: 'entry',
         ...ogName(hit.entry.name ?? entryId),
       },
-      icon: await ogRefSprite(dataset, hit.entry.icon),
+      icon: () => ogRefSprite(dataset, hit.entry.icon),
       description:
         [hit.bookName, hit.categoryName].filter(Boolean).join(' · ') ||
         undefined,
@@ -42,7 +42,7 @@ async function guideOgContext(
         kind: 'category',
         ...ogName(category.name),
       },
-      icon: await ogRefSprite(dataset, category.icon),
+      icon: () => ogRefSprite(dataset, category.icon),
       description: [
         overview.book?.name,
         `${category.entries.length} entr${category.entries.length === 1 ? 'y' : 'ies'}`,
@@ -56,7 +56,7 @@ async function guideOgContext(
   if (!book) return {};
   return {
     entity: { kind: 'book', ...ogName(book.name) },
-    icon: await ogRefSprite(dataset, book.cover ?? undefined),
+    icon: () => ogRefSprite(dataset, book.cover ?? undefined),
     description: `${overview.entries.length} entr${overview.entries.length === 1 ? 'y' : 'ies'}`,
     imageQuery: `book=${encodeURIComponent(bookId)}`,
   };

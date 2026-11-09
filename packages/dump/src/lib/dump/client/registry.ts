@@ -11,7 +11,10 @@ import type {
   DumpRegistryEntry,
   DumpRegistryKind,
 } from '@terrafirmagreg-team/dump/lib/dump/data/registry/dto';
-import { clientRegistryEntries } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
+import {
+  clientRegistryEntries,
+  clientRegistryNsEntries,
+} from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import { createDatasetCache } from '@terrafirmagreg-team/dump/lib/dump/reader';
 
 type RegistryByKind = {
@@ -55,6 +58,50 @@ export function loadClientRegistry<K extends DumpRegistryKind>(
   kind: K,
 ): Promise<Map<string, RegistryByKind[K]>> {
   return clientRegistry(dataset, kind) as Promise<Map<string, RegistryByKind[K]>>;
+}
+
+const clientRegistryNs = createDatasetCache(
+  async (
+    dataset: DatasetRef,
+    kind: DumpRegistryKind,
+    ns: string,
+  ): Promise<Map<string, DumpRegistryEntry>> => {
+    const out = new Map<string, DumpRegistryEntry>();
+    const entries = await clientRegistryNsEntries(dataset, KIND_FILE[kind], ns);
+    const ids = asIdTable(entries);
+    for (const [id, raw] of Object.entries(entries ?? {})) {
+      if (id === EDGE_TABLE_FIELD) continue;
+      const entry = asEntry(raw, kind, id, ids);
+      if (!entry) continue;
+      if (!out.has(id)) out.set(id, entry);
+      if (entry.id !== id && !out.has(entry.id)) {
+        out.set(entry.id, entry);
+      }
+    }
+    return out;
+  },
+);
+
+export function loadClientRegistryNs<K extends DumpRegistryKind>(
+  dataset: DatasetRef,
+  kind: K,
+  ns: string,
+): Promise<Map<string, RegistryByKind[K]>> {
+  return clientRegistryNs(dataset, kind, ns) as Promise<
+    Map<string, RegistryByKind[K]>
+  >;
+}
+
+export async function loadClientRegistryEntry<K extends DumpRegistryKind>(
+  dataset: DatasetRef,
+  kind: K,
+  id: string,
+): Promise<RegistryByKind[K] | undefined> {
+  const base = parseStackId(id).id;
+  const ns = base.includes(':') ? base.split(':', 1)[0] : 'minecraft';
+  if (!ns) return undefined;
+  const map = await loadClientRegistryNs(dataset, kind, ns);
+  return map.get(id) ?? map.get(base);
 }
 
 export function resolveClientStackDisplay(
@@ -110,7 +157,11 @@ export async function loadClientRegistryTooltipsMod(
   kind: string,
   mod: string,
 ): Promise<Record<string, DumpText[]> | undefined> {
-  const entries = await loadClientRegistry(dataset, clientRegistryKindFor(kind));
+  const entries = await loadClientRegistryNs(
+    dataset,
+    clientRegistryKindFor(kind),
+    mod,
+  );
   const out: Record<string, DumpText[]> = {};
   for (const entry of entries.values()) {
     const lines = entry.display?.tooltipMods?.[mod];

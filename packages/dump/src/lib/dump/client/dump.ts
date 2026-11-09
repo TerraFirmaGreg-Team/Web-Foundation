@@ -3,7 +3,10 @@ import { dumpReader } from '@terrafirmagreg-team/dump/lib/dump/reader';
 import { DUMP_POINTER_TTL } from '@terrafirmagreg-team/dump/lib/dump/json-reader';
 import { dumpRelPublicUrl, splitDumpId } from '@terrafirmagreg-team/dump/lib/dump/paths';
 import { stackIdBase } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
-import { asRecord } from '@terrafirmagreg-team/dump/lib/dump/contract/read';
+import {
+  asRecord,
+  resolveEdgeRows,
+} from '@terrafirmagreg-team/dump/lib/dump/contract/read';
 import {
   modelPublicUrl,
   texturePublicUrl,
@@ -12,6 +15,8 @@ import { createAsyncCache } from '@terrafirmagreg-team/data/lib/async-cache';
 import { loadDatasetDump } from '@terrafirmagreg-team/dump/lib/dump/mods/load';
 import {
   dumpModRegistryRel,
+  dumpRegistryIconsRel,
+  dumpRegistryNamespaces,
   dumpRegistryRel,
 } from '@terrafirmagreg-team/dump/lib/dump/mods/index';
 import type { DumpManifest } from '@terrafirmagreg-team/dump/lib/dump/manifest/dto';
@@ -57,7 +62,51 @@ export async function clientRegistryEntries(
   file: string,
   priority?: 'high',
 ): Promise<Record<string, unknown> | undefined> {
-  const rel = dumpRegistryRel(await loadDatasetDump(dataset), file);
+  const dump = await loadDatasetDump(dataset);
+  const rel = dumpRegistryRel(dump, file);
+  if (rel) return asRecord(await clientDumpJson(dataset, rel, priority));
+  const namespaces = dumpRegistryNamespaces(dump, file);
+  if (!namespaces.length) return undefined;
+  const shards = await Promise.all(
+    namespaces.map((ns) =>
+      clientDumpJson(dataset, `registry/${file}/${ns}.json`, priority),
+    ),
+  );
+  const out: Record<string, unknown> = {};
+  for (const shard of shards) {
+    const map = asRecord(shard);
+    if (map) Object.assign(out, resolveEdgeRows(map));
+  }
+  return out;
+}
+
+export async function clientRegistryNsEntries(
+  dataset: DatasetRef,
+  file: string,
+  ns: string,
+  priority?: 'high',
+): Promise<Record<string, unknown> | undefined> {
+  const rel = dumpModRegistryRel(
+    await loadDatasetDump(dataset),
+    ns,
+    file,
+  );
+  return rel
+    ? asRecord(await clientDumpJson(dataset, rel, priority))
+    : undefined;
+}
+
+export async function clientRegistryIconsEntries(
+  dataset: DatasetRef,
+  file: string,
+  ns: string,
+  priority?: 'high',
+): Promise<Record<string, unknown> | undefined> {
+  const rel = dumpRegistryIconsRel(
+    await loadDatasetDump(dataset),
+    ns,
+    file,
+  );
   return rel
     ? asRecord(await clientDumpJson(dataset, rel, priority))
     : undefined;

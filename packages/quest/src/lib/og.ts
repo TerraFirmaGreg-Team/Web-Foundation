@@ -29,7 +29,7 @@ async function questOgContext(
         ...ogName(quest.title ?? quest.id),
         id: quest.id,
       },
-      icon: await ogIconSprite(dataset, quest.icon, quest.iconKind),
+      icon: () => ogIconSprite(dataset, quest.icon, quest.iconKind),
       description: quest.subtitle
         ? stripMcFormat(quest.subtitle).trim()
         : undefined,
@@ -47,7 +47,7 @@ async function questOgContext(
         name: await ogStackName(dataset, item, 'item', lang),
         id: item,
       },
-      icon: await ogRefSprite(dataset, { kind: 'item', id: item }),
+      icon: () => ogRefSprite(dataset, { kind: 'item', id: item }),
       description: `${count} quest${count === 1 ? '' : 's'}`,
       imageQuery: `item=${encodeURIComponent(item)}`,
     };
@@ -68,7 +68,7 @@ async function questOgContext(
       kind: 'chapter',
       ...ogName(chapter.title ?? chapter.filename),
     },
-    icon: await ogIconSprite(dataset, chapter.icon, chapter.iconKind),
+    icon: () => ogIconSprite(dataset, chapter.icon, chapter.iconKind),
     description: [`${count} quest${count === 1 ? '' : 's'}`, group]
       .filter(Boolean)
       .join(' · '),

@@ -5,28 +5,11 @@ import {
   mergeAtlases,
 } from '@terrafirmagreg-team/dump/lib/dump/assets/atlas/sprites';
 import {
-  clientDumpJson,
+  clientRegistryIconsEntries,
   loadClientManifest,
 } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
-import { asRecord } from '@terrafirmagreg-team/dump/lib/dump/contract/read';
+import { serverCache } from '@terrafirmagreg-team/data/lib/server-cache';
 import { createDatasetCache } from '@terrafirmagreg-team/dump/lib/dump/reader';
-
-async function modEntries(
-  dataset: DatasetRef,
-  modId: string,
-  kind: string,
-): Promise<Record<string, unknown> | undefined> {
-  const entries = asRecord(
-    await clientDumpJson(dataset, `registry/${kind}.json`, 'high'),
-  );
-  if (!entries) return undefined;
-  const prefix = `${modId}:`;
-  const out: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(entries)) {
-    if (key.startsWith(prefix)) out[key] = value;
-  }
-  return out;
-}
 
 const loadClientModAtlas = createDatasetCache(
   async (
@@ -41,7 +24,7 @@ const loadClientModAtlas = createDatasetCache(
     if (kind === 'blocks') {
       if (!has('blocks')) return null;
       return iconAtlasFromEntries(
-        await modEntries(dataset, modId, 'blocks'),
+        await clientRegistryIconsEntries(dataset, 'blocks', modId, 'high'),
         dataset,
         modId,
         'blocks',
@@ -49,8 +32,12 @@ const loadClientModAtlas = createDatasetCache(
       );
     }
     const [items, fluids] = await Promise.all([
-      has('items') ? modEntries(dataset, modId, 'items') : undefined,
-      has('fluids') ? modEntries(dataset, modId, 'fluids') : undefined,
+      has('items')
+        ? clientRegistryIconsEntries(dataset, 'items', modId, 'high')
+        : undefined,
+      has('fluids')
+        ? clientRegistryIconsEntries(dataset, 'fluids', modId, 'high')
+        : undefined,
     ]);
     return mergeAtlases(
       [
@@ -70,11 +57,24 @@ const loadClientModAtlas = createDatasetCache(
 
 export const loadClientModAtlases = createDatasetCache(
   async (dataset: DatasetRef, modId: string): Promise<AtlasBundle> => {
-    const [items, blocks] = await Promise.all([
-      loadClientModAtlas(dataset, modId, 'items'),
-      loadClientModAtlas(dataset, modId, 'blocks'),
-    ]);
-    return { items, blocks };
+    const load = async (): Promise<AtlasBundle> => {
+      const [items, blocks] = await Promise.all([
+        loadClientModAtlas(dataset, modId, 'items'),
+        loadClientModAtlas(dataset, modId, 'blocks'),
+      ]);
+      return { items, blocks };
+    };
+    const cache = serverCache();
+    if (!cache) return load();
+    try {
+      return (await cache(
+        `atlas-bundle:${dataset.id}:${dataset.version ?? ''}:${modId}`,
+        load,
+        dataset.version ? false : 60,
+      )) as AtlasBundle;
+    } catch {
+      return load();
+    }
   },
 );
 

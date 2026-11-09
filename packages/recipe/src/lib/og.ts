@@ -41,7 +41,7 @@ async function recipeOgContext(
         name: await ogStackName(dataset, id, kind, lang),
         id,
       },
-      icon: await ogRefSprite(dataset, { kind, id }),
+      icon: () => ogRefSprite(dataset, { kind, id }),
       description: id,
       imageQuery: `${kind}=${encodeURIComponent(id)}`,
     };
@@ -61,10 +61,11 @@ async function recipeOgContext(
     return {
       entity: { kind: 'tag', name: `#${tagId || id}`, id },
       icon: first
-        ? await ogRefSprite(dataset, {
-            kind: tagKind as ReferenceKind,
-            id: first,
-          })
+        ? () =>
+            ogRefSprite(dataset, {
+              kind: tagKind as ReferenceKind,
+              id: first,
+            })
         : undefined,
       description:
         list != null
@@ -98,10 +99,11 @@ async function recipeOgContext(
     return {
       entity: { kind: 'recipe', name, id: recipe.id },
       icon: out
-        ? await ogRefSprite(dataset, {
-            kind: out.kind === 'tag' ? 'itemTag' : out.kind,
-            id: out.id,
-          })
+        ? () =>
+            ogRefSprite(dataset, {
+              kind: out.kind === 'tag' ? 'itemTag' : out.kind,
+              id: out.id,
+            })
         : undefined,
       description: catName ?? recipe.id,
       imageQuery: `id=${encodeURIComponent(id)}`,
@@ -118,7 +120,7 @@ async function recipeOgContext(
     ogLocalized(map, category.display?.name) ?? category.id;
   return {
     entity: { kind: 'category', ...ogName(localized), id: category.id },
-    icon: await ogRefSprite(dataset, category.icon),
+    icon: () => ogRefSprite(dataset, category.icon),
     description: category.id,
     imageQuery: `type=${encodeURIComponent(type)}`,
   };

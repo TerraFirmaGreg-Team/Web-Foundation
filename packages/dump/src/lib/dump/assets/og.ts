@@ -6,10 +6,11 @@ import sharp from 'sharp';
 import { loadClientModAtlases } from '../client/atlases';
 import { clientDumpLang } from '../client/dump';
 import {
-  loadClientRegistry,
+  loadClientRegistryNs,
   resolveClientStackDisplay,
 } from '../client/registry';
 import {
+  parseStackId,
   refId,
   type ReferenceKind,
   type TaggedReference,
@@ -132,10 +133,12 @@ export async function ogStackName(
   kind: 'item' | 'fluid',
   lang: Lang,
 ): Promise<string> {
+  const base = parseStackId(id).id;
+  const ns = base.includes(':') ? base.split(':', 1)[0] : 'minecraft';
   const [map, items, fluids] = await Promise.all([
     clientDumpLang(dataset, lang),
-    loadClientRegistry(dataset, 'items'),
-    loadClientRegistry(dataset, 'fluids'),
+    loadClientRegistryNs(dataset, 'items', ns),
+    loadClientRegistryNs(dataset, 'fluids', ns),
   ]);
   const langKey = resolveClientStackDisplay(id, items, fluids)?.name;
   return stripMcFormat(stackDisplayName(map, id, kind, langKey)).trim();

@@ -1,5 +1,5 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
-import { clientDumpJson } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
+import { clientRegistryNsEntries } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import { loadClientTagMembers } from '@terrafirmagreg-team/dump/lib/dump/client/tags';
 import {
   asRecord,
@@ -27,21 +27,14 @@ const registrySliceCache = createDatasetCache(
   async (
     dataset: DatasetRef,
     kind: string,
+    ns: string,
   ): Promise<Record<string, Record<string, unknown>>> => {
     const field = registryField(kind);
-    const raw = await clientDumpJson(dataset, `registry/${field}.json`, 'high');
+    const raw = await clientRegistryNsEntries(dataset, field, ns, 'high');
     const map = asRecord(raw);
     return map ? resolveEdgeRows(map) : {};
   },
-  (dataset, kind) => `${dataset.id}/${dataset.version ?? ''} ${registryField(kind)}`,
 );
-
-function loadRegistryFile(
-  dataset: DatasetRef,
-  kind: string,
-): Promise<Record<string, Record<string, unknown>>> {
-  return registrySliceCache(dataset, kind);
-}
 
 export async function loadRegistryEntrySlice(
   dataset: DatasetRef,
@@ -49,7 +42,8 @@ export async function loadRegistryEntrySlice(
   id: string,
 ): Promise<Record<string, unknown> | undefined> {
   const base = stackIdBase(id);
-  const map = await loadRegistryFile(dataset, kind);
+  const ns = base.includes(':') ? base.split(':', 1)[0] : 'minecraft';
+  const map = await registrySliceCache(dataset, kind, ns);
   return map[id] ?? map[base];
 }
 
@@ -60,7 +54,7 @@ const tagSliceCache = createDatasetCache(
     ns: string,
   ): Promise<Record<string, string[]>> => {
     const prefix = `${ns}:`;
-    const map = await loadRegistryFile(dataset, kind);
+    const map = await registrySliceCache(dataset, kind, ns);
     const out: Record<string, string[]> = {};
     for (const [id, entry] of Object.entries(map)) {
       if (!id.startsWith(prefix)) continue;

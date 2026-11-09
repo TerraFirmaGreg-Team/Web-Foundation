@@ -12,12 +12,20 @@ export type OgEntity = {
   format?: string;
 };
 
+export type OgIcon = () => Promise<OGSprite | undefined>;
+
 export type OgContext = {
   entity?: OgEntity;
-  icon?: OGSprite;
+  icon?: OgIcon;
   description?: string;
   imageQuery?: string;
 };
+
+export async function ogResolveIcon(
+  icon: OgIcon | undefined,
+): Promise<OGSprite | undefined> {
+  return icon?.();
+}
 
 export type OgBrand = {
   site: string;
