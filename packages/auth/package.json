@@ -16,7 +16,7 @@
   ],
   "dependencies": {
     "@terrafirmagreg-team/data": "workspace:^",
-    "arctic": "^3.7.0"
+    "oauth4webapi": "^3.8.8"
   },
   "devDependencies": {
     "@types/node": "catalog:"

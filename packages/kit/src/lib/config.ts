@@ -26,6 +26,8 @@ export type SectionConfigInput = {
   previewRoute: string;
   docsRoute: string;
 
+  sectionAccent?: Partial<Record<SectionKey, string>>;
+
   datasetConfig: Record<
     string,
     {

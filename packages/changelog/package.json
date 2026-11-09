@@ -25,10 +25,10 @@
     "@terrafirmagreg-team/mdx": "workspace:^",
     "@terrafirmagreg-team/translate": "workspace:^",
     "@terrafirmagreg-team/ui": "workspace:^",
-    "fumadocs-core": "catalog:",
     "lucide-react": "catalog:"
   },
   "peerDependencies": {
+    "fumadocs-core": ">=16",
     "next": "catalog:",
     "react": "catalog:"
   },

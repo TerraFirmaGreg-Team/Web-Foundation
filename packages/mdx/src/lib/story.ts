@@ -8,6 +8,8 @@ import type {
 import { DocsWithControl } from '../components/story-panel';
 import type { ComponentType } from 'react';
 
+export { useStory } from '@fumadocs/story';
+export { useDataEngine } from '@fumari/stf';
 export { md } from './md';
 
 const factory = defineStoryFactory({

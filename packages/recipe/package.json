@@ -35,12 +35,12 @@
     "@types/pathfinding": "^0.1.0",
     "comlink": "^4.4.2",
     "fflate": "0.8.3",
-    "fumadocs-core": "catalog:",
     "lucide-react": "catalog:",
     "pathfinding": "0.4.18",
     "server-only": "catalog:"
   },
   "peerDependencies": {
+    "fumadocs-core": ">=16",
     "next": "catalog:",
     "react": "catalog:"
   },

@@ -28,12 +28,12 @@
     "@terrafirmagreg-team/data": "workspace:^",
     "@terrafirmagreg-team/translate": "workspace:^",
     "lucide-react": "catalog:",
-    "server-only": "catalog:",
-    "swr": "catalog:"
+    "server-only": "catalog:"
   },
   "peerDependencies": {
     "next": "catalog:",
-    "react": "catalog:"
+    "react": "catalog:",
+    "swr": "^2.4.2"
   },
   "devDependencies": {
     "@types/node": "catalog:",

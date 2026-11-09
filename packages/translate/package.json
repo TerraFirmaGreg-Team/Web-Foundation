@@ -28,10 +28,10 @@
     "src"
   ],
   "dependencies": {
-    "@fuma-translate/react": "1.0.2",
     "server-only": "catalog:"
   },
   "peerDependencies": {
+    "@fuma-translate/react": "^1.0.2",
     "react": "catalog:"
   },
   "devDependencies": {

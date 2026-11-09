@@ -34,8 +34,9 @@ function pick(html: string, prop: string): string | undefined {
   return value ? unescapeHtml(value) : undefined;
 }
 
-export async function fetchOgMeta(raw: string): Promise<OgMeta> {
-  const url = new URL(raw.trim(), window.location.origin);
+const metaCache = new Map<string, Promise<OgMeta>>();
+
+async function loadOgMeta(url: URL): Promise<OgMeta> {
   if (isImageUrl(url))
     return { image: url.pathname + (url.search || '') };
   const html = await (await fetch(url)).text();
@@ -48,6 +49,24 @@ export async function fetchOgMeta(raw: string): Promise<OgMeta> {
       ? resolved.pathname + (resolved.search || '')
       : undefined,
   };
+}
+
+export function fetchOgMeta(raw: string): Promise<OgMeta> {
+  const url = new URL(raw.trim(), window.location.origin);
+  const key = url.href;
+  let cached = metaCache.get(key);
+  if (!cached) {
+    if (metaCache.size > 200) {
+      const first = metaCache.keys().next().value;
+      if (first) metaCache.delete(first);
+    }
+    cached = loadOgMeta(url).catch((err) => {
+      metaCache.delete(key);
+      throw err;
+    });
+    metaCache.set(key, cached);
+  }
+  return cached;
 }
 
 export function useOgMeta(url?: string): {

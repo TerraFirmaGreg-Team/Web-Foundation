@@ -5,6 +5,7 @@
   "description": "GitHub Discussions comments and feedback",
   "license": "LGPL-3.0-only",
   "exports": {
+    "./styles.css": "./src/styles.css",
     "./lib": "./src/lib/index.ts",
     "./lib/*": [
       "./src/lib/*.ts",
@@ -22,7 +23,6 @@
   },
   "dependencies": {
     "@floating-ui/react-dom": "^2.1.9",
-    "@fuma-comment/react": "1.6.0",
     "@fuma-comment/server": "1.6.0",
     "@terrafirmagreg-team/auth": "workspace:^",
     "@terrafirmagreg-team/data": "workspace:^",
@@ -32,12 +32,13 @@
     "fuma-comment-github-discussions": "1.1.1",
     "lucide-react": "catalog:",
     "server-only": "catalog:",
-    "swr": "catalog:",
     "zod": "catalog:"
   },
   "peerDependencies": {
+    "@fuma-comment/react": "^1.6.0",
     "next": "catalog:",
-    "react": "catalog:"
+    "react": "catalog:",
+    "swr": "^2.4.2"
   },
   "devDependencies": {
     "@types/node": "catalog:",

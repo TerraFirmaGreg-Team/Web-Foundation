@@ -1,9 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import type { SectionKey } from '@terrafirmagreg-team/sites';
 import { useOgMeta } from '../hooks/og-meta';
-import { Button } from '@terrafirmagreg-team/ui/components/ui/button';
 import { Skeleton } from '@terrafirmagreg-team/ui/components/ui/skeleton';
 
 export type OgPreviewProps = {
@@ -38,13 +36,6 @@ function Frame({
   loading?: boolean;
   failed?: boolean;
 }) {
-  const [copied, setCopied] = useState(false);
-  const copy = async () => {
-    if (!src) return;
-    await navigator.clipboard.writeText(`${window.location.origin}${src}`);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1200);
-  };
   return (
     <div className="overflow-hidden rounded-md border border-border">
       {src ? (
@@ -85,17 +76,12 @@ function Frame({
             {src}
           </code>
         )}
-        {src && (
-          <Button type="button" variant="outline" size="sm" onClick={copy}>
-            {copied ? 'скопировано' : 'копировать URL'}
-          </Button>
-        )}
       </div>
     </div>
   );
 }
 
-export function OgPreview({
+export function useOgImage({
   url,
   section = 'recipe',
   dataset = 'modern',
@@ -109,15 +95,19 @@ export function OgPreview({
   const baseImage = raw
     ? meta?.image
     : `/api/preview/${section}/${dataset}/${slugPath ? `${slugPath}/` : ''}image.png${slugQuery ? `?${slugQuery}` : ''}`;
+  return {
+    src: baseImage ? withParams(baseImage, { lang, version }) : undefined,
+    meta: raw ? meta : undefined,
+    loading: !!raw && !meta && !failed,
+    failed: raw ? failed || (!!meta && !meta.image) : !baseImage,
+  };
+}
 
+export function OgPreview(props: OgPreviewProps) {
+  const { src, meta, loading, failed } = useOgImage(props);
   return (
     <div className="flex w-full flex-col gap-4">
-      <Frame
-        src={baseImage ? withParams(baseImage, { lang, version }) : undefined}
-        meta={raw ? meta : undefined}
-        loading={!!raw && !meta && !failed}
-        failed={raw ? failed || (!!meta && !meta.image) : !baseImage}
-      />
+      <Frame src={src} meta={meta} loading={loading} failed={failed} />
     </div>
   );
 }

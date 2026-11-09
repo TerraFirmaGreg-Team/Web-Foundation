@@ -59,14 +59,6 @@ function MetaChip({ children }: { children: ReactNode }) {
   );
 }
 
-export const SECTION_ACCENT: Record<string, string> = {
-  docs: '#6ea8ff',
-  guide: '#7dd87d',
-  recipe: '#ffb347',
-  quest: '#ff96ff',
-  changelog: '#b49aff',
-};
-
 export const SECTION_PAGE_KIND: Record<string, string> = {
   changelog: 'release',
 };

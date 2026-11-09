@@ -7,11 +7,8 @@ import type { SectionPage } from '@terrafirmagreg-team/kit/types';
 import { loadLocaleRegistry } from '@terrafirmagreg-team/translate/server';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import { ImageResponse } from 'next/og';
-import {
-  OgDock,
-  SECTION_ACCENT,
-  SECTION_PAGE_KIND,
-} from '../components/og-dock';
+import { sectionConfig } from '@terrafirmagreg-team/kit/lib/config';
+import { OgDock, SECTION_PAGE_KIND } from '../components/og-dock';
 import { ogSectionIcon } from './og-icon';
 import { resolveOgContext, type OgBrand } from './og';
 
@@ -58,7 +55,7 @@ export async function ogImageResponse(
         ? (pageSlugs[0] as Lang)
         : defaultLanguage;
   const ctx = await resolveOgContext(section, ref, search, lang);
-  const accent = SECTION_ACCENT[section] ?? '#ff96ff';
+  const accent = sectionConfig().sectionAccent?.[section] ?? '#ff96ff';
   const entity =
     ctx.entity ??
     (pageSlugs.length

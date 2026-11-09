@@ -20,11 +20,8 @@
     "./lib/markdown": "./src/lib/markdown/index.ts"
   },
   "dependencies": {
-    "@fumadocs/story": "^1.5.3",
-    "@fumari/stf": "^1.1.2",
     "@terrafirmagreg-team/translate": "workspace:^",
     "@terrafirmagreg-team/ui": "workspace:^",
-    "fumadocs-core": "catalog:",
     "fumadocs-docgen": "^3.2.0",
     "fumadocs-twoslash": "^4.0.4",
     "fumadocs-typescript": "5.6.0",
@@ -41,6 +38,9 @@
     "unist-util-visit": "^5.2.0"
   },
   "peerDependencies": {
+    "@fumadocs/story": "^1.5.3",
+    "@fumari/stf": "^1.1.2",
+    "fumadocs-core": ">=16",
     "next": "catalog:",
     "react": "catalog:"
   },

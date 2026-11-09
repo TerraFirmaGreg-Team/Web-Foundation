@@ -28,10 +28,10 @@
     "@terrafirmagreg-team/mdx": "workspace:^",
     "@terrafirmagreg-team/sites": "workspace:^",
     "@terrafirmagreg-team/translate": "workspace:^",
-    "@terrafirmagreg-team/ui": "workspace:^",
-    "fumadocs-core": "catalog:"
+    "@terrafirmagreg-team/ui": "workspace:^"
   },
   "peerDependencies": {
+    "fumadocs-core": ">=16",
     "next": "catalog:",
     "react": "catalog:"
   },

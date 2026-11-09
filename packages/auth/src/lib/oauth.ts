@@ -1,5 +1,5 @@
 import { decrypt, encrypt } from '@terrafirmagreg-team/data';
-import { GitHub } from 'arctic';
+import { createGitHubOAuth, type GitHubOAuth } from './github-oauth';
 import type { AuthConfig } from './config';
 
 const STATE_TTL = 10 * 60 * 1000;
@@ -77,8 +77,8 @@ button:hover{opacity:.85}
 }
 
 export function createOAuthFlow(getConfig: () => AuthConfig): OAuthFlow {
-  function github(config: AuthConfig, self: string): GitHub {
-    return new GitHub(
+  function github(config: AuthConfig, self: string): GitHubOAuth {
+    return createGitHubOAuth(
       config.clientId,
       config.clientSecret,
       `${self}${config.callbackPath}`,
@@ -139,14 +139,16 @@ export function createOAuthFlow(getConfig: () => AuthConfig): OAuthFlow {
     if (url.searchParams.get('error') || !code)
       return Response.redirect(returnUrl, 302);
     try {
-      const tokens = await github(config, self).validateAuthorizationCode(code);
+      const accessToken = await github(config, self).validateAuthorizationCode(
+        code,
+      );
       return new Response(null, {
         status: 302,
         headers: {
           location: returnUrl,
           'set-cookie': setCookieHeader(
             config.cookieName,
-            encrypt(tokens.accessToken(), config.tokenSecret),
+            encrypt(accessToken, config.tokenSecret),
             COOKIE_MAX_AGE,
           ),
         },

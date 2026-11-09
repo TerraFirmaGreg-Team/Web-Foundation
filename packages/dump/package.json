@@ -18,10 +18,10 @@
     "@terrafirmagreg-team/sites": "workspace:^",
     "@terrafirmagreg-team/translate": "workspace:^",
     "aws4fetch": "^1.0.20",
-    "fumadocs-core": "catalog:",
     "server-only": "catalog:"
   },
   "peerDependencies": {
+    "fumadocs-core": ">=16",
     "sharp": "catalog:"
   },
   "peerDependenciesMeta": {
