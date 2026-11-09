@@ -5,11 +5,11 @@ import {
   authConfig,
   authCookie,
   authEnabled,
-  authMode,
+  commentsMode,
   devAuthCookie,
   devCookieAuth,
 } from '@terrafirmagreg-team/auth';
-import { env, githubAppToken } from '@terrafirmagreg-team/data';
+import { env, featureMode, githubAppToken } from '@terrafirmagreg-team/data';
 import {
   createAuth,
   createGitHubClient,
@@ -18,7 +18,7 @@ import {
 } from 'fuma-comment-github-discussions';
 import { discussionsConfig } from '../config';
 import { createDiscussion } from './github';
-import { localComments } from './local';
+import { localComments, readonlyComments } from './local';
 
 const APP_TOKEN = 'app';
 const CATEGORY = 'General';
@@ -137,28 +137,47 @@ type RouteHandler = (
 ) => Promise<Response>;
 
 export function commentsEnabled(): boolean {
-  return authEnabled() && datasets().length > 0;
+  const mode = commentsMode();
+  if (mode === 'off' || datasets().length === 0) return false;
+  if (mode === 'dev') return true;
+  return authEnabled() && Boolean(env('APP_ID') && env('APP_PRIVATE_KEY'));
 }
 
 export function feedbackEnabled(): boolean {
-  return commentsEnabled() && Boolean(env('APP_ID') && env('APP_PRIVATE_KEY'));
+  const mode = featureMode('FEEDBACK');
+  if (mode === 'off') return false;
+  if (mode === 'dev') return true;
+  return datasets().length > 0 && Boolean(env('APP_ID') && env('APP_PRIVATE_KEY'));
 }
 
 export function createCommentsRouter(
   options: { siteUrl?: string } = {},
-):
-  | { GET: RouteHandler; POST: RouteHandler; PATCH: RouteHandler; DELETE: RouteHandler }
-  | undefined {
-  if (!commentsEnabled()) return undefined;
+): {
+  GET: RouteHandler;
+  POST: RouteHandler;
+  PATCH: RouteHandler;
+  DELETE: RouteHandler;
+} {
   siteUrl = options.siteUrl ?? discussionsConfig().siteUrl;
+  const mode = commentsMode();
+  const keys = Boolean(env('APP_ID') && env('APP_PRIVATE_KEY'));
 
-  if (authMode() === 'dev' || !(env('APP_ID') && env('APP_PRIVATE_KEY')))
-    return NextComment({
+  const local = (storage = localComments()) =>
+    NextComment({
       role: 'database',
       mention: { enabled: true },
-      storage: localComments(),
+      storage,
       auth: devCookieAuth({ cookieName: devAuthCookie }),
-    }) as unknown as { GET: RouteHandler; POST: RouteHandler; PATCH: RouteHandler; DELETE: RouteHandler };
+    }) as unknown as {
+      GET: RouteHandler;
+      POST: RouteHandler;
+      PATCH: RouteHandler;
+      DELETE: RouteHandler;
+    };
+
+  if (mode === 'off') return local(readonlyComments());
+  if (mode === 'dev' || !keys) return local();
+  if (!(datasets().length > 0 && authEnabled())) return local(readonlyComments());
 
   const dispatch = (page: string | undefined) =>
     storageFor(datasetOf(page ?? ''));

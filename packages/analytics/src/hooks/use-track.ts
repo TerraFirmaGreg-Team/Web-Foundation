@@ -32,11 +32,15 @@ function flush(apiUrl: string): void {
   }).catch(() => {});
 }
 
+export function queueView(path: string, apiUrl = '/api/analytics'): void {
+  if (!path) return;
+  sessionStorage.setItem(KEY, JSON.stringify([...pending(), path]));
+  if (pending().length >= FLUSH_AT) flush(apiUrl);
+}
+
 export function useTrackView(path: string, apiUrl = '/api/analytics'): void {
   useEffect(() => {
-    if (!path) return;
-    sessionStorage.setItem(KEY, JSON.stringify([...pending(), path]));
-    if (pending().length >= FLUSH_AT) flush(apiUrl);
+    queueView(path, apiUrl);
     const onHidden = () => {
       if (document.visibilityState === 'hidden') flush(apiUrl);
     };

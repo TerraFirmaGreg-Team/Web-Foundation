@@ -148,6 +148,7 @@ export function EntryPages({
           <section
             key={index}
             id={anchors[index]}
+            data-block="feedback"
             className="scroll-mt-20 space-y-3"
           >
             {heading ? (

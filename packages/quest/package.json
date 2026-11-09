@@ -23,6 +23,7 @@
     "./styles.css": "./styles.css"
   },
   "dependencies": {
+    "@terrafirmagreg-team/analytics": "workspace:^",
     "@terrafirmagreg-team/data": "workspace:^",
     "@terrafirmagreg-team/discussions": "workspace:^",
     "@terrafirmagreg-team/dump": "workspace:^",

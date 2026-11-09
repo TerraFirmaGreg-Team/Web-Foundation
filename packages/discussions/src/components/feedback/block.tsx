@@ -23,6 +23,7 @@ import {
 } from '../../lib/feedback-schema';
 import { z } from 'zod/mini';
 import { usePathname } from 'next/navigation';
+import { useLocationSearch } from '@terrafirmagreg-team/ui/hooks/page/use-location-search';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
 import { useSubmissionStorage } from '../../hooks/feedback/use-submission-storage';
 
@@ -252,7 +253,9 @@ function FeedbackTextForm({
 }) {
   const t = useTranslations();
   const pathname = usePathname();
-  const { previous, setPrevious } = useSubmissionStorage(`${pathname}-${blockId}`, (v) => {
+  const search = useLocationSearch();
+  const pageId = search ? `${pathname}?${search}` : pathname;
+  const { previous, setPrevious } = useSubmissionStorage(`${pageId}-${blockId}`, (v) => {
     const result = blockFeedbackResult.safeParse(v);
     if (result.success) return result.data;
     return null;

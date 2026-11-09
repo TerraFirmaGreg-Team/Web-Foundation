@@ -1,5 +1,6 @@
 'use client';
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
+import type { ReactNode } from 'react';
 
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
 import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
@@ -44,6 +45,7 @@ export function QuestView({
   langMap,
   index,
   chapterJump,
+  actionsRight,
 }: {
   quest: Quest;
   dataset: DatasetRef;
@@ -51,6 +53,7 @@ export function QuestView({
   langMap: Record<string, string>;
   index?: QuestCompactIndex | null;
   chapterJump?: { filename: string; title?: string };
+  actionsRight?: ReactNode;
 }) {
   const t = useTranslations();
   const title = questDisplayTitle(quest, langMap);
@@ -93,6 +96,7 @@ export function QuestView({
             index: compact,
           })}
           titleClassName="text-base"
+          trailing={actionsRight}
           description={
             subtitle.length || quest.optional ? (
               <>

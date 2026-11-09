@@ -3,6 +3,7 @@ import { ExternalLink, Link as LinkIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { dayFormat, monthLabel } from '@terrafirmagreg-team/changelog/lib/format';
 import { ChangelogNow } from './now-bar';
+import { TrackRelease } from './track-release';
 
 export interface ChangelogTimelineEntry {
   id: string;
@@ -107,6 +108,7 @@ function ChangelogItem({
       data-release
       className="group scroll-mt-28 ps-0 pb-12 last:pb-0"
     >
+      <TrackRelease path={entry.url} />
       <time
         dateTime={entry.date.toISOString()}
         className="relative mb-1.5 block text-xs font-medium text-muted-foreground tabular-nums"

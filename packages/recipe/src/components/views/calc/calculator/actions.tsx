@@ -6,6 +6,7 @@ import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-transl
 import { RecipeToolbar } from '@terrafirmagreg-team/recipe/components/views/browser/toolbar';
 import type { RecipeSession } from '@terrafirmagreg-team/recipe/types';
 import { CalcHelp } from './help';
+import { useFeatureFlags } from '@terrafirmagreg-team/kit/hooks/use-features';
 
 export function CalcActions({
   session,
@@ -21,11 +22,13 @@ export function CalcActions({
   onClear: () => void;
 }) {
   const t = useTranslations();
+  const flags = useFeatureFlags();
   return (
     <>
       <RecipeToolbar session={session} />
       <IconButton
         overlay
+        disabled={flags?.share === false}
         label={shared ? t('Copied', { note: 'recipe.copied' }) : t('Share', { note: 'recipe.calc.share' })}
         onClick={onShare}
       >

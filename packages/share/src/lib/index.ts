@@ -1,11 +1,20 @@
 import 'server-only';
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { createHash } from 'node:crypto';
-import { dbOrm, jsonFileStore } from '@terrafirmagreg-team/data';
+import {
+  dbOrm,
+  env,
+  featureMode,
+  jsonFileStore,
+} from '@terrafirmagreg-team/data';
 
-const FILE = process.env.SHARE_DATA?.trim() || 'data/shares.json';
+export function shareEnabled(): boolean {
+  return featureMode('SHARE') !== 'off';
+}
+
+const FILE = env('SHARE_DATA') ?? 'data/shares.json';
 const MAX_TREE_LEN = 200_000;
-const TTL_DAYS = Number(process.env.SHARE_TTL_DAYS ?? 365) || 0;
+const TTL_DAYS = Number(env('SHARE_TTL_DAYS') ?? 365) || 0;
 
 const store = jsonFileStore<Record<string, { tree: string; created: number }>>(
   FILE,
@@ -25,13 +34,14 @@ export async function putShare(
   dataset: DatasetRef,
   tree: string,
 ): Promise<string | null> {
-  if (!tree || tree.length > MAX_TREE_LEN) return null;
+  const mode = featureMode('SHARE');
+  if (!tree || tree.length > MAX_TREE_LEN || mode === 'off') return null;
   const id = createHash('sha256')
     .update(scopeKey(section, dataset, tree))
     .digest('base64url')
     .slice(0, 10);
   const key = scopeKey(section, dataset, id);
-  const orm = await dbOrm();
+  const orm = mode === 'prod' ? await dbOrm() : undefined;
   if (orm) {
     const created = Date.now();
     await orm.upsert('shares', {
@@ -54,7 +64,9 @@ export async function getShare(
   dataset: DatasetRef,
   id: string,
 ): Promise<string | undefined> {
-  const orm = await dbOrm();
+  const mode = featureMode('SHARE');
+  if (mode === 'off') return undefined;
+  const orm = mode === 'prod' ? await dbOrm() : undefined;
   if (orm) {
     const row =
       (await orm.findFirst('shares', {

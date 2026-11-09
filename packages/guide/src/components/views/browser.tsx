@@ -1,5 +1,6 @@
 'use client';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, type ComponentProps, type ReactNode } from 'react';
+import type { FeedbackText } from '@terrafirmagreg-team/discussions/components/feedback/block';
 import { useRouter } from 'next/navigation';
 import { useLocationSearchParams } from '@terrafirmagreg-team/ui/hooks/page/use-location-search';
 import {
@@ -104,11 +105,17 @@ export function GuideBrowser({
   datasetTitle,
   lang,
   versions,
+  onBlockFeedback,
+  actionsRight,
+  footer,
 }: {
   dataset: string;
   datasetTitle: string;
   lang: Lang;
   versions?: readonly string[];
+  onBlockFeedback?: ComponentProps<typeof FeedbackText>['onSendAction'];
+  actionsRight?: ReactNode;
+  footer?: ReactNode;
 }) {
   const t = useTranslations();
   const router = useRouter();
@@ -230,7 +237,13 @@ export function GuideBrowser({
   return (
     <div className="relative flex-1">
       {books.stale || payload.stale ? <StaleBadge /> : null}
-      <GuidePageView payload={payload.value} langMap={langMap} />
+      <GuidePageView
+        payload={payload.value}
+        langMap={langMap}
+        onBlockFeedback={onBlockFeedback}
+        actionsRight={actionsRight}
+        footer={footer}
+      />
     </div>
   );
 }

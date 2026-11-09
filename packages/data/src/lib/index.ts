@@ -1,4 +1,4 @@
-export { env } from './env';
+export { env, featureMode, type FeatureMode } from './env';
 export { d1Binding, type D1Binding } from './d1';
 export { dataDb, dbOrm, dbSql, dbKysely, AppDB, type AppDbClient, type DataOrm } from './db';
 export { githubAppToken } from './app-token';

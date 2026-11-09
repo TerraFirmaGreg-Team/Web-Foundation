@@ -1,5 +1,10 @@
 'use server';
-import { githubAppToken } from '@terrafirmagreg-team/data';
+import {
+  env,
+  featureMode,
+  githubAppToken,
+  jsonFileStore,
+} from '@terrafirmagreg-team/data';
 import { createGitHubClient } from 'fuma-comment-github-discussions';
 import { discussionsConfig } from './config';
 import { createDiscussion } from './comments/github';
@@ -13,7 +18,10 @@ import {
 
 function targetOf(pathname: string) {
   const datasets = discussionsConfig().datasets;
-  const seg = pathname.split('/').find((part) => part in datasets);
+  const seg = pathname
+    .split(/[?#]/)[0]
+    .split('/')
+    .find((part) => part in datasets);
   const cfg = (seg && datasets[seg]) || datasets.dev;
   if (!cfg?.repo || !cfg.discussions) return undefined;
   return {
@@ -24,15 +32,25 @@ function targetOf(pathname: string) {
   };
 }
 
+const FILE = env('FEEDBACK_DATA') ?? 'data/feedback.json';
+const store = jsonFileStore<unknown[]>(FILE, () => []);
+
+function pagePath(url: string): string {
+  const u = new URL(url);
+  return u.pathname + u.search;
+}
+
 export async function onPageFeedbackAction(
   feedback: PageFeedback,
 ): Promise<ActionResponse> {
   feedback = pageFeedback.parse(feedback);
-  const { pathname } = new URL(feedback.url);
+  const page = pagePath(feedback.url);
+  if (featureMode('FEEDBACK') === 'dev')
+    return storeFeedback({ kind: 'page', ...feedback, url: page });
 
   return createDiscussionThread(
-    pathname,
-    `[${feedback.opinion}] ${feedback.message}\n\n> Forwarded from user feedback.`,
+    page,
+    `${feedback.opinion === 'good' ? '👍' : '👎'} ${feedback.message}\n\n> Forwarded from user feedback.`,
   );
 }
 
@@ -40,13 +58,24 @@ export async function onBlockFeedbackAction(
   feedback: BlockFeedback,
 ): Promise<ActionResponse> {
   feedback = blockFeedback.parse(feedback);
-  const url = new URL(feedback.url);
-  url.hash = feedback.blockId;
+  const page = pagePath(feedback.url);
+  if (featureMode('FEEDBACK') === 'dev')
+    return storeFeedback({
+      kind: 'block',
+      ...feedback,
+      url: `${page}#${feedback.blockId}`,
+    });
 
   return createDiscussionThread(
-    url.pathname,
-    `> ${feedback.blockBody}\n\n${feedback.message}\n\n> [Forwarded from user feedback](${url.href}).`,
+    page,
+    `> ${feedback.blockBody}\n\n${feedback.message}\n\n> [Forwarded from user feedback](${discussionsConfig().siteUrl}${page}#${feedback.blockId}).`,
   );
+}
+
+function storeFeedback(entry: Record<string, unknown>): ActionResponse {
+  store.data.push({ ...entry, at: Date.now() });
+  store.save();
+  return { githubUrl: '' };
 }
 
 async function createDiscussionThread(

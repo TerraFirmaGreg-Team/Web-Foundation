@@ -22,6 +22,7 @@
     "./types": "./src/types/index.ts"
   },
   "dependencies": {
+    "@terrafirmagreg-team/analytics": "workspace:^",
     "@terrafirmagreg-team/data": "workspace:^",
     "@terrafirmagreg-team/discussions": "workspace:^",
     "@terrafirmagreg-team/dump": "workspace:^",

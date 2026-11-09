@@ -17,6 +17,7 @@ import {
 } from '../../lib/feedback-schema';
 import { z } from 'zod/mini';
 import { usePathname } from 'next/navigation';
+import { useLocationSearch } from '@terrafirmagreg-team/ui/hooks/page/use-location-search';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
 import { useSubmissionStorage } from '../../hooks/feedback/use-submission-storage';
 
@@ -38,12 +39,16 @@ const pageFeedbackResult = z.extend(pageFeedback, {
 
 export function Feedback({
   onSendAction,
+  disabled,
 }: {
   onSendAction: (feedback: PageFeedback) => Promise<ActionResponse>;
+  disabled?: boolean;
 }) {
   const t = useTranslations();
   const pathname = usePathname();
-  const { previous, setPrevious } = useSubmissionStorage(pathname, (v) => {
+  const search = useLocationSearch();
+  const pageId = search ? `${pathname}?${search}` : pathname;
+  const { previous, setPrevious } = useSubmissionStorage(pageId, (v) => {
     const result = pageFeedbackResult.safeParse(v);
     return result.success ? result.data : null;
   });
@@ -52,7 +57,7 @@ export function Feedback({
   const [isPending, startTransition] = useTransition();
 
   function submit(e?: SyntheticEvent) {
-    if (opinion == null) return;
+    if (disabled || opinion == null) return;
 
     startTransition(async () => {
       const feedback: PageFeedback = {
@@ -83,10 +88,15 @@ export function Feedback({
       }}
       className="border-y py-3"
     >
-      <div className="flex flex-row items-center gap-2">
+      <div
+        className={cn(
+          'flex flex-row items-center gap-2',
+          disabled && 'opacity-50',
+        )}
+      >
         <p className="text-sm font-medium pe-2">{t('How is this page?', { note: 'ui.feedback.question' })}</p>
         <button
-          disabled={previous !== null}
+          disabled={disabled || previous !== null}
           className={cn(
             rateButtonVariants({
               active: activeOpinion === 'good',
@@ -100,7 +110,7 @@ export function Feedback({
           {t('Good', { note: 'ui.feedback.good' })}
         </button>
         <button
-          disabled={previous !== null}
+          disabled={disabled || previous !== null}
           className={cn(
             rateButtonVariants({
               active: activeOpinion === 'bad',

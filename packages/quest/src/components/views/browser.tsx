@@ -1,5 +1,11 @@
 'use client';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocationSearchParams } from '@terrafirmagreg-team/ui/hooks/page/use-location-search';
 import { X } from 'lucide-react';
@@ -147,11 +153,13 @@ export function QuestBrowser({
   datasetTitle,
   lang,
   versions,
+  actionsRight,
 }: {
   dataset: string;
   datasetTitle: string;
   lang: Lang;
   versions?: readonly string[];
+  actionsRight?: ReactNode;
 }) {
   const router = useRouter();
   const t = useTranslations();
@@ -276,6 +284,7 @@ export function QuestBrowser({
       lang={lang}
       langMap={langMap}
       index={index.value}
+      actionsRight={actionsRight}
       chapterJump={
         linkTarget
           ? { filename: linkTarget.filename, title: linkTargetTitle }

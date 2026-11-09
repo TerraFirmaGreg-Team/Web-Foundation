@@ -16,7 +16,7 @@ const COMMENTS_API = '/api/comments';
 export function useCommentsMenuItem(): SiteMenuItem | false {
   const t = useTranslations();
   const enabled = useCommentsEnabled(`${COMMENTS_API}/config`);
-  const { session } = useCommentsSession(COMMENTS_API, { enabled });
+  const { session } = useCommentsSession(COMMENTS_API, { enabled: enabled === true });
   if (!enabled) return false;
   return {
     label: session ? t('Sign out', { note: 'ui.sign_out' }) : t('Sign in', { note: 'ui.sign_in' }),

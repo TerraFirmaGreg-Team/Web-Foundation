@@ -26,12 +26,12 @@ function makeSubscribe(configUrl: string) {
   };
 }
 
-export function useCommentsEnabled(configUrl: string): boolean {
+export function useCommentsEnabled(configUrl: string): boolean | null {
   const subscribe = useMemo(() => makeSubscribe(configUrl), [configUrl]);
   return useSyncExternalStore(
     subscribe,
-    () => enabled === true,
-    () => false,
+    () => enabled,
+    () => null,
   );
 }
 

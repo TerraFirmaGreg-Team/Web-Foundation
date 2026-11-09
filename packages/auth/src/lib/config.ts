@@ -4,14 +4,21 @@ export type AuthMode = 'dev' | 'github';
 export const authCookie = 'fcgd_token';
 export const devAuthCookie = 'fc_dev_user';
 
+export function commentsMode(): 'dev' | 'prod' | 'off' {
+  const mode = env('COMMENTS_MODE') ?? env('COMMENTS_AUTH');
+  if (mode === 'dev') return 'dev';
+  if (mode === 'prod' || mode === 'github') return 'prod';
+  return 'off';
+}
+
 export function authMode(): AuthMode {
-  const mode = env('COMMENTS_AUTH');
-  if (mode) return mode === 'dev' ? 'dev' : 'github';
-  return process.env.NODE_ENV === 'development' ? 'dev' : 'github';
+  return commentsMode() === 'dev' ? 'dev' : 'github';
 }
 
 export function authEnabled() {
-  if (authMode() === 'dev') return true;
+  const mode = commentsMode();
+  if (mode === 'off') return false;
+  if (mode === 'dev') return true;
   return Boolean(env('DISCUSSIONS_SECRET') && env('APP_CLIENT_ID'));
 }
 

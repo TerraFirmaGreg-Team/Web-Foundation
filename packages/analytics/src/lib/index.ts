@@ -1,3 +1,3 @@
-export { getView, incrementView } from './store';
+export { analyticsEnabled, getView, incrementView } from './store';
 export { createAnalyticsRouter } from './track';
 

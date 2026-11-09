@@ -9,6 +9,7 @@ import {
   QuestBrowser,
   QuestBrowserFallback,
 } from '@terrafirmagreg-team/quest/components/views/browser';
+import { PageActionsRight } from '@terrafirmagreg-team/analytics/components/page-features';
 
 export function questLanding({
   page,
@@ -23,6 +24,7 @@ export function questLanding({
             datasetTitle={page.datasetTitle ?? page.dataset.id}
             lang={lang}
             versions={page.versions}
+            actionsRight={<PageActionsRight />}
           />
         </Suspense>
       </WorkspaceBody>

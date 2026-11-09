@@ -2,6 +2,7 @@ export {
   authConfig,
   authEnabled,
   authMode,
+  commentsMode,
   authCookie,
   devAuthCookie,
   type AuthConfig,

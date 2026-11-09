@@ -410,6 +410,9 @@ importers:
 
   packages/guide:
     dependencies:
+      '@terrafirmagreg-team/analytics':
+        specifier: workspace:^
+        version: link:../analytics
       '@terrafirmagreg-team/data':
         specifier: workspace:^
         version: link:../data
@@ -679,6 +682,9 @@ importers:
 
   packages/quest:
     dependencies:
+      '@terrafirmagreg-team/analytics':
+        specifier: workspace:^
+        version: link:../analytics
       '@terrafirmagreg-team/data':
         specifier: workspace:^
         version: link:../data

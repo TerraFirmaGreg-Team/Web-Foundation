@@ -166,3 +166,22 @@ export function localComments(): StorageAdapter {
   return (local ??= createLocalComments());
 }
 
+const deny = (): never => {
+  throw new Error('Comments disabled');
+};
+
+let readonly: StorageAdapter | undefined;
+export function readonlyComments(): StorageAdapter {
+  return (readonly ??= {
+    getComments: (args) => localComments().getComments(args),
+    getCommentAuthor: (args) => localComments().getCommentAuthor(args),
+    queryUsers: (args) => localComments().queryUsers?.(args) ?? [],
+    getRole: () => null,
+    postComment: deny,
+    updateComment: deny,
+    deleteComment: deny,
+    setRate: deny,
+    deleteRate: deny,
+  });
+}
+

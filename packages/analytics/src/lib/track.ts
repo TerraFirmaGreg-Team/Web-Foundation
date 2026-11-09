@@ -1,5 +1,5 @@
 import 'server-only';
-import { getView, incrementView } from './store';
+import { analyticsEnabled, getView, incrementView } from './store';
 
 const MAX_PATH_LEN = 500;
 
@@ -11,6 +11,8 @@ function normalizePath(path: string): string {
 export function createAnalyticsRouter() {
   return {
     async POST(req: Request): Promise<Response> {
+      if (!analyticsEnabled())
+        return Response.json({ error: 'disabled' }, { status: 404 });
       const body = (await req.json().catch(() => null)) as {
         path?: unknown;
         views?: unknown;
@@ -31,6 +33,8 @@ export function createAnalyticsRouter() {
     },
 
     async GET(req: Request): Promise<Response> {
+      if (!analyticsEnabled())
+        return Response.json({ error: 'disabled' }, { status: 404 });
       const path = new URL(req.url).searchParams.get('path');
       if (!path || !path.startsWith('/'))
         return Response.json({ error: 'invalid path' }, { status: 400 });

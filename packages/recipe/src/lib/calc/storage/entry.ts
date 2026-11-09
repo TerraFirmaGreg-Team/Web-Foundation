@@ -1,6 +1,6 @@
 import type { CalculatorState } from '@terrafirmagreg-team/recipe/types/calc';
 
-const MAX_HISTORY = 20;
+const MAX_HISTORY = 5;
 
 export type CalcTreeEntry = {
   id: string;

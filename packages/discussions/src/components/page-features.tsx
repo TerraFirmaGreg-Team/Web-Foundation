@@ -25,9 +25,12 @@ export function PageBodyFeatures({ children }: { children: ReactNode }) {
 }
 
 export function PageFooterFeedback() {
-  return feedbackEnabled() ? (
-    <Feedback onSendAction={onPageFeedbackAction} />
-  ) : null;
+  return (
+    <Feedback
+      onSendAction={onPageFeedbackAction}
+      disabled={!feedbackEnabled()}
+    />
+  );
 }
 
 export function PageComments() {

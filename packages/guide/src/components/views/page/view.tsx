@@ -1,5 +1,5 @@
 'use client';
-import { useMemo } from 'react';
+import { useMemo, type ComponentProps, type ReactNode } from 'react';
 import { EntryProvider } from '@terrafirmagreg-team/game/hooks/use-entry-context';
 import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
 import {
@@ -22,6 +22,7 @@ import { GuideCategoryBody } from '@terrafirmagreg-team/guide/components/views/p
 import { GuideEntryBody } from '@terrafirmagreg-team/guide/components/views/page/entry-body';
 import { guideMessage } from '@terrafirmagreg-team/guide/lib/display/messages';
 import { CommentsSlot } from '@terrafirmagreg-team/discussions/components/comments';
+import { FeedbackText } from '@terrafirmagreg-team/discussions/components/feedback/block';
 import {
   guideBookHref,
   guideCategoryHref,
@@ -78,9 +79,15 @@ function guideNavItems(
 export function GuidePageView({
   payload,
   langMap,
+  onBlockFeedback,
+  actionsRight,
+  footer,
 }: {
   payload: GuidePagePayload;
   langMap: Record<string, string>;
+  onBlockFeedback?: ComponentProps<typeof FeedbackText>['onSendAction'];
+  actionsRight?: ReactNode;
+  footer?: ReactNode;
 }) {
   const { dataset, lang, kind } = payload;
   const overview: GuideIndex | undefined =
@@ -267,6 +274,7 @@ export function GuidePageView({
                 : undefined
             }
           />
+          {actionsRight}
         </div>
         {kind === 'pack' && repoSlug ? (
           <GithubInfo
@@ -276,10 +284,19 @@ export function GuidePageView({
           />
         ) : null}
         <WorkspaceBody>
-          <div data-md-root className="contents">
-            {body}
-          </div>
+          {onBlockFeedback ? (
+            <FeedbackText onSendAction={onBlockFeedback}>
+              <div data-md-root className="contents">
+                {body}
+              </div>
+            </FeedbackText>
+          ) : (
+            <div data-md-root className="contents">
+              {body}
+            </div>
+          )}
         </WorkspaceBody>
+        {footer}
         <CommentsSlot
           page={`guide:${dataset.id}:${payload.modId}:${payload.bookPath}:${payload.entry?.id ?? payload.categoryId ?? 'book'}#${lang}`}
         />

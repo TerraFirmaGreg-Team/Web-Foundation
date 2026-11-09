@@ -1,12 +1,24 @@
 import 'server-only';
-import { dbOrm, dbSql, jsonFileStore } from '@terrafirmagreg-team/data';
+import {
+  dbOrm,
+  dbSql,
+  env,
+  featureMode,
+  jsonFileStore,
+} from '@terrafirmagreg-team/data';
 
-const FILE = process.env.ANALYTICS_DATA?.trim() || 'data/analytics.json';
+const FILE = env('ANALYTICS_DATA') ?? 'data/analytics.json';
 
 const store = jsonFileStore<Record<string, number>>(FILE, () => ({}));
 
+export function analyticsEnabled(): boolean {
+  return featureMode('ANALYTICS') !== 'off';
+}
+
 export async function incrementView(key: string): Promise<void> {
-  if (await dbOrm()) {
+  const mode = featureMode('ANALYTICS');
+  if (mode === 'off') return;
+  if (mode === 'prod' && (await dbOrm())) {
     await dbSql`insert into analytics ("key", views) values (${key}, 1) on conflict ("key") do update set views = views + 1`;
     return;
   }
@@ -16,7 +28,9 @@ export async function incrementView(key: string): Promise<void> {
 }
 
 export async function getView(key: string): Promise<number> {
-  const orm = await dbOrm();
+  const mode = featureMode('ANALYTICS');
+  if (mode === 'off') return 0;
+  const orm = mode === 'prod' ? await dbOrm() : undefined;
   if (orm) {
     const row = await orm.findFirst('analytics', {
       select: ['views'],
