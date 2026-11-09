@@ -168,7 +168,7 @@ export function Switcher({
         align="start"
         sideOffset={8}
         alignOffset={-4}
-        className="w-[calc(var(--anchor-width)+--spacing(2))] rounded-2xl"
+        className="max-h-[min(--spacing(72),var(--available-height))] w-[calc(var(--anchor-width)+--spacing(2))] rounded-2xl"
       >
         {header != null ? (
           <DropdownMenuGroup>

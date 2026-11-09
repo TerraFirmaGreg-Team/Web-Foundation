@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { firstLocalizedPage } from '@terrafirmagreg-team/translate/server';
 import { loadLocaleRegistry } from '@terrafirmagreg-team/translate/server';
 import { stripLangFromUrl, toInternalSlugs, toPublicSlug } from '@terrafirmagreg-team/translate/lib/slug';
-import { sectionConfig } from './config';
+import { sourceLanguages } from './languages';
 import { sectionDatasets } from './datasets';
 import { canonicalUrl, getPageImageUrl } from './urls';
 import type { SectionKey, SectionPage, SectionSource } from '@terrafirmagreg-team/kit/types';
@@ -50,7 +50,7 @@ export async function generateDatasetParams(
 }
 
 export function generatePageParams(source: SectionSource): { slug: string[] }[] {
-  const languages = [...sectionConfig().knownLanguages];
+  const languages = sourceLanguages(source);
   const seen = new Set<string>();
   const params: { slug: string[] }[] = [];
   for (const page of source.getPages()) {
@@ -71,9 +71,9 @@ export async function sectionMetadata(
   const page = firstLocalizedPage(slug, (s, l) => getPage(source, s, l));
   if (!page) notFound();
   const doc = page as SectionPage;
-  const languages = sectionConfig().knownLanguages;
-
-  const url = canonicalUrl(stripLangFromUrl(doc.url, [...languages]));
+  const url = canonicalUrl(
+    stripLangFromUrl(doc.url, sourceLanguages(source)),
+  );
   return {
     title: doc.data.title,
     description: doc.data.description,

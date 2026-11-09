@@ -1,5 +1,4 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
-import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import type {
   SectionKey,
   SectionSourceEntry,
@@ -48,8 +47,6 @@ export type SectionConfigInput = {
       guide?: { bookOrder?: readonly string[] };
     }
   >;
-  knownLanguages: readonly Lang[];
-
   sources: Partial<Record<SectionKey, SectionSourceEntry>>;
 
   dump?: {

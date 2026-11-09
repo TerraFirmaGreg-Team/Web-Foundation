@@ -17,7 +17,7 @@ export function WorkstationRail({
   if (!workstations?.length) return null;
   const { lang, names, nav } = session;
   return (
-    <div className="scrollbar-thin flex max-h-full flex-col items-center gap-1 self-start overflow-y-auto overflow-x-hidden rounded-lg border border-border bg-muted/60 p-1">
+    <div className="flex max-h-full flex-col items-center gap-1 self-start overflow-y-auto overflow-x-hidden rounded-lg border border-border bg-muted/60 p-1">
       <Factory
         className="m-1 size-3.5 shrink-0 text-muted-foreground"
         aria-hidden

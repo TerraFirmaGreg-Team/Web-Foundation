@@ -66,7 +66,7 @@ export function IconPicker({
           placeholder={t('Search items', { note: 'recipe.search' })}
           className="h-7 px-2 text-xs"
         />
-        <div className="scrollbar-thin mt-2 grid max-h-60 grid-cols-6 gap-1 overflow-y-auto">
+        <div className="mt-2 grid max-h-60 grid-cols-6 gap-1 overflow-y-auto">
           {results.map((item) => (
             <button
               key={`${item.kind}:${item.id}`}

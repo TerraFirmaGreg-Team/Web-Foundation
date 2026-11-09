@@ -6,7 +6,7 @@ import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import type { PagePreviewData } from '@terrafirmagreg-team/ui/types/preview';
 import { loadLocaleRegistry } from '@terrafirmagreg-team/translate/server';
 import { localizePageTree } from '@terrafirmagreg-team/translate/server';
-import { sectionConfig } from './config';
+import { sourceLanguages } from './languages';
 import { lookupPagePreview } from './preview/lookup';
 import { datasetId } from './tree';
 import type { SectionSource } from './page';
@@ -23,7 +23,7 @@ export function sectionBreadcrumbItems(
   page: SectionPage,
   lang: Lang,
 ): SectionCrumb[] {
-  const languages = [...sectionConfig().knownLanguages];
+  const languages = sourceLanguages(source);
   const tree = localizePageTree(source.getPageTree(), lang, {
     languages,
     fallbackLanguage: loadLocaleRegistry().defaultLanguage,

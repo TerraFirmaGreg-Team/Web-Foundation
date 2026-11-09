@@ -6,14 +6,11 @@ import {
   type LoaderOutput,
 } from 'fumadocs-core/source';
 import { sectionDatasets } from '@terrafirmagreg-team/kit/lib/datasets';
-import { sectionConfig } from '@terrafirmagreg-team/kit/lib/config';
 import { orderPlugin } from '@terrafirmagreg-team/kit/lib/order';
 import { renderSectionMarkdown } from '@terrafirmagreg-team/mdx/lib/markdown';
 import { localizedDatasetTrees } from '@terrafirmagreg-team/kit/lib/tree';
 import type { SectionTrees } from '@terrafirmagreg-team/kit/types';
 import type { SectionKey } from '@terrafirmagreg-team/sites/location';
-
-const LOCALE_SEGMENT = /^[a-z]{2,3}_[a-z]{2,4}$/;
 
 export function createSectionSource(options: {
   route: string;
@@ -24,18 +21,7 @@ export function createSectionSource(options: {
   postTrees?: (trees: SectionTrees) => SectionTrees;
 }) {
   const { route, section, source: dynamicSource, postTrees } = options;
-  const source: DynamicSource = {
-    ...dynamicSource,
-    files: async () => {
-      const known = new Set(sectionConfig().knownLanguages);
-      return (await dynamicSource.files()).filter(
-        (file) =>
-          !file.path
-            .split('/')
-            .some((seg) => LOCALE_SEGMENT.test(seg) && !known.has(seg)),
-      );
-    },
-  };
+  const source: DynamicSource = { ...dynamicSource };
   const loader = dynamicLoader(source, {
     baseUrl: route,
     plugins: [orderPlugin()],

@@ -456,7 +456,7 @@ export function SearchDialogList({
 
         role={items?.length ? 'listbox' : undefined}
         aria-label={items?.length ? t('Search', { note: 'ui.search_dialog' }) : undefined}
-        className={cn('w-full flex flex-col overflow-y-auto max-h-[460px] p-1 scrollbar-thin', !items && 'hidden')}
+        className={cn('w-full flex flex-col overflow-y-auto max-h-[460px] p-1', !items && 'hidden')}
       >
         {items?.length === 0 && Empty()}
 

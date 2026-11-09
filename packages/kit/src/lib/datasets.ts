@@ -17,17 +17,11 @@ import type { SectionDump } from './config';
 import type { IconName } from 'lucide-react/dynamic';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 
-const sectionMeta = new Map<
-  SectionKey,
-  Promise<Map<string, Record<string, unknown>>>
->();
+const CONTENT_DATASETS_TTL =
+  process.env.NODE_ENV === 'development' ? 60_000 : undefined;
 
-function staticSectionMeta(
-  section: SectionKey,
-): Promise<Map<string, Record<string, unknown>>> {
-  let meta = sectionMeta.get(section);
-  if (meta) return meta;
-  meta = (async () => {
+const staticSectionMeta = createAsyncCache(
+  async (section: SectionKey): Promise<Map<string, Record<string, unknown>>> => {
     const map = new Map<string, Record<string, unknown>>();
     const source = await sections[section]?.getSource();
     if (source) {
@@ -42,13 +36,10 @@ function staticSectionMeta(
       }
     }
     return map;
-  })();
-  sectionMeta.set(section, meta);
-  meta.catch(() => {
-    if (sectionMeta.get(section) === meta) sectionMeta.delete(section);
-  });
-  return meta;
-}
+  },
+  (section) => section,
+  CONTENT_DATASETS_TTL,
+);
 
 async function contentSectionDatasets(
   section: SectionKey,
@@ -143,6 +134,7 @@ const contentSectionDatasetsCached = createAsyncCache(
     return rows;
   },
   (section) => section,
+  CONTENT_DATASETS_TTL,
 );
 
 function datasetOrder(a: SectionDataset, b: SectionDataset): number {

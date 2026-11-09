@@ -1,7 +1,7 @@
 import 'server-only';
 import { resolveLang } from '@terrafirmagreg-team/translate/lib/code';
 import { loadLocaleRegistry } from '@terrafirmagreg-team/translate/server';
-import { sectionConfig } from '@terrafirmagreg-team/kit/lib/config';
+import { siteLanguages } from '@terrafirmagreg-team/kit/lib/languages';
 import { isSectionKey } from '@terrafirmagreg-team/sites/location';
 import { resolvePage } from '@terrafirmagreg-team/kit/lib/page';
 import { sections } from '@terrafirmagreg-team/kit/lib/sources';
@@ -34,7 +34,7 @@ export function lookupPagePreview(
   );
   const pageLang = resolveLang(
     new URLSearchParams(qs).get('lang') ?? lang,
-    dataset?.languages ?? [...sectionConfig().knownLanguages],
+    dataset?.languages ?? siteLanguages(catalog),
     defaultLanguage,
   );
   const source = section.getSourceSync?.();

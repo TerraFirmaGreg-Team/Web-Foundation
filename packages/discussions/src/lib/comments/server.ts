@@ -61,7 +61,7 @@ function datasetOf(page: string) {
 }
 
 function pageToTitle(page: string): string {
-  const locales = new Set(discussionsConfig().knownLanguages);
+  const locales = new Set(discussionsConfig().knownLanguages ?? []);
   const segs = datasetSegs();
   const pretty = page
     .split('~')

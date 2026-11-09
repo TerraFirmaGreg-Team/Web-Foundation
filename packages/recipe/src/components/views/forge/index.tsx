@@ -71,7 +71,7 @@ export function ForgeCalculator({ session }: { session: RecipeSession }) {
           )
         }
       >
-        <div className="scrollbar-thin flex-1 space-y-5 overflow-y-auto p-2 sm:p-4">
+        <div className="flex-1 space-y-5 overflow-y-auto p-2 sm:p-4">
           {loading ? (
             <EmptyState variant="loading" />
           ) : value === undefined ? (

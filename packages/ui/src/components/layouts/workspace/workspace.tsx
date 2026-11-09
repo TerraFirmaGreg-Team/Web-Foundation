@@ -66,7 +66,7 @@ export function Workspace({
       </header>
       <div
         data-slot="workspace-scroll"
-        className="flex flex-1 items-start px-4 md:min-h-0 md:pt-(--header-height) md:px-[max(--spacing(6),calc((100%_-_var(--page-width)_-_var(--toc-width))/2))] md:overflow-y-auto md:overscroll-y-contain md:scrollbar-thin md:scrollbar-gutter-stable md:[--docs-height:calc(var(--layout-height)_-_var(--spacing)*4_-_2px_-_var(--header-height))]"
+        className="flex flex-1 items-start px-4 md:min-h-0 md:pt-(--header-height) md:px-[max(--spacing(6),calc((100%_-_var(--page-width)_-_var(--toc-width))/2))] md:overflow-y-auto md:overscroll-y-contain md:scrollbar-gutter-stable md:[--docs-height:calc(var(--layout-height)_-_var(--spacing)*4_-_2px_-_var(--header-height))]"
       >
         <article
           id="page"

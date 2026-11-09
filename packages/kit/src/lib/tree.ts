@@ -1,7 +1,7 @@
 import type * as PageTree from 'fumadocs-core/page-tree';
 import { localizePageTree } from '@terrafirmagreg-team/translate/server';
 import { loadLocaleRegistry } from '@terrafirmagreg-team/translate/server';
-import { sectionConfig } from './config';
+import { sourceLanguages } from './languages';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import type { SectionDataset, SectionTrees } from '@terrafirmagreg-team/kit/types';
 import type { SectionSource } from './page';
@@ -33,7 +33,7 @@ export function localizedDatasetTrees(
   const { defaultLanguage } = loadLocaleRegistry();
   const tree = source.getPageTree();
   const options = {
-    languages: [...sectionConfig().knownLanguages],
+    languages: sourceLanguages(source),
     fallbackLanguage: defaultLanguage,
   };
   const localized = new Map<string, PageTree.Root>();

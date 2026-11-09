@@ -6,7 +6,7 @@ export type DiscussionsDataset = {
 export type DiscussionsConfig = {
   datasets: Record<string, DiscussionsDataset>;
   siteUrl: string;
-  knownLanguages: readonly string[];
+  knownLanguages?: readonly string[];
 };
 
 const store = globalThis as Record<symbol, DiscussionsConfig | undefined>;

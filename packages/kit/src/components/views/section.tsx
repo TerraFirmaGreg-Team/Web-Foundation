@@ -13,7 +13,7 @@ import { resolvePage, type SectionSource } from '@terrafirmagreg-team/kit/lib/pa
 import { pageJsonLd } from '@terrafirmagreg-team/kit/lib/jsonld';
 import { findNeighbour } from 'fumadocs-core/page-tree';
 import { stripLangFromUrl } from '@terrafirmagreg-team/translate/lib/slug';
-import { sectionConfig } from '@terrafirmagreg-team/kit/lib/config';
+import { sourceLanguages } from '@terrafirmagreg-team/kit/lib/languages';
 import type {
   DatasetCatalog,
   SectionKey,
@@ -95,11 +95,10 @@ export async function renderSectionWorkspace({
     }
   }
   const crumbs = sectionBreadcrumbItems(source, page, lang);
+  const languages = sourceLanguages(source);
   const datasetId = page.url.split('/').filter(Boolean)[1];
   const tree = datasetId ? trees?.[lang]?.[datasetId] : undefined;
-  const pageUrl = stripLangFromUrl(page.url, [
-    ...sectionConfig().knownLanguages,
-  ]);
+  const pageUrl = stripLangFromUrl(page.url, languages);
   const neighbours = tree ? findNeighbour(tree, pageUrl) : undefined;
   const view = await pageView({
     page,
@@ -121,7 +120,9 @@ export async function renderSectionWorkspace({
     history,
     features,
   });
-  const jsonLd = JSON.stringify(pageJsonLd({ section, page, crumbs, lang }));
+  const jsonLd = JSON.stringify(
+    pageJsonLd({ section, page, crumbs, lang, languages }),
+  );
   return renderSectionView({
     ...view,
     node: (
