@@ -1,4 +1,5 @@
 import 'server-only';
+import { serverCache } from '@terrafirmagreg-team/data/lib/server-cache';
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import sharp from 'sharp';
@@ -81,7 +82,19 @@ export function ogSpriteFor(
   const cached = spriteCache.get(key);
   if (cached) return cached;
   if (spriteCache.size > 512) spriteCache.clear();
-  const promise = loadSprite(dataset, ref, id, kind).then(
+  const load = () => loadSprite(dataset, ref, id, kind);
+  const cache = serverCache();
+  const promise = (
+    cache
+      ? Promise.resolve(
+          cache(
+            `og-sprite:${key}`,
+            load,
+            dataset.version ? false : 60,
+          ) as Promise<OgSprite | undefined>,
+        ).catch(() => load())
+      : load()
+  ).then(
     (value) => value,
     () => {
       spriteCache.delete(key);

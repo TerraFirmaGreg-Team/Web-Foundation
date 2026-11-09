@@ -50,7 +50,10 @@ export function Layout({
   return (
     <LayoutContext value={useMemo(() => ({ navTitle: Title }), [Title])}>
       <TreeContextProvider tree={tree}>
-        <SidebarProvider defaultOpenLevel={defaultOpenLevel}>
+        <SidebarProvider
+          defaultOpenLevel={defaultOpenLevel}
+          prefetch={false}
+        >
           <LeftSidebarPortalProvider>
             <div
               id="spacious-layout"

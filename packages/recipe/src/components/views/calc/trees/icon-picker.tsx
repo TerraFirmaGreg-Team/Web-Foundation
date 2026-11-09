@@ -70,7 +70,7 @@ export function IconPicker({
           placeholder={t('Search items', { note: 'recipe.search' })}
           className="h-7 px-2 text-xs"
         />
-        <div className="mt-2 grid max-h-60 grid-cols-[repeat(auto-fill,minmax(2.5rem,1fr))] gap-1 overflow-y-auto">
+        <div className="mt-2 grid max-h-60 grid-cols-[repeat(auto-fill,minmax(2.5rem,1fr))] gap-1 overflow-x-clip overflow-y-auto">
           {results.map((item) => (
             <button
               key={`${item.kind}:${item.id}`}

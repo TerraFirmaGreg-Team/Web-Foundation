@@ -78,7 +78,7 @@ export function CalcTrees({
             {t('Schemes', { note: 'recipe.calc.trees' })}
           </LeftSidebarFolderTrigger>
           <LeftSidebarFolderContent>
-            <ul className="flex max-h-60 flex-col overflow-y-auto">
+            <ul className="flex max-h-60 flex-col overflow-x-clip overflow-y-auto">
               {tabs.map((tab) => (
                 <TabRow
                   key={tab.id}

@@ -5,7 +5,7 @@ export const authCookie = 'fcgd_token';
 export const devAuthCookie = 'fc_dev_user';
 
 export function commentsMode(): 'dev' | 'prod' | 'off' {
-  const mode = env('COMMENTS_MODE') ?? env('COMMENTS_AUTH');
+  const mode = env('COMMENTS_MODE');
   if (mode === 'dev') return 'dev';
   if (mode === 'prod' || mode === 'github') return 'prod';
   return 'off';

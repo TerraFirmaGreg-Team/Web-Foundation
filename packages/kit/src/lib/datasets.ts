@@ -4,6 +4,7 @@ import { sectionConfig } from './config';
 import { sections } from './sources';
 import { datasetId } from './tree';
 import { createAsyncCache } from '@terrafirmagreg-team/data/lib/async-cache';
+import { serverCache } from '@terrafirmagreg-team/data/lib/server-cache';
 import { dumpStatusSnapshot } from '@terrafirmagreg-team/data/lib/dump-status';
 import { loadLocaleRegistry, sortLangCodes } from '@terrafirmagreg-team/translate/server';
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
@@ -256,14 +257,29 @@ export async function datasetSlugs(section: SectionKey): Promise<string[]> {
   return (await sectionDatasets(section)).map(({ id }) => id);
 }
 
+async function buildDatasetCatalog(): Promise<DatasetCatalog> {
+  return Promise.all(
+    sectionTabs.map(
+      async ({ key }) =>
+        [key, await sectionDatasets(key).catch(() => [])] as const,
+    ),
+  ).then((rows) => Object.fromEntries(rows) as DatasetCatalog);
+}
+
 const datasetCatalogCached = createAsyncCache(
-  async (): Promise<DatasetCatalog> =>
-    Promise.all(
-      sectionTabs.map(
-        async ({ key }) =>
-          [key, await sectionDatasets(key).catch(() => [])] as const,
-      ),
-    ).then((rows) => Object.fromEntries(rows) as DatasetCatalog),
+  async (): Promise<DatasetCatalog> => {
+    const cache = serverCache();
+    if (!cache) return buildDatasetCatalog();
+    try {
+      return (await cache(
+        'dataset-catalog',
+        buildDatasetCatalog,
+        60,
+      )) as DatasetCatalog;
+    } catch {
+      return buildDatasetCatalog();
+    }
+  },
   () => 'catalog',
   DUMP_DATASETS_TTL,
 );

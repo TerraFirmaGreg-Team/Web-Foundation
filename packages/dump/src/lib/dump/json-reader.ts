@@ -15,6 +15,7 @@ import {
   dumpStatusSnapshot,
   markDumpResult,
 } from '@terrafirmagreg-team/data/lib/dump-status';
+import { serverCache } from '@terrafirmagreg-team/data/lib/server-cache';
 
 const SAFE_LANG_CODE = /^[a-z0-9]+(_[a-z0-9]+)*$/i;
 
@@ -22,7 +23,7 @@ function cleanLangCode(code: string): string | undefined {
   return SAFE_LANG_CODE.test(code) ? code : undefined;
 }
 
-const MAX_INFLIGHT = 12;
+const MAX_INFLIGHT = typeof window === 'undefined' ? 24 : 12;
 const lanes = {
   high: [] as Array<() => void>,
   normal: [] as Array<() => void>,
@@ -54,12 +55,15 @@ function fetchLane<T>(task: () => Promise<T>, high: boolean): Promise<T> {
 
 const FETCH_TIMEOUT = 20_000;
 
-function fetchCache(url: string): RequestCache {
-  return url.includes('/objects/') ? 'default' : 'no-cache';
+function fetchCache(url: string, mutable: boolean): RequestCache {
+  return !mutable || url.includes('/objects/') ? 'default' : 'no-cache';
 }
 
-async function request(url: string): Promise<Response | undefined> {
-  const cache = fetchCache(url);
+async function request(
+  url: string,
+  mutable: boolean,
+): Promise<Response | undefined> {
+  const cache = fetchCache(url, mutable);
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
       return await fetch(url, {
@@ -74,13 +78,11 @@ async function request(url: string): Promise<Response | undefined> {
 }
 
 async function headOk(url: string): Promise<boolean> {
-  const cache = fetchCache(url);
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
       const res = await fetch(url, {
         method: 'HEAD',
         signal: AbortSignal.timeout(FETCH_TIMEOUT),
-        cache,
       });
       return res.ok;
     } catch {
@@ -115,79 +117,96 @@ function circuitOpen(datasetId: string | undefined): boolean {
   );
 }
 
-const fetchJsonLoader = async (
-  url: string,
-  high: boolean,
-  datasetId?: string,
-) => {
-  if (circuitOpen(datasetId)) return undefined;
-  return fetchLane(async () => {
-    const res = await request(url);
-    if (res?.status === 404) {
-      markDumpFetch(datasetId, url, res, false);
-      return undefined;
-    }
-    if (!res?.ok) {
-      markDumpFetch(datasetId, url, res, false);
-      throw new Error(`dump fetch failed: ${url}`);
-    }
-    markDumpFetch(datasetId, url, res, true);
-    try {
-      return (await res.json()) as unknown;
-    } catch {
-      if (datasetId) markDumpResult(datasetId, false);
-      throw new Error(`dump parse failed: ${url}`);
-    }
-  }, high);
-};
+class DumpNotFound extends Error {}
 
-const fetchJsonGzLoader = async (
+const SERVER_CACHE_MAX = 1_500_000;
+
+class DumpTooBig extends Error {
+  constructor(readonly value: unknown) {
+    super('dump value too large for server cache');
+  }
+}
+
+async function fetchAndParse(
   url: string,
-  high: boolean,
+  gz: boolean,
+  mutable: boolean,
   datasetId?: string,
-) => {
-  if (circuitOpen(datasetId)) return undefined;
-  return fetchLane(async () => {
-    const res = await request(url);
-    if (res?.status === 404) {
-      markDumpFetch(datasetId, url, res, false);
-      return undefined;
-    }
-    if (!res?.ok || !res.body) {
-      markDumpFetch(datasetId, url, res, false);
-      throw new Error(`dump fetch failed: ${url}`);
-    }
-    markDumpFetch(datasetId, url, res, true);
+): Promise<unknown> {
+  const res = await request(url, mutable);
+  if (res?.status === 404) {
+    markDumpFetch(datasetId, url, res, false);
+    throw new DumpNotFound(url);
+  }
+  if (!res?.ok || (gz && !res.body)) {
+    markDumpFetch(datasetId, url, res, false);
+    throw new Error(`dump fetch failed: ${url}`);
+  }
+  markDumpFetch(datasetId, url, res, true);
+  try {
+    const text = gz
+      ? await new Response(
+          res.body!.pipeThrough(new DecompressionStream('gzip')),
+        ).text()
+      : await res.text();
+    const value = JSON.parse(text) as unknown;
+    if (text.length > SERVER_CACHE_MAX) throw new DumpTooBig(value);
+    return value;
+  } catch (error) {
+    if (error instanceof DumpTooBig) throw error;
+    if (datasetId) markDumpResult(datasetId, false);
+    throw new Error(`dump parse failed: ${url}`);
+  }
+}
+
+const makeLoader =
+  (gz: boolean, mutable: boolean) =>
+  async (
+    url: string,
+    high: boolean,
+    datasetId?: string,
+  ): Promise<unknown> => {
+    if (circuitOpen(datasetId)) return undefined;
+    const load = () =>
+      fetchLane(() => fetchAndParse(url, gz, mutable, datasetId), high);
+    const attempt = async () => {
+      try {
+        return await load();
+      } catch (error) {
+        if (error instanceof DumpNotFound) return undefined;
+        if (error instanceof DumpTooBig) return error.value;
+        throw error;
+      }
+    };
+    const cache = serverCache();
+    if (!cache) return attempt();
     try {
-      const text = await new Response(
-        res.body.pipeThrough(new DecompressionStream('gzip')),
-      ).text();
-      return JSON.parse(text) as unknown;
-    } catch {
-      if (datasetId) markDumpResult(datasetId, false);
-      throw new Error(`dump parse failed: ${url}`);
+      return await cache(`dump-json:${url}`, load, mutable ? 60 : false);
+    } catch (error) {
+      if (error instanceof DumpNotFound) return undefined;
+      if (error instanceof DumpTooBig) return error.value;
+      return attempt();
     }
-  }, high);
-};
+  };
 
 const fetchJson = createAsyncCache(
-  fetchJsonLoader,
+  makeLoader(false, false),
   (url: string) => url,
 ) as AsyncCache<[url: string, high: boolean, datasetId?: string], unknown>;
 
 const fetchJsonGz = createAsyncCache(
-  fetchJsonGzLoader,
+  makeLoader(true, false),
   (url: string) => url,
 ) as AsyncCache<[url: string, high: boolean, datasetId?: string], unknown>;
 
 const fetchJsonMutable = createAsyncCache(
-  fetchJsonLoader,
+  makeLoader(false, true),
   (url: string) => url,
   DUMP_POINTER_TTL,
 ) as AsyncCache<[url: string, high: boolean, datasetId?: string], unknown>;
 
 const fetchJsonGzMutable = createAsyncCache(
-  fetchJsonGzLoader,
+  makeLoader(true, true),
   (url: string) => url,
   DUMP_POINTER_TTL,
 ) as AsyncCache<[url: string, high: boolean, datasetId?: string], unknown>;
@@ -286,12 +305,11 @@ export class JsonDumpReader implements DumpReader {
     if (versions?.latest) {
       const root = `${this.packId}/${versions.latest}`;
 
-      const [exists, files] = await Promise.all([
-        headOk(dumpStorageUrl(`${root}/objects.json.gz`)).then(
-          async (ok) => ok || (await headOk(dumpStorageUrl(`${root}/manifest.json`))),
-        ),
-        this.objectsIndex(root).catch(() => undefined),
-      ]);
+      const files = await this.objectsIndex(root).catch(() => undefined);
+      const exists =
+        files !== undefined ||
+        (await headOk(dumpStorageUrl(`${root}/objects.json.gz`))) ||
+        (await headOk(dumpStorageUrl(`${root}/manifest.json`)));
       if (exists) {
         const loc: DumpLocation = { root, files };
         registerDumpLocation(this.dataset, loc);
