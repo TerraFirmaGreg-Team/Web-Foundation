@@ -21,6 +21,7 @@ export type SectionDump = {
 
 export type SectionConfigInput = {
 
+  appName: string;
   basePath: string;
   siteUrl: string;
   previewRoute: string;

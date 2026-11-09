@@ -30,6 +30,7 @@ import {
   resolvePage,
   sectionMetadata,
 } from '@terrafirmagreg-team/kit/lib/page';
+import { getDatasetImageUrl } from '@terrafirmagreg-team/kit/lib/urls';
 import {
   localeLoader,
   registerLocaleRenderer,
@@ -39,6 +40,7 @@ import { langContent, loadLocaleRegistry } from '@terrafirmagreg-team/translate/
 import type {
   DatasetCatalog,
   DatasetLanding,
+  DeepLinkResolver,
   SectionDataset,
   SectionKey,
   SectionPage,
@@ -89,10 +91,12 @@ export interface SectionRoutesOptions<
     props: SectionLandingProps<TSource>,
   ) => SectionLandingView | Promise<SectionLandingView>;
   page?: SectionPageViewFn;
+  deepLink?: DeepLinkResolver;
 }
 
 interface RouteParams {
   params: Promise<{ slug?: string[] }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 type Resolved = { page: unknown; isFallback: boolean } | undefined;
@@ -123,6 +127,7 @@ export function createSectionRoutes<
   layout: LayoutView,
   landing,
   page: PageView,
+  deepLink,
 }: SectionRoutesOptions<S, TSource>) {
   const resolve =
     (src: TSource, datasets: readonly SectionDataset[]) =>
@@ -274,14 +279,69 @@ export function createSectionRoutes<
     return generateDatasetLandingParams(section);
   }
 
-  async function generateMetadata({ params }: RouteParams): Promise<Metadata> {
+  async function generateMetadata({
+    params,
+    searchParams,
+  }: RouteParams): Promise<Metadata> {
     const { slug } = await params;
-    if (slug?.length === 1 && landing)
-      return datasetLandingMetadata(
-        section,
-        slug,
-        await sectionDatasets(section),
-      );
+    if (slug?.length === 1 && landing) {
+      const datasets = await sectionDatasets(section);
+      const meta = datasetLandingMetadata(section, slug, datasets);
+      if (deepLink) {
+        const search = new URLSearchParams();
+        for (const [key, value] of Object.entries(await searchParams)) {
+          const first = Array.isArray(value) ? value[0] : value;
+          if (first !== undefined) search.set(key, first);
+        }
+        if ([...search.keys()].length) {
+          const { defaultLanguage, languages } = loadLocaleRegistry();
+          const langParam = search.get('lang');
+          const deep = await deepLink({
+            datasetId: slug[0],
+            search,
+            lang:
+              langParam && languages.includes(langParam)
+                ? langParam
+                : defaultLanguage,
+          }).catch(() => undefined);
+          const version =
+            search.get('version') ??
+            datasets.find((d) => d.id === slug[0])?.versions?.[0];
+          const imageQuery = [
+            deep?.imageQuery,
+            version ? `version=${encodeURIComponent(version)}` : '',
+            search.get('lang')
+              ? `lang=${encodeURIComponent(search.get('lang')!)}`
+              : '',
+          ]
+            .filter(Boolean)
+            .join('&');
+          const og = meta.openGraph as
+            | { url?: string; title?: string; description?: string; images?: string }
+            | undefined;
+          const base = og?.title as string | undefined;
+          const title =
+            deep?.title && base
+              ? `${deep.title} · ${base}`
+              : (deep?.title ?? base);
+          const description =
+            deep?.description ?? (og?.description as string | undefined);
+          const images = imageQuery
+            ? `${getDatasetImageUrl(section, slug[0]).url}?${imageQuery}`
+            : og?.images;
+          if (deep || imageQuery) {
+            return {
+              ...meta,
+              title,
+              description,
+              openGraph: { ...meta.openGraph, title, description, images },
+              twitter: { ...meta.twitter, title, description },
+            };
+          }
+        }
+      }
+      return meta;
+    }
     if (!PageView) return {};
     const src = (await source.getSource()) as SectionSource | undefined;
     if (src) {

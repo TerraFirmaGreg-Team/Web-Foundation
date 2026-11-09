@@ -1,0 +1,123 @@
+'use client';
+
+import { useState } from 'react';
+import type { SectionKey } from '@terrafirmagreg-team/sites';
+import { useOgMeta } from '../hooks/og-meta';
+import { Button } from '@terrafirmagreg-team/ui/components/ui/button';
+import { Skeleton } from '@terrafirmagreg-team/ui/components/ui/skeleton';
+
+export type OgPreviewProps = {
+  url?: string;
+  section?: SectionKey;
+  dataset?: string;
+  slug?: string;
+  lang?: string;
+  version?: string;
+};
+
+function withParams(
+  image: string,
+  extra: { lang?: string; version?: string },
+): string {
+  const [path, search = ''] = image.split('?');
+  const params = new URLSearchParams(search);
+  if (extra.lang) params.set('lang', extra.lang);
+  if (extra.version) params.set('version', extra.version);
+  const query = params.toString();
+  return query ? `${path}?${query}` : path;
+}
+
+function Frame({
+  src,
+  meta,
+  loading,
+  failed,
+}: {
+  src?: string;
+  meta?: { title?: string; description?: string };
+  loading?: boolean;
+  failed?: boolean;
+}) {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    if (!src) return;
+    await navigator.clipboard.writeText(`${window.location.origin}${src}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1200);
+  };
+  return (
+    <div className="overflow-hidden rounded-md border border-border">
+      {src ? (
+        // eslint-disable-next-line @next/next/no-img-element -- preview needs plain img
+        <img
+          key={src}
+          src={src}
+          alt="OG preview"
+          className="block w-full"
+          style={{ aspectRatio: '1200/630' }}
+        />
+      ) : failed ? (
+        <p className="p-4 text-sm text-destructive">
+          не удалось прочитать og meta со страницы
+        </p>
+      ) : (
+        loading && (
+          <Skeleton
+            className="w-full rounded-none"
+            style={{ aspectRatio: '1200/630' }}
+          />
+        )
+      )}
+      <div className="flex items-center gap-3 border-t border-border px-3 py-2">
+        {meta?.title && (
+          <p className="min-w-0 flex-1 truncate text-sm">
+            <span className="font-medium">{meta.title}</span>
+            {meta.description && (
+              <span className="text-muted-foreground">
+                {' '}
+                — {meta.description}
+              </span>
+            )}
+          </p>
+        )}
+        {!meta?.title && src && (
+          <code className="min-w-0 flex-1 truncate font-mono text-xs text-muted-foreground">
+            {src}
+          </code>
+        )}
+        {src && (
+          <Button type="button" variant="outline" size="sm" onClick={copy}>
+            {copied ? 'скопировано' : 'копировать URL'}
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function OgPreview({
+  url,
+  section = 'recipe',
+  dataset = 'modern',
+  slug = '',
+  lang,
+  version,
+}: OgPreviewProps) {
+  const raw = url?.trim();
+  const { meta, failed } = useOgMeta(raw ? url : undefined);
+  const [slugPath, slugQuery = ''] = slug.split('?');
+  const baseImage = raw
+    ? meta?.image
+    : `/api/preview/${section}/${dataset}/${slugPath ? `${slugPath}/` : ''}image.png${slugQuery ? `?${slugQuery}` : ''}`;
+
+  return (
+    <div className="flex w-full flex-col gap-4">
+      <Frame
+        src={baseImage ? withParams(baseImage, { lang, version }) : undefined}
+        meta={raw ? meta : undefined}
+        loading={!!raw && !meta && !failed}
+        failed={raw ? failed || (!!meta && !meta.image) : !baseImage}
+      />
+    </div>
+  );
+}

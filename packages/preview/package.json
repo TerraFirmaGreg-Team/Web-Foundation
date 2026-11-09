@@ -8,15 +8,21 @@
     "./lib": "./src/lib/index.ts",
     "./lib/*": [
       "./src/lib/*.ts",
-      "./src/lib/*/index.ts"
+      "./src/lib/*.tsx",
+      "./src/lib/*/index.ts",
+      "./src/lib/*/index.tsx"
     ],
     "./components/*": [
       "./src/components/*.tsx",
       "./src/components/*/index.tsx",
       "./src/components/*/index.ts"
-    ]
+    ],
+    "./server": "./src/server.ts",
+    "./hooks/*": "./src/hooks/*.ts"
   },
   "dependencies": {
+    "@terrafirmagreg-team/dump": "workspace:^",
+    "@terrafirmagreg-team/kit": "workspace:^",
     "@terrafirmagreg-team/sites": "workspace:^",
     "@terrafirmagreg-team/translate": "workspace:^",
     "@terrafirmagreg-team/ui": "workspace:^"

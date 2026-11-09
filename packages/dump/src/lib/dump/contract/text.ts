@@ -21,6 +21,7 @@ export const MC_FORMAT_COLORS: Record<string, string> = {
 
 export const MC_FORMAT = {
   marker: '§',
+  extraMarkers: ['&'],
   colors: MC_FORMAT_COLORS,
   styles: {
     l: { fontWeight: 600 },

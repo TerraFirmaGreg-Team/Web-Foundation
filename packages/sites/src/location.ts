@@ -53,8 +53,11 @@ export function resolveDatasetRef(
   version: string | undefined,
   info?: DatasetVersionInfo,
 ): { id: string; pinned?: string; ref: DatasetRef } {
+  const listed = info?.versions;
   const pinned =
-    version && version !== (info?.latest ?? info?.versions?.[0])
+    version &&
+    version !== (info?.latest ?? listed?.[0]) &&
+    (!listed?.length || listed.includes(version))
       ? version
       : undefined;
   return { id, pinned, ref: { id, version: pinned } };

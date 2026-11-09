@@ -22,7 +22,10 @@ function categoryIcon(
   if (!category.icon) return undefined;
   return createElement(
     'span',
-    { className: 'inline-flex size-4 shrink-0 items-center justify-center' },
+    {
+      key: 'icon',
+      className: 'inline-flex size-4 shrink-0 items-center justify-center',
+    },
     createElement(Entry, {
       dataset,
       reference: category.icon,

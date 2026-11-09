@@ -2,6 +2,7 @@ import { Fragment, type CSSProperties } from 'react';
 
 export type TextFormat = {
   marker: string;
+  extraMarkers?: readonly string[];
   colors: Record<string, string>;
   styles?: Record<string, CSSProperties>;
   reset?: string;
@@ -18,6 +19,7 @@ export function FormatText({
   text: string;
   format: TextFormat;
 }) {
+  const markers = new Set([format.marker, ...(format.extraMarkers ?? [])]);
   const codes = new Set([
     ...Object.keys(format.colors),
     ...Object.keys(format.styles ?? {}),
@@ -34,7 +36,7 @@ export function FormatText({
   };
   for (let i = 0; i < text.length; i += 1) {
     const ch = text[i];
-    if (ch !== format.marker) {
+    if (!markers.has(ch!)) {
       buf += ch;
       continue;
     }
@@ -44,7 +46,7 @@ export function FormatText({
       let j = i + 2;
       while (
         hex.length < 6 &&
-        text[j] === format.marker &&
+        markers.has(text[j]!) &&
         /^[0-9a-f]$/.test(text[j + 1]?.toLowerCase() ?? '')
       ) {
         hex += (text[j + 1] ?? '').toLowerCase();

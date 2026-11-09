@@ -85,3 +85,19 @@ export type SectionSourceEntry = {
   markdown: { page(page: unknown): Promise<string> };
 };
 
+export type DeepLinkMeta = {
+  title?: string;
+  description?: string;
+  imageQuery?: string;
+};
+
+export type DeepLinkContext = {
+  datasetId: string;
+  search: URLSearchParams;
+  lang: Lang;
+};
+
+export type DeepLinkResolver = (
+  ctx: DeepLinkContext,
+) => Promise<DeepLinkMeta | undefined>;
+

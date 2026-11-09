@@ -118,7 +118,10 @@ export function resolveName(
 }
 
 export function stripMcFormat(value: string): string {
-  return value.replace(/§x(?:§[0-9a-f]){6}|§[0-9a-fk-or]/gi, '');
+  return value.replace(
+    /[§&]x(?:[§&][0-9a-f]){6}|[§&][0-9a-fk-or]/gi,
+    '',
+  );
 }
 
 const KIND_LANG_PREFIXES: Record<string, readonly string[]> = {

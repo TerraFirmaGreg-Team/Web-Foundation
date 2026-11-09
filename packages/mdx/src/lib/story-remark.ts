@@ -13,6 +13,7 @@ export type DirectiveMeta = {
   props?: string[];
   solo?: boolean;
   paired?: boolean;
+  remark?: boolean;
   descriptions?: Record<string, string>;
   raw?: string;
   variants?: Record<string, Partial<DirectiveMeta>>;
@@ -395,6 +396,27 @@ const DIRECTIVE_META: Record<string, DirectiveMeta> = {
         raw: ':::math\n\\begin{aligned}\n\\nabla \\cdot \\vec{E} &= \\frac{\\rho}{\\varepsilon_0} \\\\\n\\nabla \\times \\vec{B} &= \\mu_0 \\vec{J}\n\\end{aligned}\n:::',
       },
       Display: { raw: '$$e = mc^2$$' },
+    },
+  },
+  og: {
+    remark: false,
+    props: ['url', 'section', 'dataset', 'slug', 'lang', 'version'],
+    descriptions: {
+      url: 'Page or image.png URL — overrides the fields below',
+      section: 'Site section the page belongs to',
+      dataset: 'Dataset id within the section',
+      slug: 'Page path inside the dataset, e.g. getting-started/install',
+      lang: 'Content language of the rendered card',
+      version: 'Dataset version pin, e.g. 0.13.18',
+    },
+  },
+  site: {
+    remark: false,
+    props: ['view', 'section', 'links'],
+    descriptions: {
+      view: 'What to show',
+      section: 'Limit the listing to one section',
+      links: 'URLs to preview in the links view (JSON array)',
     },
   },
 };

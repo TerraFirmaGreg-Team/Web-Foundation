@@ -15,8 +15,17 @@ import {
   SelectValue,
 } from '@terrafirmagreg-team/ui/components/ui/select';
 import { cn } from '@terrafirmagreg-team/ui/lib/utils/cn';
-import { X } from 'lucide-react';
-import { useState } from 'react';
+import { Pin, PinOff, X } from 'lucide-react';
+import { createContext, useContext, useState } from 'react';
+
+export const PinnedContext = createContext<{
+  pinned: ReadonlySet<string>;
+  toggle: (name: string) => void;
+} | null>(null);
+
+export function usePinned() {
+  return useContext(PinnedContext);
+}
 
 function resolveNode(node: TypeNode, value: unknown): TypeNode {
   if (node.type === 'intersection') return resolveNode(node.intersection, value);
@@ -234,6 +243,8 @@ function Field({
   const [value, setValue] = useFieldValue([name]);
   const resolved = resolveNode(node, value);
   const members = selectMembers(resolved);
+  const pinnedCtx = usePinned();
+  const isPinned = pinnedCtx?.pinned.has(name) ?? false;
 
   let editor: React.ReactNode;
   if (members) {
@@ -275,6 +286,26 @@ function Field({
       <span className="hidden w-24 shrink-0 truncate px-2 font-mono text-xs text-fd-muted-foreground/70 @3xl:block">
         {typeToString(resolved)}
       </span>
+      {pinnedCtx && !required && (
+        <button
+          type="button"
+          aria-label={`${isPinned ? 'Unpin' : 'Pin'} ${name}`}
+          title={
+            isPinned
+              ? 'Unpin — reset with preset'
+              : 'Pin — keep value across presets'
+          }
+          onClick={() => pinnedCtx.toggle(name)}
+          className={cn(
+            'me-1 flex size-6 shrink-0 items-center justify-center rounded-md hover:bg-fd-accent',
+            isPinned
+              ? 'text-fd-primary'
+              : 'text-fd-muted-foreground hover:text-fd-foreground',
+          )}
+        >
+          {isPinned ? <PinOff className="size-3" /> : <Pin className="size-3" />}
+        </button>
+      )}
       {!required && (
         <button
           type="button"

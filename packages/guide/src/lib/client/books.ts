@@ -168,6 +168,8 @@ export type ClientGuideEntryHit = {
   entry: GuideEntry;
   modId?: string;
   bookPath?: string;
+  bookName?: string;
+  categoryName?: string;
 };
 
 export async function findClientGuideEntry(
@@ -197,6 +199,10 @@ export async function findClientGuideEntry(
         entry,
         modId: overview?.modId,
         bookPath: overview?.bookPath,
+        bookName: overview?.book?.name ?? undefined,
+        categoryName: overview?.categories.find(
+          (category) => category.id === entry.category,
+        )?.name,
       };
     }
   }

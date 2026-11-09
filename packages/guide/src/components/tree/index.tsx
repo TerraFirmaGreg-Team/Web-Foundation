@@ -32,6 +32,7 @@ function bookIcon(
   return createElement(
     'span',
     {
+      key: 'icon',
       'data-icon': true,
       className:
         'inline-flex size-3.5 shrink-0 items-center justify-center overflow-hidden',

@@ -52,7 +52,11 @@ export function renderRichInline(
   ) {
     return only.text;
   }
-  return <span className="min-w-0">{nodesToInline(nodes)}</span>;
+  return (
+    <span key="rich" className="min-w-0">
+      {nodesToInline(nodes)}
+    </span>
+  );
 }
 
 export function renderQuestNodes(

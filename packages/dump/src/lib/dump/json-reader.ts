@@ -54,11 +54,17 @@ function fetchLane<T>(task: () => Promise<T>, high: boolean): Promise<T> {
 
 const FETCH_TIMEOUT = 20_000;
 
+function fetchCache(url: string): RequestCache {
+  return url.includes('/objects/') ? 'default' : 'no-cache';
+}
+
 async function request(url: string): Promise<Response | undefined> {
+  const cache = fetchCache(url);
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
       return await fetch(url, {
         signal: AbortSignal.timeout(FETCH_TIMEOUT),
+        cache,
       });
     } catch {
 
@@ -68,11 +74,13 @@ async function request(url: string): Promise<Response | undefined> {
 }
 
 async function headOk(url: string): Promise<boolean> {
+  const cache = fetchCache(url);
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
       const res = await fetch(url, {
         method: 'HEAD',
         signal: AbortSignal.timeout(FETCH_TIMEOUT),
+        cache,
       });
       return res.ok;
     } catch {

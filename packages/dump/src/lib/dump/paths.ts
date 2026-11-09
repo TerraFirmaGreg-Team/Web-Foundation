@@ -1,4 +1,5 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
+import { dumpStorageBase } from '@terrafirmagreg-team/data/lib/env';
 import { stackIdBase } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 
 export type DumpLocation = {
@@ -33,11 +34,7 @@ export function dumpLocation(dataset: DatasetRef): DumpLocation | undefined {
 }
 
 export function dumpStorageUrl(storageRel: string): string {
-  const origin = (
-    process.env.NEXT_PUBLIC_DUMP_STORAGE_URL ??
-    process.env.DUMP_STORAGE_URL ??
-    ''
-  ).replace(/\/+$/, '');
+  const origin = dumpStorageBase();
   if (!origin) {
     throw new Error(
       'NEXT_PUBLIC_DUMP_STORAGE_URL is not set: dump storage is required.',

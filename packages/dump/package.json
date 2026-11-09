@@ -21,6 +21,17 @@
     "fumadocs-core": "catalog:",
     "server-only": "catalog:"
   },
+  "peerDependencies": {
+    "sharp": "catalog:"
+  },
+  "peerDependenciesMeta": {
+    "sharp": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "sharp": "catalog:"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/TerraFirmaGreg-Team/Web-Foundation.git",

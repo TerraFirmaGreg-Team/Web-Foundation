@@ -4,6 +4,8 @@ export type AsyncCache<A extends unknown[], V> = ((
   peek: (...args: A) => V | undefined;
 };
 
+const MISS_TTL = 60_000;
+
 export function createAsyncCache<A extends unknown[], V>(
   loader: (...args: A) => Promise<V>,
   keyOf: (...args: A) => string = (...args) => JSON.stringify(args),
@@ -29,7 +31,8 @@ export function createAsyncCache<A extends unknown[], V>(
       pending = loader(...args)
         .then((value) => {
           resolved.set(key, value);
-          if (ttl !== undefined) expiry.set(key, Date.now() + ttl);
+          const life = value === undefined ? MISS_TTL : ttl;
+          if (life !== undefined) expiry.set(key, Date.now() + life);
           return value;
         })
         .catch((err) => {
