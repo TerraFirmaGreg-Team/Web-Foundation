@@ -48,6 +48,7 @@ export type SectionConfigInput = {
         url?: string;
         excludeUsers?: readonly string[];
         minContributions?: number;
+        mergeUsers?: Record<string, string>;
         discussions?: { repoId: string; categoryId: string };
       };
 

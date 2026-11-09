@@ -18,6 +18,7 @@ async function RepoContributorsList({ ctx }: { ctx: SectionPageContext }) {
     ? await repoContributors(url, {
         excludeUsers: dataset?.github?.excludeUsers,
         minContributions: dataset?.github?.minContributions,
+        mergeUsers: dataset?.github?.mergeUsers,
       })
     : undefined;
   if (!url || !contributors?.length) return null;

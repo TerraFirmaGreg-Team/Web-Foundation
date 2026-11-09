@@ -153,7 +153,7 @@ export const crowdinProgress = createAsyncCache(
           total: p.words.total,
         };
       return out;
-    });
+    }, { staleWhileRevalidate: true });
   },
   (slug) => slug,
   3_600_000,
@@ -219,7 +219,7 @@ export const crowdinMembers = createAsyncCache(
           roles: roles.get(r.user.username) ?? [],
           ...joined(r.user.joined),
         }));
-    });
+    }, { staleWhileRevalidate: true });
   },
   (slug, options) =>
     `${slug}|${options?.minWords ?? ''}|${[...(options?.excludeUsers ?? [])]

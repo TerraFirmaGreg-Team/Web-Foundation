@@ -190,17 +190,11 @@ export function MembersGrid({
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set());
 
   const langName = useMemo<LangLabel>(() => {
-    const displayNames = new Intl.DisplayNames([lang.replace(/_/g, '-')], {
-      type: 'language',
-    });
-    return (id) => {
-      try {
-        return displayNames.of(id) ?? id;
-      } catch {
-        return id;
-      }
-    };
-  }, [lang]);
+    const names = new Map<string, string>();
+    for (const m of members)
+      for (const l of m.languages) if (l.name) names.set(l.id, l.name);
+    return (id) => names.get(id) ?? id;
+  }, [members]);
 
   const groups = useMemo(() => {
     const byLang = new Map<
