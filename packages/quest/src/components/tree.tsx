@@ -25,6 +25,7 @@ import {
 import { renderRichInline } from '@terrafirmagreg-team/quest/components/rich-text';
 import { sectionDatasets } from '@terrafirmagreg-team/kit/lib/datasets';
 import type { QuestChapterRow } from '@terrafirmagreg-team/quest/lib/data/groups';
+import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import type { SectionTrees } from '@terrafirmagreg-team/kit/types';
 
 const UNGROUPED_FOLDER = '_ungrouped';
@@ -77,54 +78,53 @@ function chapterLeaf(
 }
 
 const questTreesCache = createAsyncCache(
-  async (): Promise<SectionTrees> => buildQuestTrees(),
-  () => 'quest-trees',
+  (lang: Lang): Promise<SectionTrees> => buildQuestTrees(lang),
+  (lang) => `quest-trees/${lang}`,
   DUMP_POINTER_TTL,
 );
 
-export function questTrees(): Promise<SectionTrees> {
-  return questTreesCache();
+export function questTrees(lang: Lang): Promise<SectionTrees> {
+  return questTreesCache(lang);
 }
 
-async function buildQuestTrees(): Promise<SectionTrees> {
+async function buildQuestTrees(lang: Lang): Promise<SectionTrees> {
   const { defaultLanguage } = loadLocaleRegistry();
   const datasets = await sectionDatasets('quest');
   const trees: SectionTrees = {};
   for (const { id, title: datasetTitle, languages } of datasets) {
-    for (const lang of languages ?? [defaultLanguage]) {
-      const ref = { id };
-      const map = await loadMergedLangMap(ref, lang);
-      const summary = await loadDumpQuestSummary(ref);
-      const index =
-        summary && questSummaryComplete(summary)
-          ? summary
-          : await getQuestSource().dumpIndex(ref);
-      const groups = index ? groupQuestChapters(index) : [];
-      const children: PageTree.Node[] = groups.flatMap(
-        (group): PageTree.Node[] =>
-          group.id
-            ? [
-                {
-                  type: 'folder',
-                  name: renderRichInline(
-                    langString(map, group.title) ?? group.id,
-                    map,
-                  ),
-                  defaultOpen: true,
-                  $id: `${id}/group/${groupFolderId(group.id)}`,
-                  children: group.chapters.map((chapter) =>
-                    chapterLeaf({ id }, chapter, map),
-                  ),
-                },
-              ]
-            : group.chapters.map((chapter) => chapterLeaf({ id }, chapter, map)),
-      );
-      (trees[lang] ??= {})[id] = {
-        name: datasetTitle ?? id,
-        children,
-        $id: `quest/${id}/${lang}`,
-      } satisfies PageTree.Root;
-    }
+    if (!(languages ?? [defaultLanguage]).includes(lang)) continue;
+    const ref = { id };
+    const map = await loadMergedLangMap(ref, lang);
+    const summary = await loadDumpQuestSummary(ref);
+    const index =
+      summary && questSummaryComplete(summary)
+        ? summary
+        : await getQuestSource().dumpIndex(ref);
+    const groups = index ? groupQuestChapters(index) : [];
+    const children: PageTree.Node[] = groups.flatMap(
+      (group): PageTree.Node[] =>
+        group.id
+          ? [
+              {
+                type: 'folder',
+                name: renderRichInline(
+                  langString(map, group.title) ?? group.id,
+                  map,
+                ),
+                defaultOpen: true,
+                $id: `${id}/group/${groupFolderId(group.id)}`,
+                children: group.chapters.map((chapter) =>
+                  chapterLeaf({ id }, chapter, map),
+                ),
+              },
+            ]
+          : group.chapters.map((chapter) => chapterLeaf({ id }, chapter, map)),
+    );
+    (trees[lang] ??= {})[id] = {
+      name: datasetTitle ?? id,
+      children,
+      $id: `quest/${id}/${lang}`,
+    } satisfies PageTree.Root;
   }
   return trees;
 }

@@ -4,8 +4,10 @@ import { useMemo, useRef, useState, type ComponentProps } from 'react';
 import { RecipeCard } from './card';
 import { SlotHitbox } from './slot-hitbox';
 import { StripCard } from './strip-card';
+import { ScrollCard } from './scroll-card';
 import { recipeGlareFilter } from './glare-filter';
 import { recipeGrid } from '@terrafirmagreg-team/recipe/lib/data/grid';
+import { recipeScroll } from '@terrafirmagreg-team/recipe/lib/data/scroll';
 import { recipeSlots } from '@terrafirmagreg-team/recipe/lib/browser/recipe-slots';
 import { PagerArrow } from '@terrafirmagreg-team/ui/components/blocks/page/pager';
 import { useInView } from '@terrafirmagreg-team/ui/hooks/use-in-view';
@@ -93,6 +95,9 @@ export function PagedCard({
     setPage((p) => Math.max(0, Math.min(pages - 1, p + dir))),
   );
 
+  if (recipeScroll(recipe.properties)) {
+    return <ScrollCard {...props} />;
+  }
   if (recipeGrid(recipe.properties)) {
     return <StripCard {...props} />;
   }

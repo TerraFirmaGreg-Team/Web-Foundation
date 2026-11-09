@@ -24,23 +24,28 @@ export async function changelogLanding({
   route,
 }: SectionLandingProps<SectionSource>): Promise<SectionLandingView> {
   const dataset = page.dataset.id;
-  const entries = await timelineEntries(
+  const { entries, metas } = await timelineEntries(
     source,
     route,
     dataset,
     lang,
     sectionConfig().datasetConfig[dataset]?.github?.repo,
+    { count: 10 },
   );
   return {
     node: (
       <WorkspaceBody>
         <Suspense fallback={<ChangelogBrowserFallback />}>
-          <ChangelogBrowser entries={entries} lang={lang} />
+          <ChangelogBrowser
+            entries={entries}
+            lang={lang}
+            more={{ dataset, total: metas.length }}
+          />
         </Suspense>
       </WorkspaceBody>
     ),
     workspace: {
-      toc: groupByMonth(entries, lang).map((month) => ({
+      toc: groupByMonth(metas, lang).map((month) => ({
         title: <ChangelogMonthLabel monthKey={month.key} />,
         url: `#${monthAnchor(month.key)}`,
         depth: 2,

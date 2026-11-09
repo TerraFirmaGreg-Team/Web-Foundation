@@ -29,6 +29,7 @@ function datasetTree(
 export function localizedDatasetTrees(
   source: SectionSource,
   datasets: readonly SectionDataset[],
+  lang?: Lang,
 ): SectionTrees {
   const { defaultLanguage } = loadLocaleRegistry();
   const tree = source.getPageTree();
@@ -37,18 +38,19 @@ export function localizedDatasetTrees(
     fallbackLanguage: defaultLanguage,
   };
   const localized = new Map<string, PageTree.Root>();
-  const localize = (lang: Lang) => {
-    let out = localized.get(lang);
+  const localize = (code: Lang) => {
+    let out = localized.get(code);
     if (!out) {
-      out = localizePageTree(tree, lang, options);
-      localized.set(lang, out);
+      out = localizePageTree(tree, code, options);
+      localized.set(code, out);
     }
     return out;
   };
   const trees: SectionTrees = {};
   for (const dataset of datasets) {
-    for (const lang of dataset.languages ?? [defaultLanguage]) {
-      const code = lang as Lang;
+    const langs = dataset.languages ?? [defaultLanguage];
+    if (lang !== undefined && !langs.includes(lang)) continue;
+    for (const code of (lang !== undefined ? [lang] : langs) as Lang[]) {
       (trees[code] ??= {})[dataset.id] = datasetTree(
         localize(code),
         dataset.id,

@@ -96,6 +96,11 @@ export function sectionConfig(): SectionConfigInput {
 export interface LayoutDeps {
   trackView?: (pathname: string) => void;
   commentsMenuItem?: () => unknown;
+  loadSectionTree?: (
+    section: string,
+    datasetId: string,
+    lang: string,
+  ) => Promise<import('fumadocs-core/page-tree').Root | null>;
 }
 
 export function registerLayoutDeps(input: LayoutDeps): void {

@@ -38,6 +38,7 @@ import {
   localeLoader,
   registerLocaleRenderer,
 } from '@terrafirmagreg-team/kit/lib/locale/renderer';
+import { registerSectionTrees } from '@terrafirmagreg-team/kit/lib/section-trees';
 import { sectionUrl } from '@terrafirmagreg-team/sites/location';
 import { langContent, loadLocaleRegistry } from '@terrafirmagreg-team/translate/server';
 import type {
@@ -82,7 +83,7 @@ export interface SectionRoutesOptions<
   TSource = SectionSource,
 > {
   section: S;
-  trees?: () => Promise<SectionTrees>;
+  trees?: (lang: Lang) => Promise<SectionTrees>;
   source: {
     getSource: () => TSource | Promise<TSource>;
     contentDir?: string;
@@ -192,6 +193,8 @@ export function createSectionRoutes<
     });
   };
 
+  if (trees) registerSectionTrees(section, trees);
+
   registerLocaleRenderer(section, {
     resolve: async (slug, lang) =>
       resolve(await source.getSource(), await sectionDatasets(section))(
@@ -202,7 +205,7 @@ export function createSectionRoutes<
       render(
         await source.getSource(),
         slug,
-        await trees?.().catch(() => undefined),
+        await trees?.(lang).catch(() => undefined),
         await datasetCatalog().catch((): DatasetCatalog => ({}) as DatasetCatalog),
         page,
         lang,
@@ -211,9 +214,10 @@ export function createSectionRoutes<
 
   async function SectionLayout({ children }: { children?: ReactNode }) {
     const { slots } = baseOptions();
+    const { defaultLanguage } = loadLocaleRegistry();
     const [resolvedTrees, catalog] = await Promise.all([
       trees
-        ? trees().catch((): SectionTrees => ({}))
+        ? trees(defaultLanguage).catch((): SectionTrees => ({}))
         : Promise.resolve<SectionTrees>({}),
       datasetCatalog().catch((): DatasetCatalog => ({}) as DatasetCatalog),
     ]);
@@ -239,7 +243,7 @@ export function createSectionRoutes<
     if (slug?.length === 1 && !landing && PageView) {
       const { defaultLanguage } = loadLocaleRegistry();
       if (!getPage(src as SectionSource, slug, defaultLanguage)) {
-        const resolvedTrees = trees ? await trees() : undefined;
+        const resolvedTrees = trees ? await trees(defaultLanguage) : undefined;
         const first = flattenTree(
           resolvedTrees?.[defaultLanguage]?.[slug[0]]?.children ?? [],
         )[0];
@@ -247,15 +251,21 @@ export function createSectionRoutes<
       }
     }
 
-    const [resolvedTrees, catalog] = await Promise.all([
-      trees?.().catch(() => undefined),
-      datasetCatalog().catch((): DatasetCatalog => ({}) as DatasetCatalog),
-    ]);
+    const catalog = await datasetCatalog().catch(
+      (): DatasetCatalog => ({}) as DatasetCatalog,
+    );
     const content = langContent(
       slug,
       resolve(src, datasets),
-      (page, lang) =>
-        render(src, slug, resolvedTrees, catalog, page, lang) as ReactNode,
+      async (page, lang) =>
+        render(
+          src,
+          slug,
+          await trees?.(lang).catch(() => undefined),
+          catalog,
+          page,
+          lang,
+        ) as ReactNode,
     );
     if (!content) notFound();
     return (

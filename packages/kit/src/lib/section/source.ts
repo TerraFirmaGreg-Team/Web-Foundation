@@ -11,6 +11,7 @@ import { renderSectionMarkdown } from '@terrafirmagreg-team/mdx/lib/markdown';
 import { localizedDatasetTrees } from '@terrafirmagreg-team/kit/lib/tree';
 import type { SectionTrees } from '@terrafirmagreg-team/kit/types';
 import type { SectionKey } from '@terrafirmagreg-team/sites/location';
+import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 
 export function createSectionSource(options: {
   route: string;
@@ -41,20 +42,23 @@ export function createSectionSource(options: {
       }).page(page as never),
   };
 
-  let cached:
-    | { source: LoaderOutput<LoaderConfig>; trees: Promise<SectionTrees> }
-    | undefined;
-  const trees = (): Promise<SectionTrees> =>
-    getSource().then((source) => {
-      if (cached?.source === source) return cached.trees;
+  const cache = new Map<
+    Lang | undefined,
+    { source: LoaderOutput<LoaderConfig>; trees: Promise<SectionTrees> }
+  >();
+  const trees = (lang?: Lang): Promise<SectionTrees> =>
+    getSource().then(async (source) => {
+      const hit = cache.get(lang);
+      if (hit?.source === source) return hit.trees;
       const built = (async () => {
         const result = localizedDatasetTrees(
           source,
           await sectionDatasets(section),
+          lang,
         );
         return postTrees ? postTrees(result) : result;
       })();
-      cached = { source, trees: built };
+      cache.set(lang, { source, trees: built });
       return built;
     });
 

@@ -13,6 +13,7 @@ import { encodeQueryValue } from '@terrafirmagreg-team/translate/lib/url';
 import { recipeBasePath } from '@terrafirmagreg-team/recipe/lib/links';
 import { sectionDatasets } from '@terrafirmagreg-team/kit/lib/datasets';
 import type { DumpRecipeCategory } from '@terrafirmagreg-team/recipe/lib/data/category/dto';
+import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import type { SectionTrees } from '@terrafirmagreg-team/kit/types';
 
 function categoryIcon(
@@ -53,48 +54,45 @@ function categoryLeaf(
 }
 
 const recipeTreesCache = createAsyncCache(
-  async (): Promise<SectionTrees> => buildRecipeTrees(),
-  () => 'recipe-trees',
+  (lang: Lang): Promise<SectionTrees> => buildRecipeTrees(lang),
+  (lang) => `recipe-trees/${lang}`,
   DUMP_POINTER_TTL,
 );
 
-export function recipeTrees(): Promise<SectionTrees> {
-  return recipeTreesCache();
+export function recipeTrees(lang: Lang): Promise<SectionTrees> {
+  return recipeTreesCache(lang);
 }
 
-async function buildRecipeTrees(): Promise<SectionTrees> {
+async function buildRecipeTrees(lang: Lang): Promise<SectionTrees> {
   const { defaultLanguage } = loadLocaleRegistry();
   const datasets = await sectionDatasets('recipe');
   const trees: SectionTrees = {};
   for (const { id, title: datasetTitle, languages } of datasets) {
-    for (const lang of languages ?? [defaultLanguage]) {
-      const ref = { id };
-      const map = await loadMergedLangMap(ref, lang);
-      const source = getRecipeSource();
-      const categories = await source.categories(ref);
-      const types = (await source.manifest(ref))?.indexes.recipes.types;
-      const nonEmpty = types
-        ? new Set(
-            types
-              .filter((row) => (row.count ?? 0) > 0)
-              .map((row) => row.id),
-          )
-        : undefined;
-      const leaves = [...categories]
-        .filter((category) => !nonEmpty || nonEmpty.has(category.id))
-        .sort(
-          (a, b) =>
-            creativeTabName(map, a.display?.name).localeCompare(
-              creativeTabName(map, b.display?.name),
-            ) || a.id.localeCompare(b.id),
+    if (!(languages ?? [defaultLanguage]).includes(lang)) continue;
+    const ref = { id };
+    const map = await loadMergedLangMap(ref, lang);
+    const source = getRecipeSource();
+    const categories = await source.categories(ref);
+    const types = (await source.manifest(ref))?.indexes.recipes.types;
+    const nonEmpty = types
+      ? new Set(
+          types.filter((row) => (row.count ?? 0) > 0).map((row) => row.id),
         )
-        .map((category) => categoryLeaf(ref, category, map));
-      (trees[lang] ??= {})[id] = {
-        name: datasetTitle ?? id,
-        children: leaves,
-        $id: `recipe/${id}/${lang}`,
-      } satisfies PageTree.Root;
-    }
+      : undefined;
+    const leaves = [...categories]
+      .filter((category) => !nonEmpty || nonEmpty.has(category.id))
+      .sort(
+        (a, b) =>
+          creativeTabName(map, a.display?.name).localeCompare(
+            creativeTabName(map, b.display?.name),
+          ) || a.id.localeCompare(b.id),
+      )
+      .map((category) => categoryLeaf(ref, category, map));
+    (trees[lang] ??= {})[id] = {
+      name: datasetTitle ?? id,
+      children: leaves,
+      $id: `recipe/${id}/${lang}`,
+    } satisfies PageTree.Root;
   }
   return trees;
 }

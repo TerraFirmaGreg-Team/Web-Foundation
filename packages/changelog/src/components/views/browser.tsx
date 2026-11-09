@@ -1,16 +1,14 @@
 import { redirect } from 'next/navigation';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
-import {
-  ChangelogTimeline,
-  type ChangelogTimelineEntry,
-} from '@terrafirmagreg-team/changelog/components/timeline';
+import { ChangelogLazyTimeline } from '@terrafirmagreg-team/changelog/components/lazy-timeline';
+import { ChangelogBrowserFallback } from '@terrafirmagreg-team/changelog/components/browser-fallback';
+import type { ChangelogTimelineEntry } from '@terrafirmagreg-team/changelog/types';
 import {
   WorkspaceBody,
   WorkspaceDescription,
   WorkspaceTitle,
 } from '@terrafirmagreg-team/ui/components/layouts/workspace';
 import { PageActions } from '@terrafirmagreg-team/kit/components/page-actions';
-import { Skeleton } from '@terrafirmagreg-team/ui/components/ui/skeleton';
 import type {
   SectionPageView,
   SectionWorkspaceProps,
@@ -38,11 +36,15 @@ export type ChangelogPageFeatures = SectionFeatures;
 export function ChangelogBrowser({
   entries,
   lang,
+  more,
 }: {
   entries: ChangelogTimelineEntry[];
   lang: Lang;
+  more?: { dataset: string; total: number };
 }) {
-  return <ChangelogTimeline entries={entries} lang={lang} />;
+  return (
+    <ChangelogLazyTimeline entries={entries} lang={lang} more={more} />
+  );
 }
 
 export function ChangelogPageChrome({
@@ -153,19 +155,4 @@ export async function changelogPage({
   };
 }
 
-export function ChangelogBrowserFallback() {
-  return (
-    <div className="flex flex-col gap-8 pt-6">
-      {Array.from({ length: 3 }, (_, i) => (
-        <div key={i} className="flex flex-col gap-3">
-          <Skeleton className="h-6 w-32" />
-          <div className="flex flex-col gap-2.5 border-l border-border ps-4">
-            <Skeleton className="h-4 w-2/3" />
-            <Skeleton className="h-4 w-4/5" />
-            <Skeleton className="h-4 w-1/2" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
+export { ChangelogBrowserFallback };

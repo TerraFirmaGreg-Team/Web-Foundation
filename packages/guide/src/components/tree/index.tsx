@@ -106,29 +106,30 @@ async function datasetBookLeaves(
   return leaves;
 }
 
+import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
+
 const guideTreesCache = createAsyncCache(
-  async (): Promise<SectionTrees> => buildGuideTrees(),
-  () => 'guide-trees',
+  (lang: Lang): Promise<SectionTrees> => buildGuideTrees(lang),
+  (lang) => `guide-trees/${lang}`,
   DUMP_POINTER_TTL,
 );
 
-export function guideTrees(): Promise<SectionTrees> {
-  return guideTreesCache();
+export function guideTrees(lang: Lang): Promise<SectionTrees> {
+  return guideTreesCache(lang);
 }
 
-async function buildGuideTrees(): Promise<SectionTrees> {
+async function buildGuideTrees(lang: Lang): Promise<SectionTrees> {
   const { defaultLanguage } = loadLocaleRegistry();
   const datasets = await sectionDatasets('guide');
   const trees: SectionTrees = {};
   for (const { id, title: datasetTitle, languages } of datasets) {
-    for (const lang of languages ?? [defaultLanguage]) {
-      const map = await loadMergedLangMap({ id }, lang);
-      (trees[lang] ??= {})[id] = {
-        name: datasetTitle ?? id,
-        children: await datasetBookLeaves({ id }, map),
-        $id: `guide/${id}/${lang}`,
-      } satisfies PageTree.Root;
-    }
+    if (!(languages ?? [defaultLanguage]).includes(lang)) continue;
+    const map = await loadMergedLangMap({ id }, lang);
+    (trees[lang] ??= {})[id] = {
+      name: datasetTitle ?? id,
+      children: await datasetBookLeaves({ id }, map),
+      $id: `guide/${id}/${lang}`,
+    } satisfies PageTree.Root;
   }
   return trees;
 }

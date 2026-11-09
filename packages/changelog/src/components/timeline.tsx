@@ -1,25 +1,11 @@
 import Link from 'next/link';
 import { ExternalLink, Link as LinkIcon } from 'lucide-react';
-import type { ReactNode } from 'react';
 import { dayFormat, monthLabel } from '@terrafirmagreg-team/changelog/lib/format';
 import { ChangelogNow } from './now-bar';
 import { TrackRelease } from './track-release';
+import type { ChangelogTimelineEntry, ChangelogMonth } from '../types';
 
-export interface ChangelogTimelineEntry {
-  id: string;
-  title: string;
-  date: Date;
-  url?: string;
-  releaseUrl?: string;
-  untranslated?: boolean;
-  body: ReactNode;
-}
-
-export type ChangelogMonth = {
-  key: string;
-  label: string;
-  items: ChangelogTimelineEntry[];
-};
+export type { ChangelogTimelineEntry, ChangelogMonth } from '../types';
 
 export function groupByMonth(
   entries: ChangelogTimelineEntry[],

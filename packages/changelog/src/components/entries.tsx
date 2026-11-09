@@ -9,7 +9,17 @@ import type { SectionPage } from '@terrafirmagreg-team/kit/types';
 import type { LoaderConfig, LoaderOutput, Page } from 'fumadocs-core/source';
 import type { MDXContent } from 'mdx/types';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
-import type { ChangelogTimelineEntry } from './timeline';
+import type { ChangelogTimelineEntry } from '../types';
+
+type TimelineMeta = ChangelogTimelineEntry & {
+  page: SectionPage;
+  pageLang: Lang;
+};
+
+export interface TimelineEntriesResult {
+  entries: ChangelogTimelineEntry[];
+  metas: ChangelogTimelineEntry[];
+}
 
 export async function timelineEntries(
   source: SectionSource,
@@ -17,7 +27,8 @@ export async function timelineEntries(
   dataset: string,
   lang: Lang,
   repo?: `${string}/${string}`,
-): Promise<ChangelogTimelineEntry[]> {
+  { offset = 0, count }: { offset?: number; count?: number } = {},
+): Promise<TimelineEntriesResult> {
   const catalog = await datasetCatalog();
   const { defaultLanguage } = loadLocaleRegistry();
   const byFile = new Map<string, { own?: SectionPage; fallback?: SectionPage }>();
@@ -31,7 +42,7 @@ export async function timelineEntries(
     else if (pageLang === defaultLanguage) slot.fallback = page;
     byFile.set(key, slot);
   }
-  const entries: ChangelogTimelineEntry[] = [];
+  const metas: TimelineMeta[] = [];
   for (const { own, fallback } of byFile.values()) {
     const page = own ?? fallback;
     if (!page) continue;
@@ -42,24 +53,8 @@ export async function timelineEntries(
     };
     const rawDate = data.date ?? data.frontmatter?.date;
     if (!rawDate) continue;
-    const { body: MDX } = (await (
-      page.data as unknown as {
-        load(): Promise<{ body: MDXContent }>;
-      }
-    ).load()) as { body: MDXContent };
-    const link = createRelativeLink(
-      source as LoaderOutput<LoaderConfig>,
-      page as unknown as Page,
-      (props) => (
-        <LinkPreview
-          preview={lookupPagePreview(catalog, props.href, pageLang)}
-          {...props}
-        />
-      ),
-    );
-    const body = <MDX components={getMDXComponents({ a: link })} />;
     const fileSlug = page.slugs.slice(2);
-    entries.push({
+    metas.push({
       id: fileSlug.join('/'),
       title: page.data.title,
       date: new Date(rawDate),
@@ -68,8 +63,38 @@ export async function timelineEntries(
         ? `https://github.com/${repo}/releases/tag/${page.data.title}`
         : undefined,
       untranslated: !own,
-      body,
+      body: undefined,
+      page,
+      pageLang,
     });
   }
-  return entries;
+  metas.sort((a, b) => b.date.getTime() - a.date.getTime());
+  const slice = metas.slice(
+    offset,
+    count === undefined ? undefined : offset + count,
+  );
+  const entries = await Promise.all(
+    slice.map(async ({ page, pageLang, ...meta }) => {
+      const { body: MDX } = (await (
+        page.data as unknown as {
+          load(): Promise<{ body: MDXContent }>;
+        }
+      ).load()) as { body: MDXContent };
+      const link = createRelativeLink(
+        source as LoaderOutput<LoaderConfig>,
+        page as unknown as Page,
+        (props) => (
+          <LinkPreview
+            preview={lookupPagePreview(catalog, props.href, pageLang)}
+            {...props}
+          />
+        ),
+      );
+      return {
+        ...meta,
+        body: <MDX components={getMDXComponents({ a: link })} />,
+      };
+    }),
+  );
+  return { entries, metas };
 }

@@ -38,6 +38,7 @@ import { LangLocalesScope } from '@terrafirmagreg-team/translate/provider';
 import { localeItems } from '@terrafirmagreg-team/translate/create';
 import { siteLinks } from '@terrafirmagreg-team/sites';
 import { useCurrentDataset } from '@terrafirmagreg-team/kit/hooks/use-current-dataset';
+import { useSectionTree } from '@terrafirmagreg-team/kit/hooks/use-section-tree';
 import {
   isDatasetFailed,
   useFailedDatasets,
@@ -108,9 +109,16 @@ export function Layout({
   const commentsItem =
     (deps.commentsMenuItem?.() as SiteMenuItem | false | null) ?? false;
   const Feature = sidebar?.feature;
-  const scoped = baseId
+  const shipped = baseId
     ? (trees[lang]?.[baseId] ?? trees[defaultLanguage]?.[baseId])
     : undefined;
+  const lazy = useSectionTree(
+    section,
+    baseId,
+    lang,
+    baseId !== undefined && trees[lang]?.[baseId] === undefined,
+  );
+  const scoped = lazy ?? shipped;
   const serverTree = scoped ?? {
     name: section,
     children: [],
