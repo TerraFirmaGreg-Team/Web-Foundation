@@ -1,9 +1,8 @@
 import type { ComponentProps, ComponentType, ReactNode } from 'react';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import type * as PageTree from 'fumadocs-core/page-tree';
 import { flattenTree } from 'fumadocs-core/page-tree';
-import { LangRedirect } from '@terrafirmagreg-team/ui/components/blocks/lang/redirect';
 import { LangContentSwitch } from '@terrafirmagreg-team/ui/components/blocks/lang/content';
 import { SectionNotFound } from '@terrafirmagreg-team/kit/components/views/not-found';
 import {
@@ -40,6 +39,8 @@ import {
 } from '@terrafirmagreg-team/kit/lib/locale/renderer';
 import { registerSectionTrees } from '@terrafirmagreg-team/kit/lib/section-trees';
 import { sectionUrl, type DatasetRef } from '@terrafirmagreg-team/sites/location';
+import { resolveLang } from '@terrafirmagreg-team/translate/lib/code';
+import { withLang } from '@terrafirmagreg-team/translate/lib/url';
 import { langContent, loadLocaleRegistry } from '@terrafirmagreg-team/translate/server';
 import type {
   DatasetCatalog,
@@ -105,11 +106,26 @@ interface RouteParams {
 
 type Resolved = { page: unknown; isFallback: boolean } | undefined;
 
+async function redirectToSection(section: SectionKey, request: Request) {
+  const dataset = await defaultDataset(section);
+  if (!dataset) notFound();
+  const { languages, defaultLanguage } = loadLocaleRegistry();
+  redirect(
+    withLang(
+      sectionUrl(section, dataset),
+      resolveLang(
+        new URL(request.url).searchParams.get('lang'),
+        languages,
+        defaultLanguage,
+      ),
+      defaultLanguage,
+    ),
+  );
+}
+
 export function createSectionRedirect(section: SectionKey) {
-  return async function Page() {
-    const dataset = await defaultDataset(section);
-    if (!dataset) notFound();
-    return <LangRedirect to={sectionUrl(section, dataset)} />;
+  return function GET(request: Request) {
+    return redirectToSection(section, request);
   };
 }
 
@@ -233,7 +249,7 @@ export function createSectionRoutes<
     );
   }
 
-  async function Page({ params }: RouteParams) {
+  async function Page({ params, searchParams }: RouteParams) {
     const { slug } = await params;
     const [src, datasets] = await Promise.all([
       source.getSource(),
@@ -241,13 +257,24 @@ export function createSectionRoutes<
     ]);
 
     if (slug?.length === 1 && !landing && PageView) {
-      const { defaultLanguage } = loadLocaleRegistry();
+      const { languages, defaultLanguage } = loadLocaleRegistry();
       if (!getPage(src as SectionSource, slug, defaultLanguage)) {
         const resolvedTrees = trees ? await trees(defaultLanguage) : undefined;
         const first = flattenTree(
           resolvedTrees?.[defaultLanguage]?.[slug[0]]?.children ?? [],
         )[0];
-        if (first) return <LangRedirect to={first.url} />;
+        if (first)
+          redirect(
+            withLang(
+              first.url,
+              resolveLang(
+                (await searchParams)['lang'],
+                languages,
+                defaultLanguage,
+              ),
+              defaultLanguage,
+            ),
+          );
       }
     }
 
@@ -277,10 +304,8 @@ export function createSectionRoutes<
     );
   }
 
-  async function Redirect() {
-    const dataset = await defaultDataset(section);
-    if (!dataset) notFound();
-    return <LangRedirect to={sectionUrl(section, dataset)} />;
+  function Redirect(request: Request) {
+    return redirectToSection(section, request);
   }
 
   function generateStaticParams() {

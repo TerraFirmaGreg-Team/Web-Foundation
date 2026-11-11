@@ -77,7 +77,10 @@ async function request(
   return undefined;
 }
 
+const BUILD_PHASE = process.env.NEXT_PHASE === 'phase-production-build';
+
 async function headOk(url: string): Promise<boolean> {
+  if (BUILD_PHASE) return false;
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
       const res = await fetch(url, {
@@ -166,7 +169,7 @@ const makeLoader =
     high: boolean,
     datasetId?: string,
   ): Promise<unknown> => {
-    if (circuitOpen(datasetId)) return undefined;
+    if (BUILD_PHASE || circuitOpen(datasetId)) return undefined;
     const load = () =>
       fetchLane(() => fetchAndParse(url, gz, mutable, datasetId), high);
     const attempt = async () => {
