@@ -11,6 +11,7 @@ import { useCycleIndex } from '@terrafirmagreg-team/ui/hooks/use-cycle-index';
 import { stackDisplayName } from '@terrafirmagreg-team/game/lib/entry/display';
 import { entryHref } from '@terrafirmagreg-team/game/lib/entry/href';
 import { loadStackDisplay } from '@terrafirmagreg-team/game/lib/entry/tooltip';
+import { texturePublicUrl } from '@terrafirmagreg-team/dump/lib/dump/assets/urls';
 import { favoriteHover } from '@terrafirmagreg-team/recipe/lib/browser/favorite-hover';
 import { useAsyncResult } from '@terrafirmagreg-team/ui/hooks/use-async-value';
 import type { ReferenceKind } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
@@ -114,6 +115,11 @@ export function SlotHitbox({
       ? widget.tagKind
       : undefined
     : widgetRefKind(widget);
+  const chanceUrl =
+    dataset && (alternatives?.length ?? 0) > 1
+      ? texturePublicUrl(dataset, 'emi:textures/gui/widgets.png')
+      : undefined;
+  const chance = widget.w >= 26 ? { u: 19, v: 27 } : { u: 1, v: 19 };
   const icon = (
     <span className="pointer-events-none flex size-full items-center justify-center">
       {alternatives && alternatives.length > 1 ? (
@@ -121,7 +127,19 @@ export function SlotHitbox({
           aria-hidden
           className="absolute bg-mc-inset"
           style={{ inset: scale }}
-        />
+        >
+          {chanceUrl ? (
+            <span
+              className="absolute inset-0 block"
+              style={{
+                backgroundImage: `url(${chanceUrl})`,
+                backgroundSize: `${256 * scale}px ${256 * scale}px`,
+                backgroundPosition: `-${chance.u * scale}px -${chance.v * scale}px`,
+                imageRendering: 'pixelated',
+              }}
+            />
+          ) : null}
+        </span>
       ) : null}
       <EntryIcon
         id={iconId}

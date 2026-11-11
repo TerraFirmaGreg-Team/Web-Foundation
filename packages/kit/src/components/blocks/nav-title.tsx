@@ -31,13 +31,13 @@ export function NavTitle({ className, ...props }: ComponentProps<'a'>) {
     versions ?? undefined,
   );
   const version = useAsyncValue(
-    ref
+    ref && versions !== undefined
       ? () =>
           clientDumpLoader()
             .loadDump(ref)
             .then((dump) => dump?.manifest.pack?.version ?? undefined)
       : false,
-    [ref],
+    [ref, versions],
   );
   return (
     <SiteTitle

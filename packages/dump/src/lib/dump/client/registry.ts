@@ -16,6 +16,7 @@ import {
   clientRegistryNsEntries,
 } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import { createDatasetCache } from '@terrafirmagreg-team/dump/lib/dump/reader';
+import { yieldToMain } from '@terrafirmagreg-team/data/lib/scheduler';
 
 type RegistryByKind = {
   items: DumpItemEntry;
@@ -40,14 +41,17 @@ const clientRegistry = createDatasetCache(
     const file = KIND_FILE[kind];
     const entries = await clientRegistryEntries(dataset, file);
     const ids = asIdTable(entries);
+    let processed = 0;
     for (const [id, raw] of Object.entries(entries ?? {})) {
       if (id === EDGE_TABLE_FIELD) continue;
       const entry = asEntry(raw, kind, id, ids);
-      if (!entry) continue;
-      if (!out.has(id)) out.set(id, entry);
-      if (entry.id !== id && !out.has(entry.id)) {
-        out.set(entry.id, entry);
+      if (entry) {
+        if (!out.has(id)) out.set(id, entry);
+        if (entry.id !== id && !out.has(entry.id)) {
+          out.set(entry.id, entry);
+        }
       }
+      if (++processed % 8000 === 0) await yieldToMain();
     }
     return out;
   },
@@ -69,14 +73,17 @@ const clientRegistryNs = createDatasetCache(
     const out = new Map<string, DumpRegistryEntry>();
     const entries = await clientRegistryNsEntries(dataset, KIND_FILE[kind], ns);
     const ids = asIdTable(entries);
+    let processed = 0;
     for (const [id, raw] of Object.entries(entries ?? {})) {
       if (id === EDGE_TABLE_FIELD) continue;
       const entry = asEntry(raw, kind, id, ids);
-      if (!entry) continue;
-      if (!out.has(id)) out.set(id, entry);
-      if (entry.id !== id && !out.has(entry.id)) {
-        out.set(entry.id, entry);
+      if (entry) {
+        if (!out.has(id)) out.set(id, entry);
+        if (entry.id !== id && !out.has(entry.id)) {
+          out.set(entry.id, entry);
+        }
       }
+      if (++processed % 8000 === 0) await yieldToMain();
     }
     return out;
   },

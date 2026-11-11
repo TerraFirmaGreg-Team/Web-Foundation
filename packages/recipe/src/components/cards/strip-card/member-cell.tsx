@@ -3,6 +3,7 @@ import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 
 import Link from 'next/link';
 import { EntryIcon } from '@terrafirmagreg-team/game/components/entry/icon';
+import { McText } from '@terrafirmagreg-team/game/components/entry/mc-text';
 import {
   EntryTooltip,
   type EntryTooltipLevel,
@@ -31,6 +32,8 @@ export function StripCardMember({
   x,
   y,
   pitch,
+  hideIcon,
+  tooltipLines,
   interactive = true,
   tooltipLevel,
 }: {
@@ -42,12 +45,17 @@ export function StripCardMember({
   x: number;
   y: number;
   pitch: number;
+  hideIcon?: boolean;
+  tooltipLines?: string[];
   interactive?: boolean;
   tooltipLevel?: EntryTooltipLevel;
 }) {
   const kind = MEMBER_KIND[member.kind ?? 'item'] ?? 'item';
   const name = stackDisplayName(langMap, member.id);
-  const checkKind = kind === 'item' || kind === 'fluid' ? kind : undefined;
+  const checkKind =
+    kind === 'item' || kind === 'fluid' || kind === 'block' || kind === 'entity'
+      ? kind
+      : undefined;
   const stackPeek =
     dataset && checkKind
       ? loadStackDisplay.peek(dataset, member.id, checkKind)
@@ -77,15 +85,20 @@ export function StripCardMember({
   }
   const inner = (
     <>
-      <span className="pointer-events-none flex size-full items-center justify-center">
-        <EntryIcon
-          id={member.id}
-          kind={kind}
-          dataset={dataset}
-          size={Math.max(8, pitch - 4)}
-          missing="placeholder"
-        />
-      </span>
+      {hideIcon ? null : (
+        <span
+          className="pointer-events-none absolute flex justify-center"
+          style={{ inset: 0, alignItems: 'center' }}
+        >
+          <EntryIcon
+            id={member.id}
+            kind={kind}
+            dataset={dataset}
+            size={Math.max(8, pitch - 4)}
+            missing="placeholder"
+          />
+        </span>
+      )}
       {badges.length > 0 && (
         <span
           className="font-mc pointer-events-none absolute right-0 bottom-0 leading-none text-white [text-shadow:1px_1px_0_var(--color-mc-arrow)]"
@@ -96,6 +109,15 @@ export function StripCardMember({
       )}
     </>
   );
+  const footer = tooltipLines?.length ? (
+    <>
+      {tooltipLines.map((line, index) => (
+        <p key={`${index}:${line}`} className="text-muted-foreground">
+          <McText text={line} surface="inverted" />
+        </p>
+      ))}
+    </>
+  ) : undefined;
   const faceStyle = { left: x, top: y, width: pitch, height: pitch };
   const hover = {
     onMouseEnter: () => {
@@ -118,10 +140,11 @@ export function StripCardMember({
         dataset={dataset}
         id={member.id}
         name={name}
-        kind={kind === 'fluid' ? 'fluid' : kind === 'entity' ? 'entity' : 'item'}
+        kind={kind}
         lang={lang}
         langMap={langMap}
         level={tooltipLevel}
+        footer={footer}
       >
         <span
           {...hover}
@@ -139,10 +162,11 @@ export function StripCardMember({
       dataset={dataset}
       id={member.id}
       name={name}
-      kind={kind === 'fluid' ? 'fluid' : kind === 'entity' ? 'entity' : 'item'}
+      kind={kind}
       lang={lang}
       langMap={langMap}
       level={tooltipLevel}
+      footer={footer}
     >
       <span
         {...hover}

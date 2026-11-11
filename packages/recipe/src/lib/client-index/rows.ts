@@ -56,12 +56,13 @@ const typeRowsCache = createDatasetCache(
         });
       }),
     );
-    return buckets
+    const rows = buckets
       .flat()
       .sort(
         (a, b) =>
           (a.o ?? Number.MAX_SAFE_INTEGER) - (b.o ?? Number.MAX_SAFE_INTEGER),
       );
+    return rows;
   },
   (dataset, _index, typeId) => `${dataset.id}/${dataset.version ?? ''} ${typeId}`,
 );

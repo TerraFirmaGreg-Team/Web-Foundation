@@ -5,7 +5,10 @@ import {
   tagKindOf,
   type ReferenceKind,
 } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
-import { clientDumpLang } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
+import {
+  clientDumpLang,
+  loadClientManifest,
+} from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import {
   clientRegistryKindFor,
   loadClientRegistryEntry,
@@ -22,7 +25,7 @@ export const loadStackDisplay = createDatasetCache(
   async (
     dataset: DatasetRef,
     compactId: string,
-    kind?: 'item' | 'fluid' | 'entity',
+    kind?: 'item' | 'fluid' | 'entity' | 'block',
   ): Promise<DumpDisplay | undefined> => {
     const parsed = parseStackId(compactId);
     const ofKind = async (registry: 'items' | 'fluids') => {
@@ -73,7 +76,7 @@ export async function stackTooltip(
   }
   const memberKind = tagKindOf(kind) ?? kind;
   const loadKind =
-    memberKind === 'fluid' || memberKind === 'entity'
+    memberKind === 'fluid' || memberKind === 'entity' || memberKind === 'block'
       ? memberKind
       : 'item';
   const display = await loadStackDisplay(dataset, id, loadKind);
@@ -83,9 +86,16 @@ export async function stackTooltip(
     const resolved = dumpTextLines(map, raw);
     if (resolved.length) mods[mod] = resolved;
   }
-  return {
-    lines: display.tooltip?.length ? dumpTextLines(map, display.tooltip) : [],
-    mods,
-  };
+  const lines = display.tooltip?.length
+    ? dumpTextLines(map, display.tooltip)
+    : [];
+  if (!lines.length) {
+    const manifest = await loadClientManifest(dataset);
+    const ns = parseStackId(id).id.split(':', 1)[0];
+    const key = ns ? manifest?.namespaces?.[ns]?.display?.name : undefined;
+    const mod = key ? map[key] : undefined;
+    if (mod) lines.push(mod);
+  }
+  return { lines, mods };
 }
 

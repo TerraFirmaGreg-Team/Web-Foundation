@@ -39,7 +39,7 @@ import {
   registerLocaleRenderer,
 } from '@terrafirmagreg-team/kit/lib/locale/renderer';
 import { registerSectionTrees } from '@terrafirmagreg-team/kit/lib/section-trees';
-import { sectionUrl } from '@terrafirmagreg-team/sites/location';
+import { sectionUrl, type DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { langContent, loadLocaleRegistry } from '@terrafirmagreg-team/translate/server';
 import type {
   DatasetCatalog,
@@ -58,7 +58,7 @@ export interface SectionLayoutViewProps {
   section: SectionKey;
   trees: SectionTrees;
   catalog: DatasetCatalog;
-  useTree?: (tree: PageTree.Root) => PageTree.Root;
+  useTree?: (tree: PageTree.Root, dataset?: DatasetRef) => PageTree.Root;
   sidebar?: { feature?: ComponentType };
   navTitle?: ComponentType<ComponentProps<'a'>>;
   children?: ReactNode;

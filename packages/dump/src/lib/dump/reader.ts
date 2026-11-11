@@ -9,6 +9,7 @@ export interface DumpReader {
   getJson(path: string, priority?: 'high'): Promise<unknown | undefined>;
   getLang(lang: string): Promise<Record<string, string>>;
   getLangRaw(lang: string): Promise<Record<string, string>>;
+  getNames(lang: string): Promise<Record<string, string>>;
 }
 
 export function createDatasetCache<A extends unknown[], V>(

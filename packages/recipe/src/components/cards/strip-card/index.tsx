@@ -189,6 +189,7 @@ export function StripCard({
             scale={scale}
             disabled={clamped <= 0}
             onClick={() => setPage(clamped - 1)}
+            dataset={dataset}
           />
           <StripCardTagPager
             left={(margin + guiW - 14) * scale}
@@ -197,6 +198,7 @@ export function StripCard({
             scale={scale}
             disabled={clamped + 1 >= pages}
             onClick={() => setPage(clamped + 1)}
+            dataset={dataset}
           />
         </>
       )}

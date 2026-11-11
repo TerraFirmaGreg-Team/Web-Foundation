@@ -30,6 +30,7 @@ export function useRecipeIndex(dataset: DatasetRef | undefined, lang: string) {
   const [loaded, setLoaded] = useState<LoadedIndex | null>(null);
   const [complete, setComplete] = useState<string | null>(null);
   const [lastFull, setLastFull] = useState<RecipeCompactIndex | null>(null);
+  const [warmKey, setWarmKey] = useState<string | null>(null);
   const nonce = useDumpRetryNonce();
   const { locales: items } = useLang();
   const locales = useMemo(
@@ -62,20 +63,19 @@ export function useRecipeIndex(dataset: DatasetRef | undefined, lang: string) {
         [lang]: { ...entityNames, ...index.names[lang] },
       },
     });
-  }, [dataset, lang, nonce]);
+    setWarmKey(key);
+  }, [dataset, lang, nonce, key]);
 
   useAsyncEffect(async (isCancelled) => {
-    if (!dataset) return;
-    const others = locales.filter((entry) => entry !== lang);
-    for (const entry of others) {
-      if (isCancelled()) return;
+    if (!dataset || warmKey !== key) return;
+    for (const entry of locales.filter((item) => item !== lang)) {
       await idle();
       if (isCancelled()) return;
-      const chrome = await loadRecipeChromeClient(dataset, entry);
+      const other = await loadRecipeChromeClient(dataset, entry);
       if (isCancelled()) return;
-      await loadRecipeCompactIndex(dataset, chrome);
+      await loadRecipeCompactIndex(dataset, other);
     }
-  }, [dataset, lang, locales]);
+  }, [dataset, lang, locales, warmKey, key]);
 
   const active = loaded?.key === key ? loaded.index : null;
   const index = active?.items.length ? active : (lastFull ?? active);

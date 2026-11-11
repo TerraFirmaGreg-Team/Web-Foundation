@@ -4,6 +4,7 @@ import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { Fragment, useRef, useState } from 'react';
 import { SlotHitbox } from '@terrafirmagreg-team/recipe/components/cards/slot-hitbox';
 import { CardText } from '@terrafirmagreg-team/recipe/components/cards/card/text';
+import { texturePublicUrl } from '@terrafirmagreg-team/dump/lib/dump/assets/urls';
 import { formatCount } from '@terrafirmagreg-team/ui/lib/utils/format';
 import type { CardStripGeo } from '@terrafirmagreg-team/recipe/lib/cards/model';
 import type { EntryTooltipLevel } from '@terrafirmagreg-team/game/components/entry/tooltip';
@@ -37,6 +38,7 @@ export function CardStrip({
 }) {
   const stripRef = useRef<HTMLDivElement>(null);
   const barDrag = useRef<{ x: number; left: number } | null>(null);
+  const widgetsUrl = texturePublicUrl(dataset, 'emi:textures/gui/widgets.png');
   const [stripScroll, setStripScroll] = useState(0);
   const trackW = Math.max((contentGuiW - 8) * scale, 0);
   const totalW = (geo.right + 2) * scale;
@@ -97,6 +99,22 @@ export function CardStrip({
                   height: widget.h * scale,
                 }}
               />
+              {widgetsUrl ? (
+                <span
+                  aria-hidden
+                  className="absolute block"
+                  style={{
+                    left: widget.x * scale,
+                    top: widget.y * scale,
+                    width: widget.w * scale,
+                    height: widget.h * scale,
+                    backgroundImage: `url(${widgetsUrl})`,
+                    backgroundSize: `${256 * scale}px ${256 * scale}px`,
+                    backgroundPosition: '0px 0px',
+                    imageRendering: 'pixelated',
+                  }}
+                />
+              ) : null}
               <SlotHitbox
                 widget={widget}
                 dataset={dataset}

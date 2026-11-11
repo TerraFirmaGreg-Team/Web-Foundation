@@ -6,6 +6,7 @@ import {
   type ReactNode,
 } from 'react';
 import type * as PageTree from 'fumadocs-core/page-tree';
+import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { Layout as UiLayout } from '@terrafirmagreg-team/ui/components/layouts/layout';
 import {
   LeftSidebar,
@@ -61,7 +62,7 @@ export type LayoutProps = {
   trees: SectionTrees;
   catalog: DatasetCatalog;
 
-  useTree?: (tree: PageTree.Root) => PageTree.Root;
+  useTree?: (tree: PageTree.Root, dataset?: DatasetRef) => PageTree.Root;
   sidebar?: Pick<LeftSidebarSlotProps, 'feature'>;
   navTitle?: ComponentType<ComponentProps<'a'>>;
   defaultOpenLevel?: number;
@@ -77,7 +78,7 @@ const LINK_ICONS: Record<string, ReactNode> = {
   discord: <SiDiscord />,
 };
 
-const identityTree = (tree: PageTree.Root) => tree;
+const identityTree = (tree: PageTree.Root): PageTree.Root => tree;
 
 export function Layout({
   section,
@@ -124,7 +125,7 @@ export function Layout({
     children: [],
     $id: `${section}:empty`,
   };
-  const tree = useTree(serverTree);
+  const tree = useTree(serverTree, current);
   const effectiveTree =
     datasetFailed && !tree.children.length ? skeletonTree() : tree;
   const pinnedTree = useMemo(

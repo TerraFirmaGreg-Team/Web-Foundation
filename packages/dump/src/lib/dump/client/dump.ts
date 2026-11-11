@@ -5,13 +5,14 @@ import { dumpRelPublicUrl, splitDumpId } from '@terrafirmagreg-team/dump/lib/dum
 import { stackIdBase } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 import {
   asRecord,
-  resolveEdgeRows,
+  resolveEdgeRowEntries,
 } from '@terrafirmagreg-team/dump/lib/dump/contract/read';
 import {
   modelPublicUrl,
   texturePublicUrl,
 } from '@terrafirmagreg-team/dump/lib/dump/assets/urls';
 import { createAsyncCache } from '@terrafirmagreg-team/data/lib/async-cache';
+import { yieldToMain } from '@terrafirmagreg-team/data/lib/scheduler';
 import { loadDatasetDump } from '@terrafirmagreg-team/dump/lib/dump/mods/load';
 import {
   dumpModRegistryRel,
@@ -73,9 +74,14 @@ export async function clientRegistryEntries(
     ),
   );
   const out: Record<string, unknown> = {};
+  let processed = 0;
   for (const shard of shards) {
     const map = asRecord(shard);
-    if (map) Object.assign(out, resolveEdgeRows(map));
+    if (!map) continue;
+    for (const [key, row] of resolveEdgeRowEntries(map)) {
+      out[key] = row;
+      if (++processed % 8000 === 0) await yieldToMain();
+    }
   }
   return out;
 }
@@ -124,6 +130,13 @@ export function clientDumpLangRaw(
   lang: string,
 ): Promise<Record<string, string>> {
   return dumpReader(dataset).then((reader) => reader.getLangRaw(lang));
+}
+
+export function clientDumpNames(
+  dataset: DatasetRef,
+  lang: string,
+): Promise<Record<string, string>> {
+  return dumpReader(dataset).then((reader) => reader.getNames(lang));
 }
 
 export async function clientRegistryDataFileRel(

@@ -4,26 +4,22 @@ import type {
   RecipeChrome,
   RecipeStackGroup,
 } from '@terrafirmagreg-team/recipe/types';
-import { clientDumpLang, loadClientManifest } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
+import {
+  clientDumpLang,
+  clientDumpNames,
+  loadClientManifest,
+} from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import {
   creativeTabName,
   dumpTextString,
 } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names';
-import { stackDisplayName } from '@terrafirmagreg-team/game/lib/entry/display';
-import {
-  loadClientRegistry,
-  loadClientRegistryOrder,
-  resolveClientStackDisplay,
-} from '@terrafirmagreg-team/dump/lib/dump/client/registry';
+import { loadClientRegistryOrder } from '@terrafirmagreg-team/dump/lib/dump/client/registry';
 import { loadClientTagMembers } from '@terrafirmagreg-team/dump/lib/dump/client/tags';
 import { loadClientTabs } from '@terrafirmagreg-team/dump/lib/dump/client/tabs';
 import { loadDatasetRecipeCategories } from '@terrafirmagreg-team/recipe/lib/data/category/load';
 import { loadClientRegistryGroups } from '@terrafirmagreg-team/dump/lib/dump/client/groups';
 import { loadClientModNames } from '@terrafirmagreg-team/dump/lib/dump/client/mods';
-import { loadClientModAtlases } from '@terrafirmagreg-team/dump/lib/dump/client/atlases';
-import { lookupSpriteInBundle } from '@terrafirmagreg-team/dump/lib/dump/assets/atlas/lookup';
-import { stackIdBase, stackIdFromRef } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
-import type { AtlasBundle } from '@terrafirmagreg-team/dump/lib/dump/assets/atlas/dto';
+import { stackIdFromRef } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 import { createDatasetCache } from '@terrafirmagreg-team/dump/lib/dump/reader';
 
 async function clientEntityNames(
@@ -31,49 +27,15 @@ async function clientEntityNames(
   lang: string,
   ids: Iterable<string>,
 ): Promise<Record<string, string>> {
-  const [map, items, fluids] = await Promise.all([
-    clientDumpLang(dataset, lang),
-    loadClientRegistry(dataset, 'items'),
-    loadClientRegistry(dataset, 'fluids'),
-  ]);
-  const all = [...new Set([...items.keys(), ...fluids.keys(), ...ids])];
-  const info = new Map<string, { baseId: string; langKey?: string }>();
-  const mods = new Set<string>();
-  for (const id of all) {
-    const baseId = stackIdBase(id);
-    const langKey = resolveClientStackDisplay(id, items, fluids)?.name;
-    info.set(id, { baseId, ...(langKey ? { langKey } : {}) });
-    if (!langKey && baseId.includes(':') && !baseId.startsWith('#')) {
-      const mod = baseId.split(':', 2)[0];
-      if (mod) mods.add(mod);
+  const table = await clientDumpNames(dataset, lang);
+  for (const id of ids) {
+    if (table[id] === undefined) {
+      throw new Error(
+        `dump names missing id "${id}" for ${dataset.id} lang=${lang}`,
+      );
     }
   }
-  const atlases = new Map<string, AtlasBundle>();
-  await Promise.all(
-    [...mods].map(async (mod) => {
-      atlases.set(mod, await loadClientModAtlases(dataset, mod));
-    }),
-  );
-  const names: Record<string, string> = { ...map };
-  let processed = 0;
-  for (const [id, entry] of info) {
-    if (++processed % 2000 === 0) {
-      await new Promise((resolve) => setTimeout(resolve));
-    }
-    const langKey =
-      entry.langKey ??
-      lookupSpriteInBundle(
-        atlases.get(entry.baseId.split(':', 2)[0] ?? ''),
-        entry.baseId,
-      )?.sprite.langKey;
-    const kind = entry.baseId.startsWith('#')
-      ? undefined
-      : fluids.has(entry.baseId)
-        ? 'fluid'
-        : 'item';
-    names[id] = stackDisplayName(map, id, kind, langKey);
-  }
-  return names;
+  return { ...table };
 }
 
 async function clientNamedCategories(

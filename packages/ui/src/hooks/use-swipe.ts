@@ -4,7 +4,7 @@ import { useRef, type TouchEvent } from 'react';
 
 const MIN_DX = 48;
 
-export function useSwipe(onSwipe: (dir: -1 | 1) => void) {
+export function useSwipe(onSwipe: (dir: -1 | 1) => void, axis: 'x' | 'y' = 'x') {
   const start = useRef<{ x: number; y: number } | null>(null);
   return {
     onTouchStart: (event: TouchEvent) => {
@@ -19,8 +19,10 @@ export function useSwipe(onSwipe: (dir: -1 | 1) => void) {
       if (!from || !touch) return;
       const dx = touch.clientX - from.x;
       const dy = touch.clientY - from.y;
-      if (Math.abs(dx) < MIN_DX || Math.abs(dx) < Math.abs(dy) * 1.5) return;
-      onSwipe(dx < 0 ? 1 : -1);
+      const main = axis === 'y' ? dy : dx;
+      const cross = axis === 'y' ? dx : dy;
+      if (Math.abs(main) < MIN_DX || Math.abs(main) < Math.abs(cross) * 1.5) return;
+      onSwipe(main < 0 ? 1 : -1);
     },
   };
 }

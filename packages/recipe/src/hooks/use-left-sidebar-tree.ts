@@ -1,34 +1,24 @@
 'use client';
-import { usePathname } from 'next/navigation';
-import { useMemo } from 'react';
 import type * as PageTree from 'fumadocs-core/page-tree';
-import { useLocationSearchParams } from '@terrafirmagreg-team/ui/hooks/page/use-location-search';
+import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { useLastValue } from '@terrafirmagreg-team/ui/hooks/use-last-value';
 import { skeletonTree } from '@terrafirmagreg-team/ui/lib/tree';
 import { useRecipeModNames } from '@terrafirmagreg-team/recipe/hooks/use-mod-names';
 import { useSidebarGroup } from '@terrafirmagreg-team/recipe/hooks/use-sidebar-group';
 import { groupRecipeSidebarByMod } from '@terrafirmagreg-team/recipe/lib/browser/sidebar';
-import { parseSectionLocation } from '@terrafirmagreg-team/sites/location';
-import { useVersionPreference } from '@terrafirmagreg-team/kit/hooks/use-version-pref';
 
-export function useRecipeLeftSidebarTree(tree: PageTree.Root): PageTree.Root {
-  const { dataset: datasetId } = parseSectionLocation(usePathname());
+export function useRecipeLeftSidebarTree(
+  tree: PageTree.Root,
+  dataset?: DatasetRef,
+): PageTree.Root {
   const lang = useResolvedLang();
   const { sidebarGroup } = useSidebarGroup();
-  const scopeKey = datasetId ?? '';
-  const versionParam = useLocationSearchParams().get('version') ?? undefined;
-  const preferred = useVersionPreference(datasetId);
-  const version = versionParam ?? preferred;
-  const dataset = useMemo(
-    () => (datasetId ? { id: datasetId, version } : undefined),
-    [datasetId, version],
-  );
   const result = useRecipeModNames(
     sidebarGroup === 'mod' ? dataset : undefined,
     lang,
   );
-  const modNames = useLastValue(result.value, scopeKey);
+  const modNames = useLastValue(result.value, dataset?.id ?? '');
   if (sidebarGroup === 'mod' && !modNames && result.pending)
     return skeletonTree('recipe:skeleton');
   return sidebarGroup === 'mod' && modNames

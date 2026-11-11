@@ -46,11 +46,10 @@ export function asEdgeList(value: unknown, ids?: string[]): string[] {
   return out;
 }
 
-export function resolveEdgeRows(
+export function* resolveEdgeRowEntries(
   map: Record<string, unknown>,
-): Record<string, Record<string, unknown>> {
+): Generator<[string, Record<string, unknown>]> {
   const ids = asIdTable(map);
-  const out: Record<string, Record<string, unknown>> = {};
   for (const [key, value] of Object.entries(map)) {
     if (key === EDGE_TABLE_FIELD) continue;
     const row = asRecord(value);
@@ -59,8 +58,15 @@ export function resolveEdgeRows(
       if (Array.isArray(row.usedBy)) row.usedBy = asEdgeList(row.usedBy, ids);
       if (Array.isArray(row.producedBy)) row.producedBy = asEdgeList(row.producedBy, ids);
     }
-    out[key] = row;
+    yield [key, row];
   }
+}
+
+export function resolveEdgeRows(
+  map: Record<string, unknown>,
+): Record<string, Record<string, unknown>> {
+  const out: Record<string, Record<string, unknown>> = {};
+  for (const [key, row] of resolveEdgeRowEntries(map)) out[key] = row;
   return out;
 }
 

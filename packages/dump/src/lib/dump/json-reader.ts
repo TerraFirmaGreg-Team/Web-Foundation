@@ -229,6 +229,26 @@ export class JsonDumpReader implements DumpReader {
   private langRawCache = createAsyncCache((code: string) =>
     this.loadLangRaw(code),
   );
+  private namesCache = createAsyncCache((code: string) =>
+    this.getJson(`names/${code}.json`).then((raw) => {
+      if (
+        !raw ||
+        typeof raw !== 'object' ||
+        Array.isArray(raw) ||
+        !Object.entries(raw).every(
+          ([key, value]) =>
+            key.length > 0 &&
+            typeof value === 'string' &&
+            value.length > 0,
+        )
+      ) {
+        throw new Error(
+          `dump names file missing or invalid: names/${code}.json (${this.packId})`,
+        );
+      }
+      return toLangMap(raw);
+    }),
+  );
   private readonly dataset: DatasetRef;
   private readonly packId: string;
   private readonly statusKey: string;
@@ -280,6 +300,14 @@ export class JsonDumpReader implements DumpReader {
   getLangRaw(lang: string): Promise<Record<string, string>> {
     const code = cleanLangCode(lang);
     return code ? this.langRawCache(code) : Promise.resolve({});
+  }
+
+  getNames(lang: string): Promise<Record<string, string>> {
+    const code = cleanLangCode(lang);
+    if (!code) {
+      return Promise.reject(new Error(`dump names invalid lang "${lang}"`));
+    }
+    return this.namesCache(code);
   }
 
   private location(): Promise<DumpLocation> {

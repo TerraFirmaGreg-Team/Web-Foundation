@@ -4,12 +4,9 @@ export const sites = {
 } as const;
 
 export type SiteKey = keyof typeof sites;
-
-export const discordUrl = 'https://discord.com/invite/terrafirmagreg';
-
 export const siteLinks = {
   website: 'https://terrafirmagreg.team',
-  discord: discordUrl,
+  discord: 'https://discord.com/invite/terrafirmagreg',
   github: 'https://github.com/TerraFirmaGreg-Team',
   curseforge: 'https://www.curseforge.com/members/terrafirmagreg/projects',
   modrinth: 'https://modrinth.com/organization/terrafirmagreg-team',
