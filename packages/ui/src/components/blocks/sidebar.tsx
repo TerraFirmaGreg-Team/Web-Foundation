@@ -309,6 +309,7 @@ export function SidebarFolderTrigger({
 export function SidebarFolderLink({
   children,
   active = false,
+  onClick,
   ...props
 }: ComponentProps<typeof Link> & { active?: boolean }) {
   const ref = useRef<HTMLAnchorElement>(null);
@@ -321,7 +322,8 @@ export function SidebarFolderLink({
       ref={ref}
       data-active={active}
       onClick={(e) => {
-        if (!folder?.collapsible) return;
+        onClick?.(e);
+        if (e.defaultPrevented || !folder?.collapsible) return;
         if (
           e.target instanceof Element &&
           e.target.matches('[data-icon], [data-icon] *')

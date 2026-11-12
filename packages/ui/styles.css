@@ -128,10 +128,6 @@ html {
   scrollbar-gutter: stable;
 }
 
-html:has(.viewport-shell) {
-  scrollbar-gutter: auto;
-}
-
 @layer base {
   * {
     scrollbar-width: thin;

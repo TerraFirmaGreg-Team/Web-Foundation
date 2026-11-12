@@ -19,7 +19,10 @@ import { loadClientTabs } from '@terrafirmagreg-team/dump/lib/dump/client/tabs';
 import { loadDatasetRecipeCategories } from '@terrafirmagreg-team/recipe/lib/data/category/load';
 import { loadClientRegistryGroups } from '@terrafirmagreg-team/dump/lib/dump/client/groups';
 import { loadClientModNames } from '@terrafirmagreg-team/dump/lib/dump/client/mods';
-import { stackIdFromRef } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
+import {
+  stackIdBase,
+  stackIdFromRef,
+} from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 import { createDatasetCache } from '@terrafirmagreg-team/dump/lib/dump/reader';
 
 async function clientEntityNames(
@@ -29,7 +32,7 @@ async function clientEntityNames(
 ): Promise<Record<string, string>> {
   const table = await clientDumpNames(dataset, lang);
   for (const id of ids) {
-    if (table[id] === undefined) {
+    if (table[id] === undefined && table[stackIdBase(id)] === undefined) {
       throw new Error(
         `dump names missing id "${id}" for ${dataset.id} lang=${lang}`,
       );

@@ -35,6 +35,18 @@ export type LeftSidebarSlotProps = LeftSidebarScope & {
 
 export type SectionTrees = Record<Lang, Record<string, PageTree.Root>>;
 
+export type TreeFeatureProps = {
+  input: PageTree.Root;
+  dataset?: DatasetRef;
+  onTree: (next: { input: PageTree.Root; tree: PageTree.Root }) => void;
+};
+
+export type SectionLayoutOptions = {
+  treeFeature?: ComponentType<TreeFeatureProps>;
+  sidebar?: { feature?: ComponentType };
+  defaultOpenLevel?: number;
+};
+
 export type SectionPage = {
   data: {
     title: string;
@@ -83,6 +95,7 @@ export type SectionSourceEntry = {
   getSource: () => Promise<SectionSource>;
   getSourceSync?: () => SectionSource | undefined;
   markdown: { page(page: unknown): Promise<string> };
+  trees?: (lang: Lang) => Promise<SectionTrees>;
 };
 
 export type DeepLinkMeta = {

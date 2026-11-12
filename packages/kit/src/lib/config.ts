@@ -27,6 +27,12 @@ export type SectionConfigInput = {
   previewRoute: string;
   docsRoute: string;
 
+  git?: {
+    user: string;
+    repo: string;
+    branch: string;
+  };
+
   sectionAccent?: Partial<Record<SectionKey, string>>;
 
   languages?: readonly string[];

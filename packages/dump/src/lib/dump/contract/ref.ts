@@ -43,6 +43,7 @@ export type TaggedReference = {
   kind: ReferenceKind;
   id: string;
   tag?: DumpNbt;
+  key?: string;
 };
 
 export type ParsedStackId = {
@@ -121,7 +122,13 @@ export function asTaggedReference(value: unknown): TaggedReference | undefined {
   const id = asString(row.id);
   if (!kind || !id) return undefined;
   const tag = asNbt(row.tag);
-  return { kind, id, ...(tag !== undefined ? { tag } : {}) };
+  const key = asString(row.key);
+  return {
+    kind,
+    id,
+    ...(tag !== undefined ? { tag } : {}),
+    ...(key !== undefined ? { key } : {}),
+  };
 }
 
 export function isTagKind(
@@ -245,6 +252,7 @@ export function nbtSpecificity(candidate: DumpNbt, query: DumpNbt): number {
 }
 
 export function stackIdFromRef(ref: TaggedReference): string {
+  if (ref.key !== undefined) return ref.key;
   switch (ref.kind) {
     case 'itemTag':
     case 'blockTag':

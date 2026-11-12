@@ -25,7 +25,7 @@ export function PagedCard({
   const { recipe, naturalH, naturalW, src, title, onFail } = props;
   const scale = recipe.scale ?? 2;
   const margin = recipe.margin ?? 0;
-  const natural = naturalH ?? 0;
+  const natural = naturalH ?? recipe.h ?? 0;
   const rootRef = useRef<HTMLDivElement>(null);
   const observedInView = useInView(rootRef);
   const inView = props.eager || observedInView;

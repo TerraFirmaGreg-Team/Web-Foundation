@@ -54,15 +54,21 @@ export function useRecipeIndex(dataset: DatasetRef | undefined, lang: string) {
       setLastFull(index);
     });
     publishRecipeIndex(dataset, lang, index);
-    const entityNames = await loadRecipeEntityNames(dataset, chrome, lang);
+    const entityNames = await loadRecipeEntityNames(
+      dataset,
+      chrome,
+      lang,
+    ).catch(() => null);
     if (isCancelled()) return;
-    publishRecipeIndex(dataset, lang, {
-      ...index,
-      names: {
-        ...index.names,
-        [lang]: { ...entityNames, ...index.names[lang] },
-      },
-    });
+    if (entityNames) {
+      publishRecipeIndex(dataset, lang, {
+        ...index,
+        names: {
+          ...index.names,
+          [lang]: { ...entityNames, ...index.names[lang] },
+        },
+      });
+    }
     setWarmKey(key);
   }, [dataset, lang, nonce, key]);
 
@@ -71,9 +77,12 @@ export function useRecipeIndex(dataset: DatasetRef | undefined, lang: string) {
     for (const entry of locales.filter((item) => item !== lang)) {
       await idle();
       if (isCancelled()) return;
-      const other = await loadRecipeChromeClient(dataset, entry);
+      const other = await loadRecipeChromeClient(dataset, entry).catch(
+        () => null,
+      );
       if (isCancelled()) return;
-      await loadRecipeCompactIndex(dataset, other);
+      if (!other) continue;
+      await loadRecipeCompactIndex(dataset, other).catch(() => null);
     }
   }, [dataset, lang, locales, warmKey, key]);
 

@@ -54,7 +54,7 @@ export function useFitPages<T>(
         usedH += shelfH + (usedH > 0 ? gap : 0);
         shelfW = 0;
         shelfH = 0;
-        if (usedH + ih > h && page.length) {
+        if (usedH + gap + ih > h && page.length) {
           packed.push(page);
           page = [];
           usedH = 0;

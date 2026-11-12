@@ -1,6 +1,10 @@
 export const env = (key: string): string | undefined =>
   process.env[key]?.trim() || undefined;
 
+export function isBuildPhase(): boolean {
+  return process.env.NEXT_PHASE === 'phase-production-build';
+}
+
 export type FeatureMode = 'dev' | 'prod' | 'off';
 
 export function featureMode(name: string): FeatureMode {

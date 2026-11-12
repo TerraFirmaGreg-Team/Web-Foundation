@@ -1,12 +1,13 @@
 'use client';
 import {
+  useCallback,
   useMemo,
+  useState,
   type ComponentProps,
   type ComponentType,
   type ReactNode,
 } from 'react';
 import type * as PageTree from 'fumadocs-core/page-tree';
-import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { Layout as UiLayout } from '@terrafirmagreg-team/ui/components/layouts/layout';
 import {
   LeftSidebar,
@@ -38,6 +39,7 @@ import { useLocaleRegistry } from '@terrafirmagreg-team/translate/hooks/use-loca
 import { LangLocalesScope } from '@terrafirmagreg-team/translate/provider';
 import { localeItems } from '@terrafirmagreg-team/translate/create';
 import { siteLinks } from '@terrafirmagreg-team/sites';
+import { isSectionKey } from '@terrafirmagreg-team/sites/location';
 import { useCurrentDataset } from '@terrafirmagreg-team/kit/hooks/use-current-dataset';
 import { useSectionTree } from '@terrafirmagreg-team/kit/hooks/use-section-tree';
 import {
@@ -51,25 +53,24 @@ import { layoutDeps, sectionConfig } from '@terrafirmagreg-team/kit/lib/config';
 import { datasetLinks } from '@terrafirmagreg-team/kit/lib/dataset-links';
 import type {
   DatasetCatalog,
-  LeftSidebarSlotProps,
   SectionKey,
+  SectionLayoutOptions,
   SectionTrees,
 } from '@terrafirmagreg-team/kit/types';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 
 export type LayoutProps = {
-  section: SectionKey;
-  trees: SectionTrees;
+  trees: Partial<Record<SectionKey, SectionTrees>>;
+  options: Partial<Record<SectionKey, SectionLayoutOptions>>;
   catalog: DatasetCatalog;
 
-  useTree?: (tree: PageTree.Root, dataset?: DatasetRef) => PageTree.Root;
-  sidebar?: Pick<LeftSidebarSlotProps, 'feature'>;
   navTitle?: ComponentType<ComponentProps<'a'>>;
-  defaultOpenLevel?: number;
   children?: ReactNode;
 };
 
 const NAV_KEYS = new Set(['book', 'cat', 'entry', 'category', 'type']);
+
+const NO_LOCALES: readonly never[] = [];
 
 const LINK_ICONS: Record<string, ReactNode> = {
   github: <SiGithub />,
@@ -78,21 +79,22 @@ const LINK_ICONS: Record<string, ReactNode> = {
   discord: <SiDiscord />,
 };
 
-const identityTree = (tree: PageTree.Root): PageTree.Root => tree;
-
 export function Layout({
-  section,
-  trees,
+  trees: treesBySection,
+  options: optionsBySection,
   catalog,
-  useTree = identityTree,
-  sidebar,
   navTitle,
-  defaultOpenLevel,
   children,
 }: LayoutProps) {
+  'use no memo';
   const t = useTranslations();
   const { defaultLanguage } = useLocaleRegistry();
   const lang: Lang = useResolvedLang();
+  const pathname = usePathname();
+  const sectionParam = pathname.split('/').filter(Boolean)[0];
+  const section = isSectionKey(sectionParam) ? sectionParam : 'docs';
+  const options = optionsBySection[section];
+  const trees = treesBySection[section] ?? {};
   const sectionDatasets = catalog[section] ?? [];
   const current = useCurrentDataset(sectionDatasets);
   const baseId = current ? current.id : undefined;
@@ -104,12 +106,12 @@ export function Layout({
     isDatasetFailed(failedDatasets, { id: baseId, version: pinned });
   useDatasetAccent(meta?.accent);
   const nav = useNavOptions({ section, catalog });
-  const pathname = usePathname();
   const deps = layoutDeps();
   deps.trackView?.(pathname);
   const commentsItem =
     (deps.commentsMenuItem?.() as SiteMenuItem | false | null) ?? false;
-  const Feature = sidebar?.feature;
+  const Feature = options?.sidebar?.feature;
+  const TreeFeature = options?.treeFeature;
   const shipped = baseId
     ? (trees[lang]?.[baseId] ?? trees[defaultLanguage]?.[baseId])
     : undefined;
@@ -120,12 +122,26 @@ export function Layout({
     baseId !== undefined && trees[lang]?.[baseId] === undefined,
   );
   const scoped = lazy ?? shipped;
-  const serverTree = scoped ?? {
-    name: section,
-    children: [],
-    $id: `${section}:empty`,
-  };
-  const tree = useTree(serverTree, current);
+  const serverTree = useMemo(
+    () =>
+      scoped ?? {
+        name: section,
+        children: [],
+        $id: `${section}:empty`,
+      },
+    [scoped, section],
+  );
+  const [feature, setFeature] =
+    useState<{ input: PageTree.Root; tree: PageTree.Root }>();
+  const onFeatureTree = useCallback(
+    (next: { input: PageTree.Root; tree: PageTree.Root }) =>
+      setFeature((prev) =>
+        prev?.input === next.input && prev?.tree === next.tree ? prev : next,
+      ),
+    [],
+  );
+  const tree =
+    TreeFeature && feature?.input === serverTree ? feature.tree : serverTree;
   const effectiveTree =
     datasetFailed && !tree.children.length ? skeletonTree() : tree;
   const pinnedTree = useMemo(
@@ -135,7 +151,7 @@ export function Layout({
         : effectiveTree,
     [effectiveTree, section, baseId, pinned],
   );
-  const locales = meta?.languages ? localeItems(meta.languages) : undefined;
+  const locales = meta?.languages ? localeItems(meta.languages) : NO_LOCALES;
   const links = datasetLinks(
     baseId ? sectionConfig().datasetConfig[baseId] : undefined,
   );
@@ -158,12 +174,13 @@ export function Layout({
       external: true,
     },
   ];
+  if (!isSectionKey(sectionParam)) return <>{children}</>;
 
   const layout = (
     <UiLayout
       tree={pinnedTree}
       navTitle={navTitle}
-      defaultOpenLevel={defaultOpenLevel}
+      defaultOpenLevel={options?.defaultOpenLevel}
       sidebar={
         <LeftSidebar
           navKeys={NAV_KEYS}
@@ -209,9 +226,16 @@ export function Layout({
       {children}
     </UiLayout>
   );
-  return locales ? (
-    <LangLocalesScope locales={locales}>{layout}</LangLocalesScope>
-  ) : (
-    layout
+  return (
+    <>
+      {TreeFeature ? (
+        <TreeFeature
+          input={serverTree}
+          dataset={current}
+          onTree={onFeatureTree}
+        />
+      ) : null}
+      <LangLocalesScope locales={locales}>{layout}</LangLocalesScope>
+    </>
   );
 }

@@ -1,6 +1,2 @@
-@media (min-width: 1024px) {
-  [data-slot='right-sidebar']:empty {
-    width: 0;
-    padding-inline: 0;
-  }
-}
+/* Right sidebar column is always reserved so the workspace panel keeps a fixed
+   width across sections. Content is portaled in by page-level outlines. */

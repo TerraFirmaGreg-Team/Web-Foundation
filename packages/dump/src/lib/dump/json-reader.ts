@@ -16,6 +16,8 @@ import {
   markDumpResult,
 } from '@terrafirmagreg-team/data/lib/dump-status';
 import { serverCache } from '@terrafirmagreg-team/data/lib/server-cache';
+import { isBuildPhase } from '@terrafirmagreg-team/data/lib/env';
+import { canonicalStackId } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 
 const SAFE_LANG_CODE = /^[a-z0-9]+(_[a-z0-9]+)*$/i;
 
@@ -77,10 +79,8 @@ async function request(
   return undefined;
 }
 
-const BUILD_PHASE = process.env.NEXT_PHASE === 'phase-production-build';
-
 async function headOk(url: string): Promise<boolean> {
-  if (BUILD_PHASE) return false;
+  if (isBuildPhase()) return false;
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
       const res = await fetch(url, {
@@ -169,7 +169,7 @@ const makeLoader =
     high: boolean,
     datasetId?: string,
   ): Promise<unknown> => {
-    if (BUILD_PHASE || circuitOpen(datasetId)) return undefined;
+    if (isBuildPhase() || circuitOpen(datasetId)) return undefined;
     const load = () =>
       fetchLane(() => fetchAndParse(url, gz, mutable, datasetId), high);
     const attempt = async () => {
@@ -249,7 +249,15 @@ export class JsonDumpReader implements DumpReader {
           `dump names file missing or invalid: names/${code}.json (${this.packId})`,
         );
       }
-      return toLangMap(raw);
+      const map = toLangMap(raw);
+      for (const key of Object.keys(map)) {
+        if (!key.includes('{')) continue;
+        const canonical = canonicalStackId(key);
+        if (canonical !== key && map[canonical] === undefined) {
+          map[canonical] = map[key];
+        }
+      }
+      return map;
     }),
   );
   private readonly dataset: DatasetRef;

@@ -17,11 +17,13 @@
     ],
     "./lib/*": [
       "./src/lib/*.ts",
+      "./src/lib/*.tsx",
       "./src/lib/*/index.ts"
     ]
   },
   "dependencies": {
     "@terrafirmagreg-team/analytics": "workspace:^",
+    "@terrafirmagreg-team/crowdin": "workspace:^",
     "@terrafirmagreg-team/discussions": "workspace:^",
     "@terrafirmagreg-team/github": "workspace:^",
     "@terrafirmagreg-team/kit": "workspace:^",

@@ -1,7 +1,6 @@
-import type { ComponentProps, ComponentType, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { notFound, redirect } from 'next/navigation';
 import type { Metadata } from 'next';
-import type * as PageTree from 'fumadocs-core/page-tree';
 import { flattenTree } from 'fumadocs-core/page-tree';
 import { LangContentSwitch } from '@terrafirmagreg-team/ui/components/blocks/lang/content';
 import { SectionNotFound } from '@terrafirmagreg-team/kit/components/views/not-found';
@@ -12,6 +11,7 @@ import {
   type SectionPageViewFn,
 } from '@terrafirmagreg-team/kit/components/views/section';
 import { baseOptions } from '@terrafirmagreg-team/kit/lib/layout';
+import { withSectionTitle } from '@terrafirmagreg-team/kit/lib/section-metadata';
 import {
   datasetCatalog,
   defaultDataset,
@@ -37,8 +37,17 @@ import {
   localeLoader,
   registerLocaleRenderer,
 } from '@terrafirmagreg-team/kit/lib/locale/renderer';
-import { registerSectionTrees } from '@terrafirmagreg-team/kit/lib/section-trees';
-import { sectionUrl, type DatasetRef } from '@terrafirmagreg-team/sites/location';
+import {
+  registerSectionTrees,
+  sectionTreesLoader,
+} from '@terrafirmagreg-team/kit/lib/section-trees';
+import {
+  registerSectionLayout,
+  sectionLayoutOptions,
+} from '@terrafirmagreg-team/kit/lib/section-layout';
+import { Layout } from '@terrafirmagreg-team/kit/components/layouts/layout';
+import { sectionTabs } from '@terrafirmagreg-team/sites';
+import { sectionUrl } from '@terrafirmagreg-team/sites/location';
 import { resolveLang } from '@terrafirmagreg-team/translate/lib/code';
 import { withLang } from '@terrafirmagreg-team/translate/lib/url';
 import { langContent, loadLocaleRegistry } from '@terrafirmagreg-team/translate/server';
@@ -48,22 +57,13 @@ import type {
   DeepLinkResolver,
   SectionDataset,
   SectionKey,
+  SectionLayoutOptions,
   SectionPage,
   SectionSource,
   SectionTrees,
 } from '@terrafirmagreg-team/kit/types';
 import type { SectionFeatures } from '@terrafirmagreg-team/kit/types/features';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
-
-export interface SectionLayoutViewProps {
-  section: SectionKey;
-  trees: SectionTrees;
-  catalog: DatasetCatalog;
-  useTree?: (tree: PageTree.Root, dataset?: DatasetRef) => PageTree.Root;
-  sidebar?: { feature?: ComponentType };
-  navTitle?: ComponentType<ComponentProps<'a'>>;
-  children?: ReactNode;
-}
 
 export type SectionLandingView = SectionPageView;
 
@@ -91,7 +91,7 @@ export interface SectionRoutesOptions<
     history?: boolean;
   };
   features?: SectionFeatures;
-  layout: ComponentType<SectionLayoutViewProps>;
+  layout?: SectionLayoutOptions;
   landing?: (
     props: SectionLandingProps<TSource>,
   ) => SectionLandingView | Promise<SectionLandingView>;
@@ -144,7 +144,7 @@ export function createSectionRoutes<
   trees,
   source,
   features,
-  layout: LayoutView,
+  layout,
   landing,
   page: PageView,
   deepLink,
@@ -210,6 +210,7 @@ export function createSectionRoutes<
   };
 
   if (trees) registerSectionTrees(section, trees);
+  registerSectionLayout(section, layout ?? {});
 
   registerLocaleRenderer(section, {
     resolve: async (slug, lang) =>
@@ -227,27 +228,6 @@ export function createSectionRoutes<
         lang,
       ),
   });
-
-  async function SectionLayout({ children }: { children?: ReactNode }) {
-    const { slots } = baseOptions();
-    const { defaultLanguage } = loadLocaleRegistry();
-    const [resolvedTrees, catalog] = await Promise.all([
-      trees
-        ? trees(defaultLanguage).catch((): SectionTrees => ({}))
-        : Promise.resolve<SectionTrees>({}),
-      datasetCatalog().catch((): DatasetCatalog => ({}) as DatasetCatalog),
-    ]);
-    return (
-      <LayoutView
-        section={section}
-        trees={resolvedTrees}
-        catalog={catalog}
-        navTitle={slots?.navTitle}
-      >
-        {children}
-      </LayoutView>
-    );
-  }
 
   async function Page({ params, searchParams }: RouteParams) {
     const { slug } = await params;
@@ -414,5 +394,44 @@ export function createSectionRoutes<
     return {};
   }
 
-  return { SectionLayout, Page, Redirect, generateStaticParams, generateMetadata };
+  return {
+    Page,
+    Redirect,
+    generateStaticParams,
+    generateMetadata: withSectionTitle(generateMetadata, section),
+  };
+}
+
+export type SectionRoutes = ReturnType<typeof createSectionRoutes>;
+
+export async function SectionLayout({ children }: { children?: ReactNode }) {
+  const { slots } = baseOptions();
+  const { defaultLanguage } = loadLocaleRegistry();
+  const sections = sectionTabs.map((tab) => tab.key);
+  const [treesBySection, catalog] = await Promise.all([
+    Promise.all(
+      sections.map(async (section) => [
+        section,
+        (await sectionTreesLoader(section)
+          ?.(defaultLanguage)
+          .catch((): SectionTrees => ({}))) ?? {},
+      ] as const),
+    ).then((entries) =>
+      Object.fromEntries(entries) as Partial<Record<SectionKey, SectionTrees>>,
+    ),
+    datasetCatalog().catch((): DatasetCatalog => ({}) as DatasetCatalog),
+  ]);
+  const options = Object.fromEntries(
+    sections.map((section) => [section, sectionLayoutOptions(section) ?? {}]),
+  ) as Record<SectionKey, SectionLayoutOptions>;
+  return (
+    <Layout
+      trees={treesBySection}
+      options={options}
+      catalog={catalog}
+      navTitle={slots?.navTitle}
+    >
+      {children}
+    </Layout>
+  );
 }

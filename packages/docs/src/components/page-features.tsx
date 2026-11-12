@@ -1,4 +1,5 @@
 import { PageActionsRight } from '@terrafirmagreg-team/analytics/components/page-features';
+import { CrowdinMembers } from '@terrafirmagreg-team/crowdin/components/members';
 import {
   PageBodyFeatures,
   PageComments,
@@ -13,6 +14,7 @@ export const docsPageFeatures: SectionFeatures = {
   wrapBody: (body) => <PageBodyFeatures>{body}</PageBodyFeatures>,
   footer: (ctx) => (
     <>
+      <CrowdinMembers ctx={ctx} />
       <RepoContributors ctx={ctx} />
       <PageHistoryFooter ctx={ctx} />
       <PageFooterFeedback />

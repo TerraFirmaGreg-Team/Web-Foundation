@@ -5,7 +5,7 @@ import { sections } from './sources';
 import { datasetId } from './tree';
 import { createAsyncCache } from '@terrafirmagreg-team/data/lib/async-cache';
 import { serverCache } from '@terrafirmagreg-team/data/lib/server-cache';
-import { dumpStatusSnapshot } from '@terrafirmagreg-team/data/lib/dump-status';
+import { isBuildPhase } from '@terrafirmagreg-team/data/lib/env';
 import { loadLocaleRegistry, sortLangCodes } from '@terrafirmagreg-team/translate/server';
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { sectionTabs } from '@terrafirmagreg-team/sites/sections';
@@ -158,12 +158,36 @@ function compareVersions(a: string, b: string): number {
   return a.localeCompare(b);
 }
 
+async function configDatasetRow(
+  section: SectionKey,
+  id: string,
+): Promise<SectionDataset | null> {
+  if (!datasetMembership(section, id)) return null;
+  return {
+    id,
+    languages: datasetLanguages([]),
+    ...(await sectionDatasetMeta(section, id)),
+    ...datasetAppearance(id),
+  };
+}
+
 async function dumpDatasets(
   section: SectionKey,
   hasContent: (dump: SectionDump) => boolean,
 ): Promise<SectionDataset[]> {
   const dump = sectionConfig().dump;
   if (!dump) return [];
+  if (isBuildPhase()) {
+    return (
+      await Promise.all(
+        Object.keys(sectionConfig().datasetConfig).map((id) =>
+          configDatasetRow(section, id),
+        ),
+      )
+    )
+      .filter((row): row is SectionDataset => row !== null)
+      .sort(datasetOrder);
+  }
   const refs = await dump.discoverDatasets().catch(() => [] as DatasetRef[]);
   const versions = new Map<string, string[]>();
   const ids: string[] = [];
@@ -188,17 +212,9 @@ async function dumpDatasets(
       ids.map(async (id): Promise<SectionDataset | null> => {
         const index = await dump.loadDataset({ id }).catch(() => null);
         if (!index) {
-          if (dumpStatusSnapshot().statuses[id]?.status !== 'failed')
-            return null;
           const good = lastGoodDatasets.get(section)?.get(id);
           if (good) return good;
-          if (!datasetMembership(section, id)) return null;
-          return {
-            id,
-            languages: datasetLanguages([]),
-            ...(await sectionDatasetMeta(section, id)),
-            ...datasetAppearance(id),
-          };
+          return configDatasetRow(section, id);
         }
         if (!hasContent(index)) return null;
         const row: SectionDataset = {

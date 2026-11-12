@@ -16,6 +16,12 @@ export function registerSectionTrees(
   registry.set(section, trees);
 }
 
+export function sectionTreesLoader(
+  section: string,
+): ((lang: Lang) => Promise<SectionTrees>) | undefined {
+  return registry.get(section);
+}
+
 export async function sectionTree(
   section: string,
   datasetId: string,
