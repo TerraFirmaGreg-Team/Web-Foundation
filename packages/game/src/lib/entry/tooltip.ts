@@ -12,6 +12,8 @@ import {
 import {
   clientRegistryKindFor,
   loadClientRegistryEntry,
+  loadClientRegistryIconsRow,
+  loadClientRegistryTooltipRow,
 } from '@terrafirmagreg-team/dump/lib/dump/client/registry';
 import type { DumpDisplay } from '@terrafirmagreg-team/dump/lib/dump/contract/text';
 import {
@@ -29,21 +31,39 @@ export const loadStackDisplay = createDatasetCache(
     kind?: 'item' | 'fluid' | 'entity' | 'block',
   ): Promise<DumpDisplay | undefined> => {
     const parsed = parseStackId(compactId);
-    const ofKind = async (registry: 'items' | 'fluids') => {
-      const entry = await loadClientRegistryEntry(
-        dataset,
-        registry,
-        parsed.id,
-      );
-      return entry ? displayOf(entry, parsed.nbt) : undefined;
+    const ns = parsed.id.includes(':')
+      ? parsed.id.split(':', 1)[0]
+      : 'minecraft';
+    const ofKind = async (
+      registry: 'items' | 'fluids' | 'blocks' | 'entities',
+    ) => {
+      const [base, tooltips] = await Promise.all([
+        registry === 'entities'
+          ? loadClientRegistryEntry(dataset, registry, parsed.id)
+          : loadClientRegistryIconsRow(dataset, registry, ns).then((rows) =>
+              rows.get(parsed.id),
+            ),
+        loadClientRegistryTooltipRow(dataset, registry, ns).then((rows) =>
+          rows.get(parsed.id),
+        ),
+      ]);
+      const display = base ? displayOf(base, parsed.nbt) : undefined;
+      const tooltipDisplay = tooltips
+        ? displayOf(tooltips, parsed.nbt)
+        : undefined;
+      if (!display && !tooltipDisplay) return undefined;
+      return {
+        ...(display?.name ? { name: display.name } : {}),
+        ...(tooltipDisplay?.tooltip
+          ? { tooltip: tooltipDisplay.tooltip }
+          : {}),
+        ...(tooltipDisplay?.tooltipMods
+          ? { tooltipMods: tooltipDisplay.tooltipMods }
+          : {}),
+      };
     };
     if (kind) {
-      const entry = await loadClientRegistryEntry(
-        dataset,
-        clientRegistryKindFor(kind),
-        parsed.id,
-      );
-      return entry ? displayOf(entry, parsed.nbt) : undefined;
+      return ofKind(clientRegistryKindFor(kind));
     }
     return (await ofKind('items')) ?? (await ofKind('fluids'));
   },

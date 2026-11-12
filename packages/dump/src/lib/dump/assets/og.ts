@@ -4,7 +4,7 @@ import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import sharp from 'sharp';
 import { clientDumpLang } from '../client/dump';
 import {
-  loadClientRegistryNs,
+  loadClientRegistryIconsRow,
   resolveClientStackDisplay,
 } from '../client/registry';
 import { parseStackId } from '../contract/ref';
@@ -24,8 +24,8 @@ export async function ogStackName(
   const ns = base.includes(':') ? base.split(':', 1)[0] : 'minecraft';
   const [map, items, fluids] = await Promise.all([
     clientDumpLang(dataset, lang),
-    loadClientRegistryNs(dataset, 'items', ns),
-    loadClientRegistryNs(dataset, 'fluids', ns),
+    loadClientRegistryIconsRow(dataset, 'items', ns),
+    loadClientRegistryIconsRow(dataset, 'fluids', ns),
   ]);
   const langKey = resolveClientStackDisplay(id, items, fluids)?.name;
   return stripMcFormat(stackDisplayName(map, id, kind, langKey)).trim();

@@ -41,9 +41,17 @@ export type TreeFeatureProps = {
   onTree: (next: { input: PageTree.Root; tree: PageTree.Root }) => void;
 };
 
+export type SectionRightPanelProps = {
+  dataset?: DatasetRef;
+  title?: string;
+  versions?: string[];
+  lang: Lang;
+};
+
 export type SectionLayoutOptions = {
   treeFeature?: ComponentType<TreeFeatureProps>;
   sidebar?: { feature?: ComponentType };
+  rightPanel?: ComponentType<SectionRightPanelProps>;
   defaultOpenLevel?: number;
 };
 

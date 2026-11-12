@@ -122,7 +122,7 @@ function circuitOpen(datasetId: string | undefined): boolean {
 
 class DumpNotFound extends Error {}
 
-const PARSE_WORKER_SOURCE = `self.onmessage=(e)=>{const{id,text}=e.data;try{self.postMessage({id,value:JSON.parse(text)})}catch(error){self.postMessage({id,error:String(error)})}};`;
+const PARSE_WORKER_SOURCE = `self.onmessage=(e)=>{const{id,text,ndjson}=e.data;try{self.postMessage({id,value:ndjson?ndjsonMap(text):JSON.parse(text)})}catch(error){self.postMessage({id,error:String(error)})}};function ndjsonMap(text){const out={};let start=0;for(let i=0;i<=text.length;i++){if(i===text.length||text.charCodeAt(i)===10){const line=text.slice(start,i);start=i+1;if(line){const row=JSON.parse(line);if(row&&typeof row==='object'){if(row.$ids!==undefined){out.$ids=row.$ids}else if(typeof row.id==='string'){out[row.id]=row}}}}}return out};`;
 
 let parseWorker: Worker | undefined;
 let parseSeq = 0;
@@ -131,9 +131,27 @@ const parsePending = new Map<
   { resolve: (value: unknown) => void; reject: (error: Error) => void }
 >();
 
-function parseJson(text: string): Promise<unknown> {
+function parseNdjsonText(text: string): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  let start = 0;
+  for (let i = 0; i <= text.length; i += 1) {
+    if (i !== text.length && text.charCodeAt(i) !== 10) continue;
+    const line = text.slice(start, i);
+    start = i + 1;
+    if (!line) continue;
+    const row = JSON.parse(line) as Record<string, unknown> | null;
+    if (!row || typeof row !== 'object') continue;
+    if (row.$ids !== undefined) out.$ids = row.$ids;
+    else if (typeof row.id === 'string') out[row.id] = row;
+  }
+  return out;
+}
+
+function parseJson(text: string, ndjson = false): Promise<unknown> {
   if (typeof Worker === 'undefined') {
-    return Promise.resolve(JSON.parse(text) as unknown);
+    return Promise.resolve(
+      ndjson ? (parseNdjsonText(text) as unknown) : JSON.parse(text),
+    );
   }
   try {
     if (!parseWorker) {
@@ -154,14 +172,24 @@ function parseJson(text: string): Promise<unknown> {
         if (error !== undefined) slot.reject(new Error(error));
         else slot.resolve(value);
       };
+      parseWorker.onerror = () => {
+        const pending = [...parsePending.values()];
+        parsePending.clear();
+        parseWorker = undefined;
+        for (const slot of pending) {
+          slot.reject(new Error('dump parse worker crashed'));
+        }
+      };
     }
     const id = ++parseSeq;
     return new Promise((resolve, reject) => {
       parsePending.set(id, { resolve, reject });
-      parseWorker!.postMessage({ id, text });
+      parseWorker!.postMessage({ id, text, ndjson });
     });
   } catch {
-    return Promise.resolve(JSON.parse(text) as unknown);
+    return Promise.resolve(
+      ndjson ? (parseNdjsonText(text) as unknown) : JSON.parse(text),
+    );
   }
 }
 
@@ -178,6 +206,7 @@ async function fetchAndParse(
   gz: boolean,
   mutable: boolean,
   datasetId?: string,
+  ndjson = false,
 ): Promise<unknown> {
   const res = await request(url, mutable);
   if (res?.status === 404) {
@@ -195,7 +224,7 @@ async function fetchAndParse(
           res.body!.pipeThrough(new DecompressionStream('gzip')),
         ).text()
       : await res.text();
-    const value = await parseJson(text);
+    const value = await parseJson(text, ndjson);
     if (text.length > SERVER_CACHE_MAX) throw new DumpTooBig(value);
     return value;
   } catch (error) {
@@ -205,8 +234,28 @@ async function fetchAndParse(
   }
 }
 
+async function fetchAndParseNdjson(
+  url: string,
+  gz: boolean,
+  mutable: boolean,
+  datasetId?: string,
+): Promise<Record<string, unknown>> {
+  return fetchAndParse(url, gz, mutable, datasetId, true) as Promise<
+    Record<string, unknown>
+  >;
+}
+
 const makeLoader =
-  (gz: boolean, mutable: boolean) =>
+  (
+    gz: boolean,
+    mutable: boolean,
+    fetcher: (
+      url: string,
+      gz: boolean,
+      mutable: boolean,
+      datasetId?: string,
+    ) => Promise<unknown>,
+  ) =>
   async (
     url: string,
     high: boolean,
@@ -214,7 +263,7 @@ const makeLoader =
   ): Promise<unknown> => {
     if (isBuildPhase() || circuitOpen(datasetId)) return undefined;
     const load = () =>
-      fetchLane(() => fetchAndParse(url, gz, mutable, datasetId), high);
+      fetchLane(() => fetcher(url, gz, mutable, datasetId), high);
     const attempt = async () => {
       try {
         return await load();
@@ -236,23 +285,45 @@ const makeLoader =
   };
 
 const fetchJson = createAsyncCache(
-  makeLoader(false, false),
+  makeLoader(false, false, fetchAndParse),
   (url: string) => url,
 ) as AsyncCache<[url: string, high: boolean, datasetId?: string], unknown>;
 
 const fetchJsonGz = createAsyncCache(
-  makeLoader(true, false),
+  makeLoader(true, false, fetchAndParse),
   (url: string) => url,
 ) as AsyncCache<[url: string, high: boolean, datasetId?: string], unknown>;
 
 const fetchJsonMutable = createAsyncCache(
-  makeLoader(false, true),
+  makeLoader(false, true, fetchAndParse),
   (url: string) => url,
   DUMP_POINTER_TTL,
 ) as AsyncCache<[url: string, high: boolean, datasetId?: string], unknown>;
 
 const fetchJsonGzMutable = createAsyncCache(
-  makeLoader(true, true),
+  makeLoader(true, true, fetchAndParse),
+  (url: string) => url,
+  DUMP_POINTER_TTL,
+) as AsyncCache<[url: string, high: boolean, datasetId?: string], unknown>;
+
+const fetchNdjson = createAsyncCache(
+  makeLoader(false, false, fetchAndParseNdjson),
+  (url: string) => url,
+) as AsyncCache<[url: string, high: boolean, datasetId?: string], unknown>;
+
+const fetchNdjsonGz = createAsyncCache(
+  makeLoader(true, false, fetchAndParseNdjson),
+  (url: string) => url,
+) as AsyncCache<[url: string, high: boolean, datasetId?: string], unknown>;
+
+const fetchNdjsonMutable = createAsyncCache(
+  makeLoader(false, true, fetchAndParseNdjson),
+  (url: string) => url,
+  DUMP_POINTER_TTL,
+) as AsyncCache<[url: string, high: boolean, datasetId?: string], unknown>;
+
+const fetchNdjsonGzMutable = createAsyncCache(
+  makeLoader(true, true, fetchAndParseNdjson),
   (url: string) => url,
   DUMP_POINTER_TTL,
 ) as AsyncCache<[url: string, high: boolean, datasetId?: string], unknown>;
@@ -330,17 +401,31 @@ export class JsonDumpReader implements DumpReader {
     return this.location().then((loc) => {
       const key = loc.files?.[path];
       if (key) {
-        return key.endsWith('.gz')
-          ? fetchJsonGz(dumpStorageUrl(`${key}`), high, this.statusKey)
-          : fetchJson(dumpStorageUrl(`${key}`), high, this.statusKey);
+        const url = dumpStorageUrl(`${key}`);
+        if (key.endsWith('.ndjson.gz')) return fetchNdjsonGz(url, high, this.statusKey);
+        if (key.endsWith('.ndjson')) return fetchNdjson(url, high, this.statusKey);
+        if (key.endsWith('.gz')) return fetchJsonGz(url, high, this.statusKey);
+        return fetchJson(url, high, this.statusKey);
       }
 
       if (loc.files) return undefined;
       const rel = `${loc.root}/${path}`;
-      const [json, jsonGz] =
-        loc.root === this.packId
-          ? [fetchJsonMutable, fetchJsonGzMutable]
-          : [fetchJson, fetchJsonGz];
+      const mutable = loc.root === this.packId;
+      const ndjson = path.endsWith('.ndjson');
+      const json = mutable
+        ? ndjson
+          ? fetchNdjsonMutable
+          : fetchJsonMutable
+        : ndjson
+          ? fetchNdjson
+          : fetchJson;
+      const jsonGz = mutable
+        ? ndjson
+          ? fetchNdjsonGzMutable
+          : fetchJsonGzMutable
+        : ndjson
+          ? fetchNdjsonGz
+          : fetchJsonGz;
       return COMPRESSED_TREE.test(path)
         ? jsonGz(dumpStorageUrl(`${rel}.gz`), high, this.statusKey)
         : json(dumpStorageUrl(`${rel}`), high, this.statusKey);

@@ -13,10 +13,14 @@ import type {
 } from '@terrafirmagreg-team/dump/lib/dump/data/registry/dto';
 import {
   clientRegistryEntries,
+  clientRegistryIconsEntries,
   clientRegistryNsEntries,
+  clientRegistryTooltipsEntries,
 } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import { createDatasetCache } from '@terrafirmagreg-team/dump/lib/dump/reader';
 import { yieldToMain } from '@terrafirmagreg-team/data/lib/scheduler';
+import { loadDatasetDump } from '@terrafirmagreg-team/dump/lib/dump/mods/load';
+import { dumpRegistryNamespaces } from '@terrafirmagreg-team/dump/lib/dump/mods/index';
 
 type RegistryByKind = {
   items: DumpItemEntry;
@@ -111,6 +115,70 @@ export async function loadClientRegistryEntry<K extends DumpRegistryKind>(
   return map.get(id) ?? map.get(base);
 }
 
+const clientTooltipsNs = createDatasetCache(
+  async (
+    dataset: DatasetRef,
+    kind: DumpRegistryKind,
+    ns: string,
+  ): Promise<Map<string, DumpRegistryEntry>> => {
+    const out = new Map<string, DumpRegistryEntry>();
+    const rows = await clientRegistryTooltipsEntries(
+      dataset,
+      KIND_FILE[kind],
+      ns,
+      'high',
+    );
+    for (const [id, raw] of Object.entries(rows ?? {})) {
+      if (id === EDGE_TABLE_FIELD) continue;
+      const entry = asEntry(raw, kind, id);
+      if (entry) out.set(id, entry);
+    }
+    return out;
+  },
+);
+
+export function loadClientRegistryTooltipRow<K extends DumpRegistryKind>(
+  dataset: DatasetRef,
+  kind: K,
+  ns: string,
+): Promise<Map<string, RegistryByKind[K]>> {
+  return clientTooltipsNs(dataset, kind, ns) as Promise<
+    Map<string, RegistryByKind[K]>
+  >;
+}
+
+const clientIconsNs = createDatasetCache(
+  async (
+    dataset: DatasetRef,
+    kind: DumpRegistryKind,
+    ns: string,
+  ): Promise<Map<string, DumpRegistryEntry>> => {
+    const out = new Map<string, DumpRegistryEntry>();
+    const rows = await clientRegistryIconsEntries(
+      dataset,
+      KIND_FILE[kind],
+      ns,
+      'high',
+    );
+    for (const [id, raw] of Object.entries(rows ?? {})) {
+      if (id === EDGE_TABLE_FIELD) continue;
+      const entry = asEntry(raw, kind, id);
+      if (entry) out.set(id, entry);
+    }
+    return out;
+  },
+);
+
+export function loadClientRegistryIconsRow<K extends DumpRegistryKind>(
+  dataset: DatasetRef,
+  kind: K,
+  ns: string,
+): Promise<Map<string, RegistryByKind[K]>> {
+  return clientIconsNs(dataset, kind, ns) as Promise<
+    Map<string, RegistryByKind[K]>
+  >;
+}
+
 export function resolveClientStackDisplay(
   compactId: string,
   items: Map<string, DumpItemEntry>,
@@ -150,11 +218,20 @@ export async function loadClientRegistryTooltips(
   dataset: DatasetRef,
   kind: string,
 ): Promise<Record<string, DumpText[]> | undefined> {
-  const entries = await loadClientRegistry(dataset, clientRegistryKindFor(kind));
+  const kindField = clientRegistryKindFor(kind);
+  const namespaces = dumpRegistryNamespaces(
+    await loadDatasetDump(dataset),
+    KIND_FILE[kindField],
+  );
+  const shards = await Promise.all(
+    namespaces.map((ns) => clientTooltipsNs(dataset, kindField, ns)),
+  );
   const out: Record<string, DumpText[]> = {};
-  for (const entry of entries.values()) {
-    const tooltip = entry.display?.tooltip;
-    if (tooltip?.length) out[entry.id] = tooltip;
+  for (const shard of shards) {
+    for (const entry of shard.values()) {
+      const tooltip = entry.display?.tooltip;
+      if (tooltip?.length && !(entry.id in out)) out[entry.id] = tooltip;
+    }
   }
   return Object.keys(out).length ? out : undefined;
 }
@@ -164,15 +241,20 @@ export async function loadClientRegistryTooltipsMod(
   kind: string,
   mod: string,
 ): Promise<Record<string, DumpText[]> | undefined> {
-  const entries = await loadClientRegistryNs(
-    dataset,
-    clientRegistryKindFor(kind),
-    mod,
+  const kindField = clientRegistryKindFor(kind);
+  const namespaces = dumpRegistryNamespaces(
+    await loadDatasetDump(dataset),
+    KIND_FILE[kindField],
+  );
+  const shards = await Promise.all(
+    namespaces.map((ns) => clientTooltipsNs(dataset, kindField, ns)),
   );
   const out: Record<string, DumpText[]> = {};
-  for (const entry of entries.values()) {
-    const lines = entry.display?.tooltipMods?.[mod];
-    if (lines?.length) out[entry.id] = lines;
+  for (const shard of shards) {
+    for (const entry of shard.values()) {
+      const lines = entry.display?.tooltipMods?.[mod];
+      if (lines?.length && !(entry.id in out)) out[entry.id] = lines;
+    }
   }
   return Object.keys(out).length ? out : undefined;
 }

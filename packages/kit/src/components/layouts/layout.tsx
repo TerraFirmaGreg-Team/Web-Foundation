@@ -112,6 +112,7 @@ export function Layout({
     (deps.commentsMenuItem?.() as SiteMenuItem | false | null) ?? false;
   const Feature = options?.sidebar?.feature;
   const TreeFeature = options?.treeFeature;
+  const RightPanel = options?.rightPanel;
   const shipped = baseId
     ? (trees[lang]?.[baseId] ?? trees[defaultLanguage]?.[baseId])
     : undefined;
@@ -221,6 +222,16 @@ export function Layout({
             </>
           }
         />
+      }
+      rightPanel={
+        RightPanel && current ? (
+          <RightPanel
+            dataset={current}
+            title={meta?.title}
+            versions={meta?.versions}
+            lang={lang}
+          />
+        ) : undefined
       }
     >
       {children}

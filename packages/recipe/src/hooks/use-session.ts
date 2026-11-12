@@ -43,16 +43,31 @@ export function useRecipeSession(page: RecipePageData): RecipeSession {
     [langRaw, names, lang],
   );
   const used = useMemo(() => recipeUsedItems(index), [index]);
-  const nav: RecipeHrefOpts = {
-    ...placeOpts,
-    tab: query.tab,
-    item: query.item,
-    fluid: query.fluid,
-    id: query.recipeId,
-    relation: query.relation,
-    search: query.query || undefined,
-    rpage: query.rpage + 1,
-  };
+  const { type: navType, tool: navTool } = placeOpts;
+  const nav = useMemo<RecipeHrefOpts>(
+    () => ({
+      ...(navType ? { type: navType } : {}),
+      ...(navTool ? { tool: navTool } : {}),
+      tab: query.tab,
+      item: query.item,
+      fluid: query.fluid,
+      id: query.recipeId,
+      relation: query.relation,
+      search: query.query || undefined,
+      rpage: query.rpage + 1,
+    }),
+    [
+      navType,
+      navTool,
+      query.tab,
+      query.item,
+      query.fluid,
+      query.recipeId,
+      query.relation,
+      query.query,
+      query.rpage,
+    ],
+  );
 
   const firstType = useMemo(() => {
     const counts = index?.typeCounts;
@@ -72,7 +87,7 @@ export function useRecipeSession(page: RecipePageData): RecipeSession {
     replaceUrlState(
       recipeHref(dataset, resolved, { ...nav, type: firstType }),
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- nav rebuilds per render
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- nav tracks URL state; effect must run only on bare-index transitions
   }, [bareIndex, firstType, dataset, resolved]);
 
   return {

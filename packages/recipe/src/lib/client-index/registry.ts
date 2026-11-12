@@ -1,5 +1,5 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
-import { clientRegistryNsEntries } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
+import { clientRegistryUsesEntries } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import { loadClientTagMembers } from '@terrafirmagreg-team/dump/lib/dump/client/tags';
 import {
   asRecord,
@@ -30,7 +30,7 @@ const registrySliceCache = createDatasetCache(
     ns: string,
   ): Promise<Record<string, Record<string, unknown>>> => {
     const field = registryField(kind);
-    const raw = await clientRegistryNsEntries(dataset, field, ns, 'high');
+    const raw = await clientRegistryUsesEntries(dataset, field, ns, 'high');
     const map = asRecord(raw);
     return map ? resolveEdgeRows(map) : {};
   },

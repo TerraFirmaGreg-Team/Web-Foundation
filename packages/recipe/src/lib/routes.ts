@@ -1,6 +1,9 @@
 import { createSectionRoutes } from '@terrafirmagreg-team/kit/components/views/routes';
 import { ogDeepLink } from '@terrafirmagreg-team/preview/server';
-import { RecipeTreeFeature } from '@terrafirmagreg-team/recipe/components/views/layout';
+import {
+  RecipePanelFeature,
+  RecipeTreeFeature,
+} from '@terrafirmagreg-team/recipe/components/views/layout';
 import { RecipeAxisSwitcher } from '@terrafirmagreg-team/recipe/components/views/browser/axis-switcher';
 import { recipeLanding } from '@terrafirmagreg-team/recipe/components/views/landing';
 import { recipeTrees } from '@terrafirmagreg-team/recipe/components/tree';
@@ -15,6 +18,7 @@ export function recipeRoutes() {
     layout: {
       treeFeature: RecipeTreeFeature,
       sidebar: { feature: RecipeAxisSwitcher },
+      rightPanel: RecipePanelFeature,
     },
     landing: recipeLanding,
     deepLink: ogDeepLink('recipe'),

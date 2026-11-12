@@ -20,7 +20,10 @@ import type {
   FavoriteEntry,
   ItemPanelCell,
   RecipeCompactIndex,
+  UsedItems,
 } from '@terrafirmagreg-team/recipe/types';
+
+const UNUSED: UsedItems = { ids: new Set(), bases: new Set() };
 
 export function usePanelCells({
   dataset,
@@ -62,7 +65,11 @@ export function usePanelCells({
     [dIndex, mode, favoriteIds, tab],
   );
 
-  const used = useMemo(() => recipeUsedItems(dIndex), [dIndex]);
+  const used = useMemo(
+    () =>
+      mode === 'all' && hideUnused ? recipeUsedItems(dIndex) : UNUSED,
+    [dIndex, mode, hideUnused],
+  );
   const tooltips = useItemTooltips(dataset, dLang, query.includes('$'));
   const tagMembers = useTagMembers(dataset, query.includes('#'));
   const filtered = useMemo(() => {

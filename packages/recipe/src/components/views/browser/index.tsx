@@ -13,9 +13,7 @@ import {
 import { useRecipeSession } from '@terrafirmagreg-team/recipe/hooks/use-session';
 import { recipeConfig } from '@terrafirmagreg-team/recipe/lib/config';
 import { recipeItemName } from '@terrafirmagreg-team/recipe/lib/client-index';
-import { ItemPanel } from '@terrafirmagreg-team/recipe/components/views/browser/item-panel';
 import { RecipeGlareFilter } from '@terrafirmagreg-team/recipe/components/cards/glare-filter';
-import { RightSidebarPortal } from '@terrafirmagreg-team/ui/components/layouts/right-sidebar';
 import { TypeView } from '@terrafirmagreg-team/recipe/components/views/browser/type-view';
 import { ItemView } from '@terrafirmagreg-team/recipe/components/views/browser/item-view';
 import { Calculator } from '@terrafirmagreg-team/recipe/components/views/calc/calculator';
@@ -147,21 +145,6 @@ export function RecipeBrowser({
             ) : null}
           </main>
         </div>
-        <RightSidebarPortal>
-          <ItemPanel
-            dataset={dataset}
-            lang={lang}
-            index={session.index}
-            indexLoading={session.indexLoading}
-            names={names}
-            tab={session.tab}
-            query={session.query}
-            setQuery={session.setQuery}
-            isCalc={isCalc}
-            nav={session.nav}
-            className="hidden h-full w-90 lg:flex"
-          />
-        </RightSidebarPortal>
       </div>
     </EntryProvider>
   );

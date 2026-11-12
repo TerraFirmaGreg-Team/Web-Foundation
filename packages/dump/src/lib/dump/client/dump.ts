@@ -19,6 +19,8 @@ import {
   dumpRegistryIconsRel,
   dumpRegistryNamespaces,
   dumpRegistryRel,
+  dumpRegistryTooltipsRel,
+  dumpRegistryUsesRel,
 } from '@terrafirmagreg-team/dump/lib/dump/mods/index';
 import type { DumpManifest } from '@terrafirmagreg-team/dump/lib/dump/manifest/dto';
 
@@ -70,7 +72,7 @@ export async function clientRegistryEntries(
   if (!namespaces.length) return undefined;
   const shards = await Promise.all(
     namespaces.map((ns) =>
-      clientDumpJson(dataset, `registry/${file}/${ns}.json`, priority),
+      clientDumpJson(dataset, `registry/${file}/${ns}.ndjson`, priority),
     ),
   );
   const out: Record<string, unknown> = {};
@@ -109,6 +111,38 @@ export async function clientRegistryIconsEntries(
   priority?: 'high',
 ): Promise<Record<string, unknown> | undefined> {
   const rel = dumpRegistryIconsRel(
+    await loadDatasetDump(dataset),
+    ns,
+    file,
+  );
+  return rel
+    ? asRecord(await clientDumpJson(dataset, rel, priority))
+    : undefined;
+}
+
+export async function clientRegistryTooltipsEntries(
+  dataset: DatasetRef,
+  file: string,
+  ns: string,
+  priority?: 'high',
+): Promise<Record<string, unknown> | undefined> {
+  const rel = dumpRegistryTooltipsRel(
+    await loadDatasetDump(dataset),
+    ns,
+    file,
+  );
+  return rel
+    ? asRecord(await clientDumpJson(dataset, rel, priority))
+    : undefined;
+}
+
+export async function clientRegistryUsesEntries(
+  dataset: DatasetRef,
+  file: string,
+  ns: string,
+  priority?: 'high',
+): Promise<Record<string, unknown> | undefined> {
+  const rel = dumpRegistryUsesRel(
     await loadDatasetDump(dataset),
     ns,
     file,

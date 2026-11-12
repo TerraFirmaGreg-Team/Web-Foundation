@@ -18,7 +18,7 @@ function registryRel(
 ): string | null {
   if (!meta.registry.includes(file)) return null;
   return SHARDED_REGISTRY.has(file)
-    ? `registry/${file}/${namespace}.json`
+    ? `registry/${file}/${namespace}.ndjson`
     : `registry/${file}.json`;
 }
 
@@ -121,16 +121,42 @@ export function dumpModRegistryRel(
   );
 }
 
+function dumpRegistryProjectionRel(
+  dump: DumpIndex | null | undefined,
+  namespace: string,
+  file: string,
+  suffix: string,
+): string | undefined {
+  const field = REGISTRY_FIELD[file as keyof typeof REGISTRY_FIELD];
+  const mod = dump?.mods.find((m) => m.namespace === namespace);
+  return field && SHARDED_REGISTRY.has(file) && mod?.[field]
+    ? `registry/${file}/${namespace}.${suffix}.ndjson`
+    : undefined;
+}
+
 export function dumpRegistryIconsRel(
   dump: DumpIndex | null | undefined,
   namespace: string,
   file: string,
 ): string | undefined {
-  if (file === 'entities') return undefined;
-  const field = REGISTRY_FIELD[file as keyof typeof REGISTRY_FIELD];
-  const mod = dump?.mods.find((m) => m.namespace === namespace);
-  return field && SHARDED_REGISTRY.has(file) && mod?.[field]
-    ? `registry/${file}/${namespace}.icons.json`
-    : undefined;
+  return file === 'entities'
+    ? undefined
+    : dumpRegistryProjectionRel(dump, namespace, file, 'icons');
+}
+
+export function dumpRegistryTooltipsRel(
+  dump: DumpIndex | null | undefined,
+  namespace: string,
+  file: string,
+): string | undefined {
+  return dumpRegistryProjectionRel(dump, namespace, file, 'tooltips');
+}
+
+export function dumpRegistryUsesRel(
+  dump: DumpIndex | null | undefined,
+  namespace: string,
+  file: string,
+): string | undefined {
+  return dumpRegistryProjectionRel(dump, namespace, file, 'uses');
 }
 

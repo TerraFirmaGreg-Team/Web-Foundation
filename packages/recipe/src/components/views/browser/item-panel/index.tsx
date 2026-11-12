@@ -22,7 +22,10 @@ import { EmptyState } from '@terrafirmagreg-team/ui/components/blocks/page/empty
 import { type ItemPanelMode } from '@terrafirmagreg-team/recipe/lib/browser/panel';
 import { recipeHref } from '@terrafirmagreg-team/recipe/lib/links';
 import { replaceUrlState } from '@terrafirmagreg-team/ui/lib/utils/history';
-import { favoriteHover } from '@terrafirmagreg-team/recipe/lib/browser/favorite-hover';
+import {
+  favoriteHover,
+  type FavoriteHoverTarget,
+} from '@terrafirmagreg-team/recipe/lib/browser/favorite-hover';
 import { IconPager } from '@terrafirmagreg-team/ui/components/blocks/page/pager';
 import { FavoriteButton } from '@terrafirmagreg-team/recipe/components/views/browser/favorite-button';
 import { ItemPanelGrid } from '@terrafirmagreg-team/recipe/components/views/browser/item-panel-grid';
@@ -125,6 +128,27 @@ export const ItemPanel = memo(function ItemPanel({
   const resolved = useResolvedLang();
   const onPress = useItemPress({ dataset, nav, isCalc });
 
+  const {
+    tab: navTab,
+    search: navSearch,
+    tool: navTool,
+    unit: navUnit,
+    mix: navMix,
+  } = nav;
+  const cellNav = useMemo<RecipeHrefOpts>(
+    () => ({
+      tab: navTab,
+      search: navSearch,
+      tool: navTool,
+      unit: navUnit,
+      mix: navMix,
+    }),
+    [navTab, navSearch, navTool, navUnit, navMix],
+  );
+  const onHover = useCallback((target: FavoriteHoverTarget | undefined) => {
+    favoriteHover.base = target;
+  }, []);
+
   const setTab = (next: string) => {
     setPanelPage(0);
     replaceUrlState(
@@ -148,6 +172,11 @@ export const ItemPanel = memo(function ItemPanel({
     for (let i = start; i < end; i++) out.push(i);
     return out;
   }, [start, list.pages]);
+  const windowCells = useMemo(
+    () =>
+      windowPages.map((p) => cells.slice(p * pageSize, (p + 1) * pageSize)),
+    [cells, windowPages, pageSize],
+  );
 
   useEffect(() => {
     if (list.page < start || list.page > start + PAGE_WINDOW - 1) {
@@ -230,28 +259,23 @@ export const ItemPanel = memo(function ItemPanel({
           className="h-full shrink-0"
           style={{ width: start * w }}
         />
-        {windowPages.map((pageIndex) => (
+        {windowPages.map((pageIndex, i) => (
           <div
             key={pageIndex}
             className="h-full w-full shrink-0 snap-center"
           >
             <ItemPanelGrid
-              cells={cells.slice(
-                pageIndex * pageSize,
-                (pageIndex + 1) * pageSize,
-              )}
+              cells={windowCells[i]}
               resetKey={gridResetKey}
               dataset={dataset}
               lang={dLang}
               names={dNames}
-              nav={nav}
+              nav={cellNav}
               cols={cols}
               rows={rows}
               favIds={favIds}
               onPress={onPress}
-              onHover={(target) => {
-                favoriteHover.base = target;
-              }}
+              onHover={onHover}
               onToggleGroup={onToggleGroup}
               draggableStacks={isCalc}
             />

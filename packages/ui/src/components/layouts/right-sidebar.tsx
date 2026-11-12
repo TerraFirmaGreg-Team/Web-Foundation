@@ -12,7 +12,12 @@ import { cn } from '@terrafirmagreg-team/ui/lib/utils/cn';
 
 const RightSidebarContext = createContext<HTMLElement | null>(null);
 
-export function RightSidebar({ children, className, ...props }: ComponentProps<'div'>) {
+export function RightSidebar({
+  children,
+  panel,
+  className,
+  ...props
+}: ComponentProps<'div'> & { panel?: ReactNode }) {
   const [el, setEl] = useState<HTMLElement | null>(null);
   useEffect(() => {
     if (!el) return;
@@ -44,7 +49,9 @@ export function RightSidebar({ children, className, ...props }: ComponentProps<'
         data-slot="right-sidebar"
         className={cn('flex min-h-0 flex-col gap-2 lg:my-2 lg:w-96 lg:px-3 [grid-area:right] [grid-row:main]', className)}
         {...props}
-      />
+      >
+        {panel}
+      </div>
     </RightSidebarContext.Provider>
   );
 }

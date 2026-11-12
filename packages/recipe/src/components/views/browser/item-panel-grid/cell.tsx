@@ -1,7 +1,7 @@
 'use client';
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 
-import type { ReactNode } from 'react';
+import { memo, type ReactNode } from 'react';
 import { Minus, Plus, Star } from 'lucide-react';
 import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
 import { EntryGroup } from '@terrafirmagreg-team/game/components/entry/group';
@@ -59,7 +59,7 @@ function PanelChip({
   );
 }
 
-export function PanelCell({
+export const PanelCell = memo(function PanelCell({
   cell,
   dataset,
   lang,
@@ -174,5 +174,5 @@ export function PanelCell({
       )}
     </li>
   );
-}
+});
 

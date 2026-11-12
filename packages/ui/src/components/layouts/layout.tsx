@@ -31,6 +31,7 @@ export type LayoutProps = {
   header?: ReactNode;
   banner?: ReactNode;
   defaultOpenLevel?: number;
+  rightPanel?: ReactNode;
   children?: ReactNode;
 };
 
@@ -45,6 +46,7 @@ export function Layout({
   header = <LayoutHeader />,
   banner,
   defaultOpenLevel = 0,
+  rightPanel,
   children,
 }: LayoutProps) {
   return (
@@ -69,7 +71,7 @@ export function Layout({
               {banner}
               {sidebar}
               {header}
-              <RightSidebar>{children}</RightSidebar>
+              <RightSidebar panel={rightPanel}>{children}</RightSidebar>
             </div>
           </LeftSidebarPortalProvider>
         </SidebarProvider>
