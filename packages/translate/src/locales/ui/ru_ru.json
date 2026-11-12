@@ -82,6 +82,7 @@
   "Search failed, showing results for {query}(ui.search_failed_results)": "Поиск не удался, результаты для {query}",
   "Search(ui.search_dialog)": "Поиск",
   "Search(ui.search_trigger)": "Поиск",
+  "Scroll(ui.scroll)": "Прокрутить",
   "Showing the English version. A translation is not available yet.(untranslated.body)": "Показана английская версия. Перевод пока недоступен.",
   "Sign in(ui.sign_in)": "Войти",
   "Sign out(ui.sign_out)": "Выйти",

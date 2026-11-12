@@ -112,7 +112,7 @@ function RecipeGridCard({
   return (
     <CopyIdMenu
       id={row.id}
-      label="recipe.copy_recipe_id"
+      label={t('Copy recipe id', { note: 'recipe.copy_recipe_id' })}
       extra={
         <>
           <RecipeDefaultMenuItem

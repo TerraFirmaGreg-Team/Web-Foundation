@@ -4,9 +4,12 @@ import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import {
   memo,
   useCallback,
+  useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
+  type UIEvent,
 } from 'react';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
 import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
@@ -14,7 +17,6 @@ import { useFavorites } from '@terrafirmagreg-team/recipe/hooks/use-favorites';
 import { useFavoriteHotkey } from '@terrafirmagreg-team/recipe/hooks/use-favorite-hotkey';
 import { useHideUnused } from '@terrafirmagreg-team/recipe/hooks/use-hide-unused';
 import { usePagedList } from '@terrafirmagreg-team/ui/hooks/page/use-paged-list';
-import { useSwipe } from '@terrafirmagreg-team/ui/hooks/use-swipe';
 import { useElementSize } from '@terrafirmagreg-team/ui/hooks/use-element-size';
 import { EmptyState } from '@terrafirmagreg-team/ui/components/blocks/page/empty-state';
 import { type ItemPanelMode } from '@terrafirmagreg-team/recipe/lib/browser/panel';
@@ -48,6 +50,7 @@ import type {
 
 const CELL = 40;
 const PANEL_COLS = 10;
+const PAGE_WINDOW = 5;
 
 export const ItemPanel = memo(function ItemPanel({
   dataset,
@@ -132,11 +135,59 @@ export const ItemPanel = memo(function ItemPanel({
     );
   };
 
-  const goPage = (dir: number) => {
-    if (list.pages <= 1) return;
-    setPanelPage((list.page + dir + list.pages) % list.pages);
+  const stripRef = useRef<HTMLDivElement | null>(null);
+  const fromScroll = useRef(false);
+  const pageRef = useRef(list.page);
+  pageRef.current = list.page;
+  const [startRaw, setStartRaw] = useState(list.page - (PAGE_WINDOW >> 1));
+  const maxStart = Math.max(0, list.pages - PAGE_WINDOW);
+  const start = Math.max(0, Math.min(startRaw, maxStart));
+  const windowPages = useMemo(() => {
+    const end = Math.min(list.pages, start + PAGE_WINDOW);
+    const out: number[] = [];
+    for (let i = start; i < end; i++) out.push(i);
+    return out;
+  }, [start, list.pages]);
+
+  useEffect(() => {
+    if (list.page < start || list.page > start + PAGE_WINDOW - 1) {
+      setStartRaw(list.page - (PAGE_WINDOW >> 1));
+    }
+  }, [list.page, start]);
+
+  useLayoutEffect(() => {
+    const el = stripRef.current;
+    if (!el || w <= 0) return;
+    const target = list.page * w;
+    if (Math.abs(el.scrollLeft - target) > 2) {
+      el.scrollTo({
+        left: target,
+        behavior: fromScroll.current ? 'instant' : 'smooth',
+      });
+    }
+    fromScroll.current = false;
+  }, [list.page, start, w]);
+
+  const idle = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(idle.current), []);
+
+  const onStripScroll = (event: UIEvent<HTMLDivElement>) => {
+    const el = event.currentTarget;
+    if (w <= 0) return;
+    const next = Math.max(
+      0,
+      Math.min(list.pages - 1, Math.round(el.scrollLeft / w)),
+    );
+    if (next !== pageRef.current) {
+      fromScroll.current = true;
+      setPanelPage(next);
+    }
+    window.clearTimeout(idle.current);
+    idle.current = window.setTimeout(
+      () => setStartRaw(pageRef.current - (PAGE_WINDOW >> 1)),
+      160,
+    );
   };
-  const swipe = useSwipe(goPage);
 
   const tabOptions = usePanelTabs(dIndex, dNames, dLang);
 
@@ -161,23 +212,60 @@ export const ItemPanel = memo(function ItemPanel({
     );
   } else {
     body = (
-      <ItemPanelGrid
-        cells={list.shown}
-        resetKey={gridResetKey}
-        dataset={dataset}
-        lang={dLang}
-        names={dNames}
-        nav={nav}
-        cols={cols}
-        rows={rows}
-        favIds={favIds}
-        onPress={onPress}
-        onHover={(target) => {
-          favoriteHover.base = target;
+      <div
+        ref={stripRef}
+        onScroll={onStripScroll}
+        onWheel={(event) => {
+          const el = stripRef.current;
+          if (!el || w <= 0) return;
+          el.scrollBy({
+            left: Math.sign(event.deltaY) * w,
+            behavior: 'smooth',
+          });
         }}
-        onToggleGroup={onToggleGroup}
-        draggableStacks={isCalc}
-      />
+        className="flex h-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        <div
+          aria-hidden
+          className="h-full shrink-0"
+          style={{ width: start * w }}
+        />
+        {windowPages.map((pageIndex) => (
+          <div
+            key={pageIndex}
+            className="h-full w-full shrink-0 snap-center"
+          >
+            <ItemPanelGrid
+              cells={cells.slice(
+                pageIndex * pageSize,
+                (pageIndex + 1) * pageSize,
+              )}
+              resetKey={gridResetKey}
+              dataset={dataset}
+              lang={dLang}
+              names={dNames}
+              nav={nav}
+              cols={cols}
+              rows={rows}
+              favIds={favIds}
+              onPress={onPress}
+              onHover={(target) => {
+                favoriteHover.base = target;
+              }}
+              onToggleGroup={onToggleGroup}
+              draggableStacks={isCalc}
+            />
+          </div>
+        ))}
+        <div
+          aria-hidden
+          className="h-full shrink-0"
+          style={{
+            width:
+              Math.max(0, list.pages - start - windowPages.length) * w,
+          }}
+        />
+      </div>
     );
   }
 
@@ -215,12 +303,7 @@ export const ItemPanel = memo(function ItemPanel({
           />
         }
       />
-      <div
-        ref={boxRef}
-        {...swipe}
-        onWheel={(event) => goPage(event.deltaY > 0 ? 1 : -1)}
-        className="min-h-0 flex-1"
-      >
+      <div ref={boxRef} className="min-h-0 flex-1 overflow-hidden">
         {body}
       </div>
       <div className="mx-auto flex w-full max-w-md items-center gap-2">

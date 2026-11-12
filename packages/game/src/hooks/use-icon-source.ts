@@ -10,6 +10,7 @@ import {
 } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 import { texturePublicUrl } from '@terrafirmagreg-team/dump/lib/dump/assets/urls';
 import { useDumpLocation } from '@terrafirmagreg-team/game/hooks/use-dump-location';
+import { dumpReader } from '@terrafirmagreg-team/dump/lib/dump/reader';
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { lookupSpriteInBundle } from '@terrafirmagreg-team/dump/lib/dump/assets/atlas/lookup';
 import type { AtlasLookup } from '@terrafirmagreg-team/dump/lib/dump/assets/atlas/dto';
@@ -192,14 +193,22 @@ export function useIconSource({
   const dumpLoc = useDumpLocation(dataset);
   const wantEntityTexture = isEntity && entityView !== 'egg';
   const texturePeek =
-    dataset && isTexture && rawId
-      ? texturePublicUrl(dataset, rawId)
-      : dataset && wantEntityTexture && resolvedId
-        ? peekEntityTexture(dataset, resolvedId, nbt)
-        : null;
+    dumpLoc === undefined
+      ? undefined
+      : dataset && isTexture && rawId
+        ? texturePublicUrl(dataset, rawId)
+        : dataset && wantEntityTexture && resolvedId
+          ? peekEntityTexture(dataset, resolvedId, nbt)
+          : null;
   const textureSrc = useAsyncResult(
     dataset && isTexture && rawId
-      ? false
+      ? dumpLoc === undefined
+        ? async () => {
+            const reader = await dumpReader(dataset);
+            await reader.getJson('manifest.json');
+            return { key: sourceKey, url: undefined };
+          }
+        : false
       : dataset &&
             wantEntityTexture &&
             resolvedId &&
@@ -220,6 +229,7 @@ export function useIconSource({
       sourceKey,
       nbt,
       texturePeek,
+      dumpLoc,
     ],
   );
   const resolvedTexture =

@@ -326,7 +326,7 @@ export function ScrollCard(props: Props) {
         style={{
           left: horizontal ? shifted : x,
           top: horizontal ? y : shifted,
-          fontSize: Math.max(6, (el.h - 1 || 8) * scale),
+          fontSize: 8 * scale,
           color: `#${rgb.toString(16).padStart(6, '0')}`,
           textShadow: `${scale}px ${scale}px 0 #${shadowRgb.toString(16).padStart(6, '0')}`,
         }}
@@ -414,7 +414,7 @@ export function ScrollCard(props: Props) {
         {el.label ? (
           <span
             className="font-mc pointer-events-none absolute right-0 bottom-0 leading-none text-white [text-shadow:1px_1px_0_var(--color-mc-arrow)]"
-            style={{ fontSize: (el.w * scale) / 4 }}
+            style={{ fontSize: (el.w / 16) * 7 * scale }}
           >
             {el.label}
           </span>

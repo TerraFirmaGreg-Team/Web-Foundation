@@ -4,9 +4,7 @@
     url('https://cdn.jsdelivr.net/gh/IdreesInc/Minecraft-Font@master/Minecraft.otf')
       format('opentype'),
     url('https://cdn.jsdelivr.net/npm/@south-paw/typeface-minecraft@1.0.0/files/minecraft.woff2')
-      format('woff2'),
-    url('https://pub-491e074ddb0942ee9dfa8204a68f07a3.r2.dev/fonts/minecraft.otf')
-      format('opentype');
+      format('woff2');
   font-display: swap;
 }
 

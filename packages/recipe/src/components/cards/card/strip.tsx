@@ -5,8 +5,11 @@ import { Fragment, useRef, useState } from 'react';
 import { SlotHitbox } from '@terrafirmagreg-team/recipe/components/cards/slot-hitbox';
 import { CardText } from '@terrafirmagreg-team/recipe/components/cards/card/text';
 import { texturePublicUrl } from '@terrafirmagreg-team/dump/lib/dump/assets/urls';
-import { formatCount } from '@terrafirmagreg-team/ui/lib/utils/format';
 import type { CardStripGeo } from '@terrafirmagreg-team/recipe/lib/cards/model';
+import {
+  slotCoveredLabel,
+  slotOverlay,
+} from '@terrafirmagreg-team/recipe/lib/cards/model';
 import type { EntryTooltipLevel } from '@terrafirmagreg-team/game/components/entry/tooltip';
 import type { RecipeTextWidget } from '@terrafirmagreg-team/recipe/lib/data/dto';
 import type { RecipeHrefOpts } from '@terrafirmagreg-team/recipe/types';
@@ -126,33 +129,34 @@ export function CardStrip({
                 interactive={interactive}
                 tooltipLevel={tooltipLevel}
               />
-              {widget.count !== undefined && widget.count > 1 ? (
-                <span
-                  aria-hidden
-                  className="font-mc pointer-events-none absolute leading-none text-white"
-                  style={{
-                    left: widget.x * scale,
-                    top: (widget.y + widget.h - 8) * scale,
-                    width: widget.w * scale,
-                    paddingRight: scale,
-                    fontSize: 7 * scale,
-                    textAlign: 'right',
-                    textShadow: `${scale}px ${scale}px 0 var(--color-mc-arrow)`,
-                  }}
-                >
-                  {formatCount(widget.count)}
-                </span>
-              ) : null}
             </Fragment>
           ))}
-          {texts.map((widget, index) => (
-            <CardText
-              key={`${widget.x}:${widget.y}:${index}`}
-              widget={widget}
-              scale={scale}
-              langMap={langMap}
-            />
-          ))}
+          {texts.map((widget, index) => {
+            const labelSlot = slotCoveredLabel(widget, geo.slots);
+            const overlaySlot = labelSlot ?? slotOverlay(widget, geo.slots);
+            const micro =
+              overlaySlot && widget.h <= 6
+                ? (Math.min(overlaySlot.w, overlaySlot.h) / 16) * 4 * scale
+                : undefined;
+            return (
+              <CardText
+                key={`${widget.x}:${widget.y}:${index}`}
+                widget={widget}
+                scale={scale}
+                langMap={langMap}
+                size={micro}
+                {...(labelSlot
+                  ? {
+                      anchor: {
+                        x: labelSlot.x,
+                        y: labelSlot.y,
+                        w: labelSlot.w,
+                      },
+                    }
+                  : {})}
+              />
+            );
+          })}
         </div>
       </div>
       <div

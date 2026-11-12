@@ -38,14 +38,41 @@ export function cardStripGeo(
   return { slots: stripSlots, top, bottom, right, overflow, patchBottom, barTop };
 }
 
+const COUNT_TEXT = /^x?(\d[\d\s.,]*)?\s*(mB|k|B|L|M)?$/i;
+
+export function slotOverlay(
+  widget: RecipeTextWidget,
+  slots: RecipeSlotWidget[],
+): RecipeSlotWidget | undefined {
+  return slots.find(
+    (slot) => widget.x + widget.w > slot.x && widget.x < slot.x + slot.w,
+  );
+}
+
 export function countCoveredText(
   widget: RecipeTextWidget,
-  stripSlots: RecipeSlotWidget[],
+  slots: RecipeSlotWidget[],
 ): boolean {
-  return stripSlots.some(
+  const match = widget.text
+    .replace(/§./g, '')
+    .trim()
+    .match(COUNT_TEXT);
+  if (!match?.[1]) return false;
+  const num = parseFloat(match[1].replace(/\s/g, '').replace(',', '.'));
+  if (!Number.isFinite(num)) return false;
+  const unit = (match[2] ?? '').toLowerCase();
+  const scales =
+    unit === 'b' || unit === 'l'
+      ? [1000, 1e9]
+      : unit === 'k'
+        ? [1000]
+        : unit === 'm'
+          ? [1e6]
+          : [1];
+  return slots.some(
     (slot) =>
       slot.count !== undefined &&
-      String(slot.count) === widget.text &&
+      scales.some((scale) => Math.round(num * scale) === slot.count) &&
       widget.x + widget.w > slot.x &&
       widget.x < slot.x + slot.w,
   );
@@ -61,5 +88,13 @@ export function textInStrip(
     widget.y < geo.bottom &&
     widget.x < geo.right
   );
+}
+
+export function slotCoveredLabel(
+  widget: RecipeTextWidget,
+  slots: RecipeSlotWidget[],
+): RecipeSlotWidget | undefined {
+  if (widget.text.replace(/§./g, '').trim() !== 'NC') return undefined;
+  return slotOverlay(widget, slots);
 }
 

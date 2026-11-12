@@ -8,6 +8,10 @@ import {
   type EntryTooltipLevel,
 } from '@terrafirmagreg-team/game/components/entry/tooltip';
 import { useCycleIndex } from '@terrafirmagreg-team/ui/hooks/use-cycle-index';
+import {
+  formatCount,
+  formatFluidAmount,
+} from '@terrafirmagreg-team/ui/lib/utils/format';
 import { stackDisplayName } from '@terrafirmagreg-team/game/lib/entry/display';
 import { entryHref } from '@terrafirmagreg-team/game/lib/entry/href';
 import { loadStackDisplay } from '@terrafirmagreg-team/game/lib/entry/tooltip';
@@ -138,6 +142,32 @@ export function SlotHitbox({
     width: widget.w * scale,
     height: widget.h * scale,
   };
+  const badge =
+    widget.count !== undefined && widget.count > 1 ? (
+      <span
+        aria-hidden
+        className="font-mc pointer-events-none absolute right-0 bottom-0 leading-none text-white"
+        style={{
+          paddingRight: scale,
+          paddingBottom: scale,
+          fontSize:
+            (Math.min(widget.w, widget.h) / 16) *
+            (widget.kind === 'fluid' ? 4 : 7) *
+            scale,
+          textShadow: `${scale}px ${scale}px 0 var(--color-mc-arrow)`,
+        }}
+      >
+        {widget.kind === 'fluid'
+          ? formatFluidAmount(widget.count)
+          : formatCount(widget.count, 1_000)}
+      </span>
+    ) : null;
+  const amountLine =
+    widget.kind === 'fluid' && widget.count !== undefined ? (
+      <p className="text-muted-foreground">
+        {widget.count.toLocaleString('en-US')} mB
+      </p>
+    ) : undefined;
   if (!interactive) {
 
     if (tooltipLevel === 'none') {
@@ -148,6 +178,7 @@ export function SlotHitbox({
           style={pos}
         >
           {icon}
+          {badge}
         </span>
       );
     }
@@ -160,6 +191,7 @@ export function SlotHitbox({
         lang={lang}
         langMap={langMap}
         level={tooltipLevel}
+        subheader={amountLine}
       >
         <span
           {...hover}
@@ -168,6 +200,7 @@ export function SlotHitbox({
           style={pos}
         >
           {icon}
+          {badge}
         </span>
       </EntryTooltip>
     );
@@ -181,10 +214,11 @@ export function SlotHitbox({
       lang={lang}
       langMap={langMap}
       level={tooltipLevel}
+      subheader={amountLine}
     >
       <span
         {...hover}
-        className="absolute block"
+        className="absolute block cursor-pointer"
         style={pos}
         aria-label={name}
       >
@@ -202,9 +236,13 @@ export function SlotHitbox({
             className="absolute inset-0 block"
           >
             {icon}
+            {badge}
           </Link>
         ) : (
-          <span className="absolute inset-0 block">{icon}</span>
+          <span className="absolute inset-0 block">
+            {icon}
+            {badge}
+          </span>
         )}
       </span>
     </EntryTooltip>

@@ -13,6 +13,10 @@ import { entryHref } from '@terrafirmagreg-team/game/lib/entry/href';
 import { loadStackDisplay } from '@terrafirmagreg-team/game/lib/entry/tooltip';
 import { favoriteHover } from '@terrafirmagreg-team/recipe/lib/browser/favorite-hover';
 import { useAsyncResult } from '@terrafirmagreg-team/ui/hooks/use-async-value';
+import {
+  formatCount,
+  formatFluidAmount,
+} from '@terrafirmagreg-team/ui/lib/utils/format';
 import type { ReferenceKind } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 import type { RecipeGridMember } from '@terrafirmagreg-team/recipe/lib/data/dto';
 import type { RecipeHrefOpts } from '@terrafirmagreg-team/recipe/types';
@@ -77,7 +81,11 @@ export function StripCardMember({
     stackRes.value.display === undefined;
   const badges: string[] = [];
   if (member.amount !== undefined && member.amount > 1) {
-    badges.push(`×${member.amount}`);
+    badges.push(
+      kind === 'fluid'
+        ? formatFluidAmount(member.amount)
+        : `×${formatCount(member.amount, 1_000)}`,
+    );
   }
   if (member.chance !== undefined && member.chance < 1) {
     const percent = member.chance <= 1 ? member.chance * 100 : member.chance;
@@ -102,13 +110,19 @@ export function StripCardMember({
       {badges.length > 0 && (
         <span
           className="font-mc pointer-events-none absolute right-0 bottom-0 leading-none text-white [text-shadow:1px_1px_0_var(--color-mc-arrow)]"
-          style={{ fontSize: pitch / 4 }}
+          style={{ fontSize: (pitch / 16) * (kind === 'fluid' ? 4 : 7) }}
         >
           {badges.join(' ')}
         </span>
       )}
     </>
   );
+  const subheader =
+    kind === 'fluid' && member.amount !== undefined ? (
+      <p className="text-muted-foreground">
+        {member.amount.toLocaleString('en-US')} mB
+      </p>
+    ) : undefined;
   const footer = tooltipLines?.length ? (
     <>
       {tooltipLines.map((line, index) => (
@@ -144,6 +158,7 @@ export function StripCardMember({
         lang={lang}
         langMap={langMap}
         level={tooltipLevel}
+        subheader={subheader}
         footer={footer}
       >
         <span
@@ -166,11 +181,12 @@ export function StripCardMember({
       lang={lang}
       langMap={langMap}
       level={tooltipLevel}
+      subheader={subheader}
       footer={footer}
     >
       <span
         {...hover}
-        className="absolute block"
+        className="absolute block cursor-pointer"
         style={faceStyle}
         aria-label={name}
       >

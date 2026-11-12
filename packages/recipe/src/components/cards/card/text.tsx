@@ -10,12 +10,16 @@ export function CardText({
   offY = 0,
   scale,
   langMap,
+  anchor,
+  size,
 }: {
   widget: RecipeTextWidget;
   offX?: number;
   offY?: number;
   scale: number;
   langMap?: Record<string, string>;
+  anchor?: { x: number; y: number; w: number };
+  size?: number;
 }) {
   const content = widget.component
     ? dumpTextString(langMap ?? {}, widget.component) || widget.text
@@ -28,9 +32,18 @@ export function CardText({
     <span
       className="font-mc pointer-events-none absolute leading-none whitespace-pre"
       style={{
-        left: (widget.x + offX) * scale,
-        top: (widget.y + offY) * scale,
-        fontSize: Math.max(6, (widget.h - 1 || 8) * scale),
+        ...(anchor
+          ? {
+              left: (anchor.x + offX) * scale,
+              top: (anchor.y + offY) * scale,
+              width: anchor.w * scale,
+              textAlign: 'right' as const,
+            }
+          : {
+              left: (widget.x + offX) * scale,
+              top: (widget.y + offY) * scale,
+            }),
+        fontSize: size ?? 8 * scale,
         color: `#${rgb.toString(16).padStart(6, '0')}`,
         ...(shadowed
           ? {

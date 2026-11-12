@@ -82,6 +82,7 @@
   "Search failed, showing results for {query}(ui.search_failed_results)": "Search failed, showing results for {query}",
   "Search(ui.search_dialog)": "Search",
   "Search(ui.search_trigger)": "Search",
+  "Scroll(ui.scroll)": "Scroll",
   "Showing the English version. A translation is not available yet.(untranslated.body)": "Showing the English version. A translation is not available yet.",
   "Sign in(ui.sign_in)": "Sign in",
   "Sign out(ui.sign_out)": "Sign out",

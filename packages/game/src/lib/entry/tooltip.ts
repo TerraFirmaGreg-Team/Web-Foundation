@@ -17,6 +17,7 @@ import type { DumpDisplay } from '@terrafirmagreg-team/dump/lib/dump/contract/te
 import {
   dumpTextLines,
   stackDisplayName,
+  stripMcFormat,
 } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names';
 import { createDatasetCache } from '@terrafirmagreg-team/dump/lib/dump/reader';
 import { fetchTagMembers } from '@terrafirmagreg-team/game/lib/entry/icon-load';
@@ -89,12 +90,17 @@ export async function stackTooltip(
   const lines = display.tooltip?.length
     ? dumpTextLines(map, display.tooltip)
     : [];
-  if (!lines.length) {
+  if (!lines.length || !lines[lines.length - 1].includes('§')) {
     const manifest = await loadClientManifest(dataset);
     const ns = parseStackId(id).id.split(':', 1)[0];
     const key = ns ? manifest?.namespaces?.[ns]?.display?.name : undefined;
     const mod = key ? map[key] : undefined;
-    if (mod) lines.push(mod);
+    if (
+      mod &&
+      !lines.some((line) => stripMcFormat(line).trim() === mod)
+    ) {
+      lines.push(mod);
+    }
   }
   return { lines, mods };
 }

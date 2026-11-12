@@ -1,7 +1,7 @@
 'use client';
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 
-import { useState, type ReactElement, type ReactNode } from 'react';
+import { Fragment, useState, type ReactElement, type ReactNode } from 'react';
 import type { ReferenceKind } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 import { useModifierKeys } from '@terrafirmagreg-team/ui/hooks/use-modifier-keys';
 import { LazyTooltip } from '@terrafirmagreg-team/ui/components/blocks/tooltip/lazy';
@@ -49,6 +49,7 @@ export function EntryTooltip({
   lang,
   langMap,
   level = 'full',
+  subheader,
   footer,
   children,
 }: {
@@ -61,6 +62,7 @@ export function EntryTooltip({
   langMap?: Record<string, string>;
 
   level?: EntryTooltipLevel;
+  subheader?: ReactNode;
   footer?: ReactNode;
   children: ReactElement;
 }) {
@@ -104,23 +106,25 @@ export function EntryTooltip({
     return (
       <>
         {lines.map((line, index) => (
-          <p
-            key={`${index}:${line}`}
-            className={
-              index === 0
-                ? 'font-medium'
-                : lastIsMod && index === lines.length - 1
-                  ? 'italic'
-                  : 'text-muted-foreground'
-            }
-            style={
-              lastIsMod && index === lines.length - 1
-                ? { color: ENCHANTED_TEXT_COLOR }
-                : undefined
-            }
-          >
-            <TooltipLine text={line} />
-          </p>
+          <Fragment key={`${index}:${line}`}>
+            <p
+              className={
+                index === 0
+                  ? 'font-medium'
+                  : lastIsMod && index === lines.length - 1
+                    ? 'italic'
+                    : 'text-muted-foreground'
+              }
+              style={
+                lastIsMod && index === lines.length - 1
+                  ? { color: ENCHANTED_TEXT_COLOR }
+                  : undefined
+              }
+            >
+              <TooltipLine text={line} />
+            </p>
+            {index === 0 ? subheader : null}
+          </Fragment>
         ))}
         {footer}
       </>

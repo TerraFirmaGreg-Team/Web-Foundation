@@ -6,6 +6,8 @@ import { recipeGlareFilter } from '@terrafirmagreg-team/recipe/components/cards/
 import {
   cardStripGeo,
   countCoveredText,
+  slotCoveredLabel,
+  slotOverlay,
   textInStrip,
 } from '@terrafirmagreg-team/recipe/lib/cards/model';
 import { CardText } from '@terrafirmagreg-team/recipe/components/cards/card/text';
@@ -184,8 +186,17 @@ export function RecipeCard({
         />
       ) : null}
       {inView
-        ? textWidgets.map((widget, index) =>
-            textInStrip(widget, strip) ? null : (
+        ? textWidgets.map((widget, index) => {
+            if (textInStrip(widget, strip) || countCoveredText(widget, slots)) {
+              return null;
+            }
+            const labelSlot = slotCoveredLabel(widget, slots);
+            const overlaySlot = labelSlot ?? slotOverlay(widget, slots);
+            const micro =
+              overlaySlot && widget.h <= 6
+                ? (Math.min(overlaySlot.w, overlaySlot.h) / 16) * 4 * scale
+                : undefined;
+            return (
               <CardText
                 key={`${widget.x}:${widget.y}:${index}`}
                 widget={widget}
@@ -193,9 +204,19 @@ export function RecipeCard({
                 offY={margin}
                 scale={scale}
                 langMap={langMap}
+                size={micro}
+                {...(labelSlot
+                  ? {
+                      anchor: {
+                        x: labelSlot.x,
+                        y: labelSlot.y,
+                        w: labelSlot.w,
+                      },
+                    }
+                  : {})}
               />
-            ),
-          )
+            );
+          })
         : null}
     </div>
   );

@@ -122,6 +122,49 @@ function circuitOpen(datasetId: string | undefined): boolean {
 
 class DumpNotFound extends Error {}
 
+const PARSE_WORKER_SOURCE = `self.onmessage=(e)=>{const{id,text}=e.data;try{self.postMessage({id,value:JSON.parse(text)})}catch(error){self.postMessage({id,error:String(error)})}};`;
+
+let parseWorker: Worker | undefined;
+let parseSeq = 0;
+const parsePending = new Map<
+  number,
+  { resolve: (value: unknown) => void; reject: (error: Error) => void }
+>();
+
+function parseJson(text: string): Promise<unknown> {
+  if (typeof Worker === 'undefined') {
+    return Promise.resolve(JSON.parse(text) as unknown);
+  }
+  try {
+    if (!parseWorker) {
+      const url = URL.createObjectURL(
+        new Blob([PARSE_WORKER_SOURCE], { type: 'text/javascript' }),
+      );
+      parseWorker = new Worker(url);
+      URL.revokeObjectURL(url);
+      parseWorker.onmessage = (event: MessageEvent) => {
+        const { id, value, error } = event.data as {
+          id: number;
+          value?: unknown;
+          error?: string;
+        };
+        const slot = parsePending.get(id);
+        if (!slot) return;
+        parsePending.delete(id);
+        if (error !== undefined) slot.reject(new Error(error));
+        else slot.resolve(value);
+      };
+    }
+    const id = ++parseSeq;
+    return new Promise((resolve, reject) => {
+      parsePending.set(id, { resolve, reject });
+      parseWorker!.postMessage({ id, text });
+    });
+  } catch {
+    return Promise.resolve(JSON.parse(text) as unknown);
+  }
+}
+
 const SERVER_CACHE_MAX = 1_500_000;
 
 class DumpTooBig extends Error {
@@ -152,7 +195,7 @@ async function fetchAndParse(
           res.body!.pipeThrough(new DecompressionStream('gzip')),
         ).text()
       : await res.text();
-    const value = JSON.parse(text) as unknown;
+    const value = await parseJson(text);
     if (text.length > SERVER_CACHE_MAX) throw new DumpTooBig(value);
     return value;
   } catch (error) {
@@ -219,7 +262,8 @@ export const COMPRESSED_TREE = /^(?:data|meta)\//;
 function toLangMap(raw: unknown): Record<string, string> {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
   const map: Record<string, string> = {};
-  for (const [key, value] of Object.entries(raw)) {
+  for (const key in raw) {
+    const value = (raw as Record<string, unknown>)[key];
     map[key] = typeof value === 'string' ? value : JSON.stringify(value);
   }
   return map;
@@ -402,7 +446,9 @@ export class JsonDumpReader implements DumpReader {
         this.getJson(`${base}/${code}.json`).then(toLangMap),
       ),
     );
-    return Object.assign({}, ...metaMaps);
+    return metaMaps.length === 1
+      ? metaMaps[0]!
+      : Object.assign({}, ...metaMaps);
   }
 
   private async loadLangRaw(code: string): Promise<Record<string, string>> {
