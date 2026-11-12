@@ -8,7 +8,7 @@ export function isBuildPhase(): boolean {
 export type FeatureMode = 'dev' | 'prod' | 'off';
 
 export function featureMode(name: string): FeatureMode {
-  const raw = env(`${name}_MODE`)?.toLowerCase();
+  const raw = env(`MODE_${name}`)?.toLowerCase();
   return raw === 'dev' || raw === 'prod' ? raw : 'off';
 }
 

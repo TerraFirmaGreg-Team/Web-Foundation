@@ -62,7 +62,7 @@ export type CrowdinLanguageProgress = {
 };
 
 const client = () => {
-  const token = env('CROWDIN_API_TOKEN');
+  const token = env('CROWDIN_TOKEN');
   return token ? new Client({ token, organization: CROWDIN_ORG }) : undefined;
 };
 

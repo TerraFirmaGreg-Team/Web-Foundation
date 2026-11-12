@@ -23,6 +23,7 @@ import {
   generateDatasetLandingParams,
   getDatasetLanding,
 } from '@terrafirmagreg-team/kit/lib/landing';
+import { splitLandingSlug } from '@terrafirmagreg-team/kit/lib/variant';
 import {
   generateDatasetParams,
   getPage,
@@ -101,7 +102,6 @@ export interface SectionRoutesOptions<
 
 interface RouteParams {
   params: Promise<{ slug?: string[] }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 type Resolved = { page: unknown; isFallback: boolean } | undefined;
@@ -152,17 +152,18 @@ export function createSectionRoutes<
   const resolve =
     (src: TSource, datasets: readonly SectionDataset[]) =>
     (slug: string[] | undefined, lang: Lang): Resolved => {
-      if (slug?.length === 1) {
-        if (!findDataset(datasets, { id: slug[0] })) return undefined;
+      const { dataset } = splitLandingSlug(slug);
+      if (dataset) {
+        if (!findDataset(datasets, { id: dataset })) return undefined;
         if (landing) {
-          const page = getDatasetLanding(section, slug, lang, datasets);
+          const page = getDatasetLanding(section, [dataset], lang, datasets);
           if (!page) return undefined;
           if (!PageView) return { page, isFallback: false };
           const own = (src as SectionSource)
             .getPages()
             .some(
               (p) =>
-                p.slugs[0] === slug[0] &&
+                p.slugs[0] === dataset &&
                 ((p as SectionPage).locale ?? p.slugs[1]) === lang,
             );
           return { page, isFallback: !own };
@@ -179,7 +180,7 @@ export function createSectionRoutes<
     page: unknown,
     lang: Lang,
   ): Promise<ReactNode> => {
-    if (slug?.length === 1 && landing) {
+    if (splitLandingSlug(slug).dataset && landing) {
       const view = await landing({
         page: page as DatasetLanding,
         lang,
@@ -229,7 +230,7 @@ export function createSectionRoutes<
       ),
   });
 
-  async function Page({ params, searchParams }: RouteParams) {
+  async function Page({ params }: RouteParams) {
     const { slug } = await params;
     const [src, datasets] = await Promise.all([
       source.getSource(),
@@ -237,24 +238,13 @@ export function createSectionRoutes<
     ]);
 
     if (slug?.length === 1 && !landing && PageView) {
-      const { languages, defaultLanguage } = loadLocaleRegistry();
+      const { defaultLanguage } = loadLocaleRegistry();
       if (!getPage(src as SectionSource, slug, defaultLanguage)) {
         const resolvedTrees = trees ? await trees(defaultLanguage) : undefined;
         const first = flattenTree(
           resolvedTrees?.[defaultLanguage]?.[slug[0]]?.children ?? [],
         )[0];
-        if (first)
-          redirect(
-            withLang(
-              first.url,
-              resolveLang(
-                (await searchParams)['lang'],
-                languages,
-                defaultLanguage,
-              ),
-              defaultLanguage,
-            ),
-          );
+        if (first) redirect(first.url);
       }
     }
 
@@ -297,34 +287,26 @@ export function createSectionRoutes<
     return generateDatasetLandingParams(section);
   }
 
-  async function generateMetadata({
-    params,
-    searchParams,
-  }: RouteParams): Promise<Metadata> {
+  async function generateMetadata({ params }: RouteParams): Promise<Metadata> {
     const { slug } = await params;
-    if (slug?.length === 1 && landing) {
+    const { dataset, variant } = splitLandingSlug(slug);
+    if (dataset && landing) {
       const datasets = await sectionDatasets(section);
-      const meta = await datasetLandingMetadata(section, slug, datasets);
-      if (deepLink) {
-        const search = new URLSearchParams();
-        for (const [key, value] of Object.entries(await searchParams)) {
-          const first = Array.isArray(value) ? value[0] : value;
-          if (first !== undefined) search.set(key, first);
-        }
-        if ([...search.keys()].length) {
-          const { defaultLanguage, languages } = loadLocaleRegistry();
-          const langParam = search.get('lang');
+      const meta = await datasetLandingMetadata(section, [dataset], datasets);
+      if (deepLink && variant?.size) {
+        const { defaultLanguage, languages } = loadLocaleRegistry();
+          const langParam = variant.get('lang');
           const deep = await deepLink({
-            datasetId: slug[0],
-            search,
+            datasetId: dataset,
+            search: variant,
             lang:
               langParam && languages.includes(langParam)
                 ? langParam
                 : defaultLanguage,
           }).catch(() => undefined);
           const version =
-            search.get('version') ??
-            datasets.find((d) => d.id === slug[0])?.versions?.[0];
+            variant.get('version') ??
+            datasets.find((d) => d.id === dataset)?.versions?.[0];
           const imageQuery = [
             deep?.imageQuery,
             version ? `version=${encodeURIComponent(version)}` : '',
@@ -353,7 +335,7 @@ export function createSectionRoutes<
             deep?.description ?? (og?.description as string | undefined);
           const imageUrl = imageQuery
             ? canonicalUrl(
-                getVariantImageUrl(section, slug[0], imageQuery).url,
+                getVariantImageUrl(section, dataset, imageQuery).url,
               )
             : undefined;
           if (deep || imageQuery) {
@@ -363,6 +345,9 @@ export function createSectionRoutes<
               description,
               openGraph: {
                 ...meta.openGraph,
+                url: canonicalUrl(
+                  `${sectionUrl(section)}/${(slug ?? []).join('/')}`,
+                ),
                 title,
                 description,
                 images: imageUrl
@@ -379,7 +364,6 @@ export function createSectionRoutes<
               twitter: { ...meta.twitter, title, description },
             };
           }
-        }
       }
       return meta;
     }
