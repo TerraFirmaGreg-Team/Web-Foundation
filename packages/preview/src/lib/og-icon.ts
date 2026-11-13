@@ -1,5 +1,3 @@
-import { createElement } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
 import * as anvilIcon from 'lucide-react/icons/anvil';
 import * as bookOpenIcon from 'lucide-react/icons/book-open';
 import * as calculatorIcon from 'lucide-react/icons/calculator';
@@ -25,7 +23,7 @@ const iconNodes: Record<string, IconNode> = {
   feather: nodeOf(featherIcon),
   flag: nodeOf(flagIcon),
   'flask-conical': nodeOf(flaskConicalIcon),
-  history: nodeOf(historyIcon),
+  'rotate-ccw-clock': nodeOf(historyIcon),
   map: nodeOf(mapIcon),
   'scroll-text': nodeOf(scrollTextIcon),
 };
@@ -35,7 +33,7 @@ const sectionIcons: Record<string, string> = {
   guide: 'map',
   recipe: 'combine',
   quest: 'scroll-text',
-  changelog: 'history',
+  changelog: 'rotate-ccw-clock',
 };
 
 const motifGlyphs: Record<string, string> = {
@@ -52,6 +50,29 @@ const namedGlyphs: Record<string, string> = {
   feather: 'feather',
 };
 
+function attr(value: unknown): string {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;');
+}
+
+function iconSvg(node: IconNode, color: string): string {
+  const body = node
+    .map(
+      ([tag, attrs]) =>
+        `<${tag}${Object.entries(attrs)
+          .map(([key, value]) =>
+            value == null || key === 'key'
+              ? ''
+              : ` ${key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}="${attr(value)}"`,
+          )
+          .join('')}/>`,
+    )
+    .join('');
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${attr(color)}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
+}
+
 const iconCache = new Map<string, Map<string, string | undefined>>();
 
 function iconDataUri(name: string, color: string): string | undefined {
@@ -62,29 +83,8 @@ function iconDataUri(name: string, color: string): string | undefined {
   }
   if (colors.has(color)) return colors.get(color);
   const node = iconNodes[name];
-  const svg = node?.length
-    ? renderToStaticMarkup(
-        createElement(
-          'svg',
-          {
-            xmlns: 'http://www.w3.org/2000/svg',
-            width: 24,
-            height: 24,
-            viewBox: '0 0 24 24',
-            fill: 'none',
-            stroke: color,
-            strokeWidth: 2,
-            strokeLinecap: 'round',
-            strokeLinejoin: 'round',
-          },
-          node.map(([tag, attrs]) =>
-            createElement(tag, attrs as Record<string, string>),
-          ),
-        ),
-      )
-    : '';
-  const uri = svg
-    ? `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
+  const uri = node?.length
+    ? `data:image/svg+xml;utf8,${encodeURIComponent(iconSvg(node, color))}`
     : undefined;
   colors.set(color, uri);
   return uri;
