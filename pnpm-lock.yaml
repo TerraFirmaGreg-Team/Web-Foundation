@@ -745,6 +745,9 @@ importers:
       react:
         specifier: 'catalog:'
         version: 19.3.1
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.3.1(react@19.3.1)
       sharp:
         specifier: 'catalog:'
         version: 0.35.5(@types/node@26.6.6)
