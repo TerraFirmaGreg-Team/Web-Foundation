@@ -16,7 +16,7 @@ export const EMPTY_ENTRIES: CalcTreeEntry[] = [];
 
 export function newCalcEntry(state: CalculatorState, name?: string): CalcTreeEntry {
   return {
-    id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+    id: crypto.randomUUID(),
     name,
     savedAt: Date.now(),
     state,

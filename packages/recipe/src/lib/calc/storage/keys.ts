@@ -11,11 +11,11 @@ function calcTabId(): string {
   try {
     tabId = window.sessionStorage.getItem(TAB_KEY);
     if (!tabId) {
-      tabId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+      tabId = crypto.randomUUID();
       window.sessionStorage.setItem(TAB_KEY, tabId);
     }
   } catch {
-    tabId ??= `tab-${Math.random().toString(36).slice(2, 8)}`;
+    tabId ??= `tab-${crypto.randomUUID()}`;
   }
   return tabId;
 }

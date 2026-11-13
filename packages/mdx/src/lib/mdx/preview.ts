@@ -1,3 +1,4 @@
+import GithubSlugger from 'github-slugger';
 import { remarkDirectives } from './directives.ts';
 import {
   remarkCodeTab,
@@ -44,14 +45,6 @@ function nextPreviewId(file: VFileLike): number {
   return n;
 }
 
-function slugify(text: string): string {
-  return (
-    text
-      .toLowerCase()
-      .replace(/[^\p{L}\p{N}]+/gu, '-')
-      .replace(/^-+|-+$/g, '') || 'section'
-  );
-}
 
 function walk(node: MdastNode, visit: (n: MdastNode) => void): void {
   visit(node);
@@ -206,7 +199,7 @@ async function processOutputBody(
 
   const { remarkInclude } = await import('fumadocs-core/mdx-plugins');
 
-  const used = new Map<string, number>();
+  const slugger = new GithubSlugger();
 
   const processor = unified()
     .use(remarkParse)
@@ -224,13 +217,8 @@ async function processOutputBody(
     .use(remarkHeading, {
       generateToc: false,
       customId: false,
-      slug: (_root, _heading, text: string) => {
-        const base = slugify(text);
-        const n = used.get(base) ?? 0;
-        used.set(base, n + 1);
-        const local = n === 0 ? base : `${base}-${n}`;
-        return `preview-${previewNo}-${local}`;
-      },
+      slug: (_root, _heading, text: string) =>
+        `preview-${previewNo}-${slugger.slug(text) || 'section'}`,
     });
 
   const tree = processor.parse({ value: source, path: file.path });

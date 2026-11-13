@@ -3,6 +3,7 @@ import { realpathSync } from 'node:fs';
 import GithubSlugger from 'github-slugger';
 import { toString } from 'mdast-util-to-string';
 import { valueToEstree } from 'estree-util-value-to-estree';
+import { visit } from 'unist-util-visit';
 import {
   shouldShowChangelog,
   shouldShowContributors,
@@ -94,34 +95,33 @@ function resolveContentPath(
 function collectIds(tree: MdastNode): Set<string> {
   const ids = new Set<string>();
   const slugger = new GithubSlugger();
-  function visit(node: MdastNode) {
-    const id = node.data?.hProperties?.id;
+  visit(tree as unknown as Root, (node) => {
+    const n = node as MdastNode;
+    const id = n.data?.hProperties?.id;
     if (typeof id === 'string') ids.add(id);
-    else if (node.type === 'heading') {
+    else if (n.type === 'heading') {
       const text = toString(node as never);
       ids.add(
         /\[#([^\]\s]+)\]\s*$/.exec(text)?.[1] ?? slugger.slug(text.trim()),
       );
     }
     if (
-      node.type === 'mdxJsxFlowElement' ||
-      node.type === 'mdxJsxTextElement'
+      n.type === 'mdxJsxFlowElement' ||
+      n.type === 'mdxJsxTextElement'
     ) {
-      for (const attribute of node.attributes ?? [])
+      for (const attribute of n.attributes ?? [])
         if (
           attribute.name === 'id' &&
           typeof attribute.value === 'string'
         )
           ids.add(attribute.value);
-    } else if (node.type === 'html') {
-      for (const [, value] of (node.value ?? '').matchAll(
+    } else if (n.type === 'html') {
+      for (const [, value] of (n.value ?? '').matchAll(
         /\bid\s*=\s*["']([^"']+)["']/g,
       ))
         ids.add(value);
     }
-    for (const child of node.children ?? []) visit(child);
-  }
-  visit(tree);
+  });
   return ids;
 }
 

@@ -57,7 +57,7 @@ function labelText(node: MdastNode): string {
     const d = node as DirectiveNode;
     const inner = (d.children ?? []).map(labelText).join('');
     const attrs = Object.entries(d.attributes ?? {})
-      .map(([k, v]) => (v == null ? k : v === true ? k : `${k}="${v}"`))
+      .map(([k, v]) => (v == null ? k : `${k}="${v}"`))
       .join(' ');
     const prefix = t === 'leafDirective' ? '::' : ':';
     return `${prefix}${d.name ?? ''}${inner ? `[${inner}]` : ''}${attrs ? `{${attrs}}` : ''}`;

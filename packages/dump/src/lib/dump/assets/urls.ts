@@ -1,3 +1,4 @@
+import { join, relative } from 'pathe';
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import type {
   AtlasPage,
@@ -67,24 +68,12 @@ function pathDir(path: string): string {
   return slash >= 0 ? path.slice(0, slash + 1) : '';
 }
 
-function relativePath(fromDir: string, toPath: string): string {
-  const a = fromDir.split('/').filter(Boolean);
-  const b = toPath.split('/').filter(Boolean);
-  let i = 0;
-  while (i < a.length && i < b.length && a[i] === b[i]) i += 1;
-  return '../'.repeat(a.length - i) + b.slice(i).join('/');
-}
-
 function resolveAssetRel(baseDir: string, relUri: string): string | null {
-  const out: string[] = [];
-  for (const seg of `${baseDir}${relUri}`.split('/')) {
-    if (seg === '..') {
-      if (!out.pop()) return null;
-    } else if (seg !== '.' && seg !== '') {
-      out.push(seg);
-    }
-  }
-  return out.length ? out.join('/') : null;
+  const depth = baseDir.split('/').filter(Boolean).length;
+  const ascents = relUri.split('/').filter((seg) => seg === '..').length;
+  if (ascents > depth) return null;
+  const resolved = join(baseDir, relUri);
+  return resolved === '.' ? null : resolved;
 }
 
 const reverseFileIndexes = new WeakMap<
@@ -142,7 +131,7 @@ export function createDumpAssetResolver(
       try {
         const resource = new URL(resourceUrl, modelAbs);
         if (resource.origin !== modelAbs.origin) return undefined;
-        rel = relativePath(pathDir(modelAbs.pathname), resource.pathname);
+        rel = relative(pathDir(modelAbs.pathname), resource.pathname);
       } catch {
         return undefined;
       }

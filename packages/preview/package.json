@@ -32,7 +32,8 @@
   },
   "peerDependencies": {
     "next": "catalog:",
-    "react": "catalog:"
+    "react": "catalog:",
+    "react-dom": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",

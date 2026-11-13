@@ -19,6 +19,7 @@
     "@terrafirmagreg-team/sites": "workspace:^",
     "@terrafirmagreg-team/translate": "workspace:^",
     "aws4fetch": "^1.0.20",
+    "pathe": "^2.0.3",
     "server-only": "catalog:"
   },
   "peerDependencies": {

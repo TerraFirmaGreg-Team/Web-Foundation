@@ -8,7 +8,7 @@ import { visit } from 'unist-util-visit';
 import { jsxAttr, type DirectiveNode } from './directive-utils.ts';
 import type { JsxAttribute, JsxElement, MdastNode } from '../../types/mdx';
 
-type TreeNode = FileNode | FolderNode;
+type TreeNode = (FileNode | FolderNode) & { parsed?: TreeName };
 
 const LINK_RE = /^\[([^\]]+)\]\((\S+?)(?:\s+"([^"]*)")?\)$/;
 
@@ -39,7 +39,7 @@ function attributes(parsed: TreeName): JsxAttribute[] {
 }
 
 function nodeToMdx(node: TreeNode, options: ToMdxOptions): JsxElement {
-  const parsed = parseName(node.name);
+  const parsed = node.parsed ?? parseName(node.name);
   const attrs = attributes(parsed);
   const isFolder = node.type === 'folder' || parsed.name.endsWith('/');
   if (!isFolder)
@@ -88,21 +88,24 @@ function itemToTree(item: ListNode): TreeNode {
           children: { value: string }[];
         })
       : undefined;
-  let name = link ? toString(link.children[0] as never) : toString(paragraph as never);
+  let name = link ? toString(link as never) : toString(paragraph as never);
   const href = link?.url;
-  const description = link?.title ?? undefined;
-  const annotated = href ? `[${name}](${href}${description ? ` "${description}"` : ''})` : name;
   const isFolder = !!nested || name.endsWith('/');
   if (isFolder) name = name.replace(/\/+$/, '') || name;
-  if (!isFolder) return { type: 'file', name: annotated } as FileNode;
+  const parsed: TreeName = { name: isFolder && href ? `${name}/` : name };
+  if (href) parsed.href = href;
+  if (link?.title) parsed.description = link.title;
+  if (!isFolder)
+    return { type: 'file', name, parsed } as unknown as FileNode;
   const children = (nested?.children ?? []).map(
     (child) => itemToTree(child as ListNode) as TreeNode,
   );
   return {
     type: 'folder',
-    name: href ? `[${name}/](${href}${description ? ` "${description}"` : ''})` : name,
+    name,
+    parsed,
     children,
-  } as FolderNode;
+  } as unknown as FolderNode;
 }
 
 export function remarkFilesDirective() {

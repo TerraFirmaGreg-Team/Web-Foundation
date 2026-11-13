@@ -32,7 +32,7 @@ export function useAddToCalc(session: RecipeSession) {
         : [
             ...state.cards,
             {
-              id: `c${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`,
+              id: `c${crypto.randomUUID()}`,
               materialId: item,
               kind,
               recipeId: null,

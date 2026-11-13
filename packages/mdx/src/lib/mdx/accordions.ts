@@ -57,9 +57,7 @@ function accordionsAttributes(node: DirectiveNode): JsxAttribute[] {
   const attrs = node.attributes ?? {};
   const out: JsxAttribute[] = [];
   const isMultiple =
-    attrs.multiple === true ||
-    attrs.multiple === '' ||
-    attrs.type === 'multiple';
+    attrs.multiple === '' || attrs.type === 'multiple';
 
   if (isMultiple) out.push(jsxAttr('multiple', true));
 

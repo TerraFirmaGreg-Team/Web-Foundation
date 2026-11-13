@@ -28,6 +28,7 @@
     "fumadocs-twoslash": "^4.0.4",
     "fumadocs-typescript": "5.6.0",
     "gemoji": "^8.1.0",
+    "github-slugger": "^2.0.0",
     "lucide-react": "catalog:",
     "mdast-util-to-string": "^4.0.0",
     "rehype-katex": "^7.0.1",

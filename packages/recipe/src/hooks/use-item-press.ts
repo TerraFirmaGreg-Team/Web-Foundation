@@ -48,9 +48,7 @@ export function useItemPress({
               : [
                   ...parsed.cards,
                   {
-                    id: `c${Date.now().toString(36)}${Math.random()
-                      .toString(36)
-                      .slice(2, 4)}`,
+                    id: `c${crypto.randomUUID()}`,
                     materialId: id,
                     kind,
                     recipeId: null,

@@ -388,6 +388,9 @@ importers:
       fumadocs-core:
         specifier: '>=16'
         version: 16.19.0(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.3.0)(lucide-react@1.72.0(@types/react@19.3.0)(react@19.3.1))(next@16.4.6(@babel/core@7.29.13)(@types/node@26.6.6)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(zod@4.6.7)
+      pathe:
+        specifier: ^2.0.3
+        version: 2.0.3
       server-only:
         specifier: 'catalog:'
         version: 0.0.1
@@ -492,6 +495,9 @@ importers:
       unified:
         specifier: ^11.0.5
         version: 11.0.5
+      unist-util-visit:
+        specifier: ^5.2.0
+        version: 5.2.0
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -657,6 +663,9 @@ importers:
       gemoji:
         specifier: ^8.1.0
         version: 8.1.0
+      github-slugger:
+        specifier: ^2.0.0
+        version: 2.0.0
       lucide-react:
         specifier: 'catalog:'
         version: 1.72.0(@types/react@19.3.0)(react@19.3.1)
@@ -4683,6 +4692,9 @@ packages:
 
   path-parse@1.0.7:
     resolution: {integrity: sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw==}
+
+  pathe@2.0.3:
+    resolution: {integrity: sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==}
 
   pathfinding@0.4.18:
     resolution: {integrity: sha512-R0TGEQ9GRcFCDvAWlJAWC+KGJ9SLbW4c0nuZRcioVlXVTlw+F5RvXQ8SQgSqI9KXWC1ew95vgmIiyaWTlCe9Ag==}
@@ -9247,6 +9259,8 @@ snapshots:
   path-key@3.1.1: {}
 
   path-parse@1.0.7: {}
+
+  pathe@2.0.3: {}
 
   pathfinding@0.4.18:
     dependencies:
