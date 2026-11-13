@@ -112,6 +112,7 @@ export interface QuestTask {
   count?: number;
   dimension?: string;
   filter?: string;
+  filterItems?: string[];
   filterRaw?: string;
   icon?: TaggedReference;
   id?: string;

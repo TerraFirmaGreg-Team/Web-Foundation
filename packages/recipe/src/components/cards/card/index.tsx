@@ -106,19 +106,23 @@ export function RecipeCard({
       ref={rootRef}
       className="relative w-fit overflow-hidden rounded-sm bg-mc-panel"
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={src}
-        alt={title}
-        className="block"
-        width={naturalW}
-        height={naturalH}
-        loading="lazy"
-        decoding="async"
-        draggable={false}
-        onError={onFail}
-        style={recipeGlareFilter}
-      />
+      {src ? (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={src}
+            alt={title}
+            className="block"
+            width={naturalW}
+            height={naturalH}
+            loading="lazy"
+            decoding="async"
+            draggable={false}
+            onError={onFail}
+            style={recipeGlareFilter}
+          />
+        </>
+      ) : null}
       {inView && interactive && glbUrl ? (
         <div
           className="absolute"

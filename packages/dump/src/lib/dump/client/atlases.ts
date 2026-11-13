@@ -5,11 +5,26 @@ import {
   mergeAtlases,
 } from '@terrafirmagreg-team/dump/lib/dump/assets/atlas/sprites';
 import {
-  clientRegistryIconsEntries,
+  clientRegistryIconsMerged,
   loadClientManifest,
 } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import { serverCache } from '@terrafirmagreg-team/data/lib/server-cache';
 import { createDatasetCache } from '@terrafirmagreg-team/dump/lib/dump/reader';
+
+const iconsSlice = async (
+  dataset: DatasetRef,
+  file: string,
+  modId: string,
+): Promise<Record<string, unknown> | undefined> => {
+  const merged = await clientRegistryIconsMerged(dataset, file, 'high');
+  if (!merged) return undefined;
+  const prefix = `${modId}:`;
+  const out: Record<string, unknown> = {};
+  for (const [id, row] of Object.entries(merged)) {
+    if (id.startsWith(prefix)) out[id] = row;
+  }
+  return out;
+};
 
 const loadClientModAtlas = createDatasetCache(
   async (
@@ -24,7 +39,7 @@ const loadClientModAtlas = createDatasetCache(
     if (kind === 'blocks') {
       if (!has('blocks')) return null;
       return iconAtlasFromEntries(
-        await clientRegistryIconsEntries(dataset, 'blocks', modId, 'high'),
+        await iconsSlice(dataset, 'blocks', modId),
         dataset,
         modId,
         'blocks',
@@ -32,12 +47,8 @@ const loadClientModAtlas = createDatasetCache(
       );
     }
     const [items, fluids] = await Promise.all([
-      has('items')
-        ? clientRegistryIconsEntries(dataset, 'items', modId, 'high')
-        : undefined,
-      has('fluids')
-        ? clientRegistryIconsEntries(dataset, 'fluids', modId, 'high')
-        : undefined,
+      has('items') ? iconsSlice(dataset, 'items', modId) : undefined,
+      has('fluids') ? iconsSlice(dataset, 'fluids', modId) : undefined,
     ]);
     return mergeAtlases(
       [

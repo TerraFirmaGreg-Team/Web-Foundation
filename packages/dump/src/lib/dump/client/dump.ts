@@ -16,11 +16,11 @@ import { yieldToMain } from '@terrafirmagreg-team/data/lib/scheduler';
 import { loadDatasetDump } from '@terrafirmagreg-team/dump/lib/dump/mods/load';
 import {
   dumpModRegistryRel,
-  dumpRegistryIconsRel,
   dumpRegistryNamespaces,
   dumpRegistryRel,
   dumpRegistryTooltipsRel,
   dumpRegistryUsesRel,
+  SHARDED_REGISTRY,
 } from '@terrafirmagreg-team/dump/lib/dump/mods/index';
 import type { DumpManifest } from '@terrafirmagreg-team/dump/lib/dump/manifest/dto';
 
@@ -68,6 +68,12 @@ export async function clientRegistryEntries(
   const dump = await loadDatasetDump(dataset);
   const rel = dumpRegistryRel(dump, file);
   if (rel) return asRecord(await clientDumpJson(dataset, rel, priority));
+  if (SHARDED_REGISTRY.has(file)) {
+    const merged = asRecord(
+      await clientDumpJson(dataset, `registry/${file}.ndjson`, priority),
+    );
+    if (merged) return merged;
+  }
   const namespaces = dumpRegistryNamespaces(dump, file);
   if (!namespaces.length) return undefined;
   const shards = await Promise.all(
@@ -104,20 +110,30 @@ export async function clientRegistryNsEntries(
     : undefined;
 }
 
-export async function clientRegistryIconsEntries(
+export async function clientRegistryIconEntry(
   dataset: DatasetRef,
   file: string,
-  ns: string,
+  id: string,
+): Promise<unknown | undefined> {
+  const reader = await dumpReader(dataset);
+  for await (const batch of reader.ndjsonRows(
+    `registry/${file}.icons.ndjson`,
+  )) {
+    for (const [key, value] of batch) {
+      if (key === id) return value;
+    }
+  }
+  return undefined;
+}
+
+export async function clientRegistryIconsMerged(
+  dataset: DatasetRef,
+  file: string,
   priority?: 'high',
 ): Promise<Record<string, unknown> | undefined> {
-  const rel = dumpRegistryIconsRel(
-    await loadDatasetDump(dataset),
-    ns,
-    file,
+  return asRecord(
+    await clientDumpJson(dataset, `registry/${file}.icons.ndjson`, priority),
   );
-  return rel
-    ? asRecord(await clientDumpJson(dataset, rel, priority))
-    : undefined;
 }
 
 export async function clientRegistryTooltipsEntries(
@@ -152,18 +168,61 @@ export async function clientRegistryUsesEntries(
     : undefined;
 }
 
-export function clientDumpLang(
+export type DumpLangPart = 'names' | 'recipe' | 'quest' | 'guide';
+
+async function clientDumpLangPart(
   dataset: DatasetRef,
   lang: string,
+  part: DumpLangPart,
 ): Promise<Record<string, string>> {
-  return dumpReader(dataset).then((reader) => reader.getLang(lang));
+  const raw = asRecord(
+    await clientDumpJson(dataset, `lang/${lang}.${part}.ndjson`),
+  ) as Record<string, string> | undefined;
+  if (!raw) return {};
+  if (lang === 'en_us') return raw;
+  const en = asRecord(
+    await clientDumpJson(dataset, `lang/en_us.${part}.ndjson`),
+  ) as Record<string, string> | undefined;
+  return { ...en, ...raw };
 }
 
-export function clientDumpLangRaw(
+export function clientDumpLangNames(
   dataset: DatasetRef,
   lang: string,
 ): Promise<Record<string, string>> {
-  return dumpReader(dataset).then((reader) => reader.getLangRaw(lang));
+  return clientDumpLangPart(dataset, lang, 'names');
+}
+
+export function clientDumpLangRecipe(
+  dataset: DatasetRef,
+  lang: string,
+): Promise<Record<string, string>> {
+  return clientDumpLangPart(dataset, lang, 'recipe');
+}
+
+export function clientDumpLangQuest(
+  dataset: DatasetRef,
+  lang: string,
+): Promise<Record<string, string>> {
+  return clientDumpLangPart(dataset, lang, 'quest');
+}
+
+export function clientDumpLangGuide(
+  dataset: DatasetRef,
+  lang: string,
+): Promise<Record<string, string>> {
+  return clientDumpLangPart(dataset, lang, 'guide');
+}
+
+export async function clientDumpLangGuideRaw(
+  dataset: DatasetRef,
+  lang: string,
+): Promise<Record<string, string>> {
+  return (
+    (asRecord(
+      await clientDumpJson(dataset, `lang/${lang}.guide.ndjson`),
+    ) as Record<string, string> | undefined) ?? {}
+  );
 }
 
 export function clientDumpNames(
@@ -207,15 +266,9 @@ export async function multiblockModelIndex(
   dataset: DatasetRef,
   namespace: string,
 ): Promise<unknown | undefined> {
-  return (
-    (await clientDumpJson(
-      dataset,
-      `assets/${namespace}/models/multiblock.json`,
-    )) ??
-    (await clientDumpJson(
-      dataset,
-      `data/${namespace}/models/multiblock.json`,
-    ))
+  return clientDumpJson(
+    dataset,
+    `assets/${namespace}/models/multiblock.json`,
   );
 }
 

@@ -95,7 +95,7 @@ export const ItemPanel = memo(function ItemPanel({
   const [expandedGroups, setExpandedGroups] = useState<ReadonlySet<string>>(
     new Set(),
   );
-  const { cells, filtered, favoriteIds, dIndex, dNames, dLang } =
+  const { cells, favoriteIds, dIndex, dNames, dLang } =
     usePanelCells({
       dataset,
       index,
@@ -112,10 +112,7 @@ export const ItemPanel = memo(function ItemPanel({
   const { page: panelPage, setPage: setPanelPage } = usePanelPage(dataset);
   const list = usePagedList(cells, panelPage, pageSize);
 
-  const gridResetKey = useMemo(
-    () => [mode, filtered, favorites.entries],
-    [mode, filtered, favorites.entries],
-  );
+  const gridResetKey = mode;
   const onToggleGroup = useCallback((groupId: string) => {
     setExpandedGroups((prev) => {
       const next = new Set(prev);
@@ -165,7 +162,13 @@ export const ItemPanel = memo(function ItemPanel({
   pageRef.current = list.page;
   const [startRaw, setStartRaw] = useState(list.page - (PAGE_WINDOW >> 1));
   const maxStart = Math.max(0, list.pages - PAGE_WINDOW);
-  const start = Math.max(0, Math.min(startRaw, maxStart));
+  const start = Math.max(
+    0,
+    Math.min(
+      maxStart,
+      Math.max(list.page - (PAGE_WINDOW - 1), Math.min(startRaw, list.page)),
+    ),
+  );
   const windowPages = useMemo(() => {
     const end = Math.min(list.pages, start + PAGE_WINDOW);
     const out: number[] = [];
@@ -178,12 +181,7 @@ export const ItemPanel = memo(function ItemPanel({
     [cells, windowPages, pageSize],
   );
 
-  useEffect(() => {
-    if (list.page < start || list.page > start + PAGE_WINDOW - 1) {
-      setStartRaw(list.page - (PAGE_WINDOW >> 1));
-    }
-  }, [list.page, start]);
-
+  const didInitScroll = useRef(false);
   useLayoutEffect(() => {
     const el = stripRef.current;
     if (!el || w <= 0) return;
@@ -191,13 +189,18 @@ export const ItemPanel = memo(function ItemPanel({
     if (Math.abs(el.scrollLeft - target) > 2) {
       el.scrollTo({
         left: target,
-        behavior: fromScroll.current ? 'instant' : 'smooth',
+        behavior:
+          fromScroll.current || !didInitScroll.current
+            ? 'instant'
+            : 'smooth',
       });
     }
+    didInitScroll.current = true;
     fromScroll.current = false;
-  }, [list.page, start, w]);
+  }, [list.page, w]);
 
   const idle = useRef<number | undefined>(undefined);
+  const [scrolling, setScrolling] = useState(false);
   useEffect(() => () => window.clearTimeout(idle.current), []);
 
   const onStripScroll = (event: UIEvent<HTMLDivElement>) => {
@@ -207,15 +210,16 @@ export const ItemPanel = memo(function ItemPanel({
       0,
       Math.min(list.pages - 1, Math.round(el.scrollLeft / w)),
     );
-    if (next !== pageRef.current) {
-      fromScroll.current = true;
-      setPanelPage(next);
-    }
+    setScrolling(true);
     window.clearTimeout(idle.current);
-    idle.current = window.setTimeout(
-      () => setStartRaw(pageRef.current - (PAGE_WINDOW >> 1)),
-      160,
-    );
+    idle.current = window.setTimeout(() => {
+      setScrolling(false);
+      if (next !== pageRef.current) {
+        fromScroll.current = true;
+        setPanelPage(next);
+      }
+      setStartRaw(pageRef.current - (PAGE_WINDOW >> 1));
+    }, 160);
   };
 
   const tabOptions = usePanelTabs(dIndex, dNames, dLang);
@@ -278,6 +282,7 @@ export const ItemPanel = memo(function ItemPanel({
               onHover={onHover}
               onToggleGroup={onToggleGroup}
               draggableStacks={isCalc}
+              tooltip={!scrolling}
             />
           </div>
         ))}

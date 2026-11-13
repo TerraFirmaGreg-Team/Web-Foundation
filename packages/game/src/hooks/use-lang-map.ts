@@ -4,7 +4,7 @@ import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { useAsyncResult } from '@terrafirmagreg-team/ui/hooks/use-async-value';
 import { useDumpRetryNonce } from '@terrafirmagreg-team/kit/hooks/use-dump-status';
 import { useLastValue } from '@terrafirmagreg-team/ui/hooks/use-last-value';
-import { dumpReader } from '@terrafirmagreg-team/dump/lib/dump/reader';
+import { clientDumpLangNames } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 
 export function useLangMap(
   dataset: DatasetRef | undefined,
@@ -14,7 +14,7 @@ export function useLangMap(
   const nonce = useDumpRetryNonce();
   const { value, pending } = useAsyncResult(
     enabled && dataset && lang
-      ? () => dumpReader(dataset).then((reader) => reader.getLang(lang))
+      ? () => clientDumpLangNames(dataset, lang)
       : false,
     [dataset, lang, enabled, nonce],
   );

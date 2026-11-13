@@ -9,12 +9,12 @@ import type {
 import { plainQuestText } from '@terrafirmagreg-team/quest/lib/rich-text';
 import { questHref } from '@terrafirmagreg-team/quest/lib/links';
 import { humanizeKey } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names';
+import { clientDumpLangQuest } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 
 export type QuestIndex = AdvancedIndex & { locale: string };
 
 export interface DumpSource {
   getJson(rel: string): Promise<unknown | undefined>;
-  getLang(lang: string): Promise<Record<string, string>>;
 }
 
 function questTitle(
@@ -87,7 +87,7 @@ export async function questSearchIndexes(
   const maps = new Map(
     await Promise.all(
       langs.map(
-        async (lang) => [lang, await source.getLang(lang)] as const,
+        async (lang) => [lang, await clientDumpLangQuest(dataset, lang)] as const,
       ),
     ),
   );

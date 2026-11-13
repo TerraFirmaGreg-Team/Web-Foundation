@@ -6,7 +6,10 @@ import { useRecipeIndex } from '@terrafirmagreg-team/recipe/hooks/use-index';
 import { useRecipeQuery } from '@terrafirmagreg-team/recipe/hooks/use-query';
 import { useAsyncValue } from '@terrafirmagreg-team/ui/hooks/use-async-value';
 import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
-import { clientDumpLang } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
+import {
+  clientDumpLangNames,
+  clientDumpLangRecipe,
+} from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import { useRecipeIndexNames } from '@terrafirmagreg-team/recipe/lib/client-index/store';
 import {
   RECIPE_ALL_TYPE,
@@ -20,6 +23,32 @@ import type {
   RecipePageData,
   RecipeSession,
 } from '@terrafirmagreg-team/recipe/types';
+
+let langMapMemo:
+  | {
+      names: Record<string, Record<string, string>>;
+      langRaw: Record<string, string> | undefined;
+      lang: string;
+      map: Record<string, string>;
+    }
+  | undefined;
+
+function mergeLangMap(
+  names: Record<string, Record<string, string>>,
+  langRaw: Record<string, string> | undefined,
+  lang: string,
+): Record<string, string> {
+  if (
+    langMapMemo?.names === names &&
+    langMapMemo.langRaw === langRaw &&
+    langMapMemo.lang === lang
+  ) {
+    return langMapMemo.map;
+  }
+  const map = { ...names.en_us, ...langRaw, ...names[lang] };
+  langMapMemo = { names, langRaw, lang, map };
+  return map;
+}
 
 export function useRecipeSession(page: RecipePageData): RecipeSession {
   const { dataset: id, lang } = page;
@@ -35,11 +64,15 @@ export function useRecipeSession(page: RecipePageData): RecipeSession {
     [indexNames, index],
   );
   const langRaw = useAsyncValue(
-    () => clientDumpLang(dataset, lang),
+    () =>
+      Promise.all([
+        clientDumpLangNames(dataset, lang),
+        clientDumpLangRecipe(dataset, lang),
+      ]).then(([names, recipe]) => ({ ...names, ...recipe })),
     [dataset, lang],
   );
   const langMap = useMemo(
-    () => ({ ...names.en_us, ...langRaw, ...names[lang] }),
+    () => mergeLangMap(names, langRaw, lang),
     [langRaw, names, lang],
   );
   const used = useMemo(() => recipeUsedItems(index), [index]);

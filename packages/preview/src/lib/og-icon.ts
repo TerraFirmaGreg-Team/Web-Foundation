@@ -1,5 +1,11 @@
 import { sectionTabs } from '@terrafirmagreg-team/sites';
-import { Anvil, Feather, Flag } from 'lucide-react';
+import {
+  Anvil,
+  Calculator,
+  Feather,
+  Flag,
+  FlaskConical,
+} from 'lucide-react';
 
 type IconNode = [string, Record<string, unknown>][];
 type IconComponent = {
@@ -64,5 +70,21 @@ export function ogMotifGlyph(
   color: string,
 ): string | undefined {
   const Icon = section ? motifGlyphs[section] : undefined;
+  return Icon ? iconDataUri(Icon, color) : undefined;
+}
+
+const namedGlyphs: Record<string, IconComponent> = {
+  anvil: Anvil as unknown as IconComponent,
+  calculator: Calculator as unknown as IconComponent,
+  flask: FlaskConical as unknown as IconComponent,
+  flag: Flag as unknown as IconComponent,
+  feather: Feather as unknown as IconComponent,
+};
+
+export function ogGlyphIcon(
+  name: string,
+  color: string,
+): string | undefined {
+  const Icon = namedGlyphs[name];
   return Icon ? iconDataUri(Icon, color) : undefined;
 }

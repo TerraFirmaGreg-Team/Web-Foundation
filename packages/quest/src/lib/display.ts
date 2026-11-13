@@ -47,6 +47,11 @@ export function questTaskIconRefsOfTask(task: QuestTask): TaggedReference[] {
     const ref = classifyRefId(item);
     if (ref) out.push(ref);
   }
+  for (const item of task.filterItems ?? []) {
+    if (isEmptyQuestIcon(item)) continue;
+    const ref = classifyRefId(item);
+    if (ref) out.push(ref);
+  }
   if (task.filter) out.push(...parseFilterRefs(task.filter));
   if (!out.length && task.ref) out.push(task.ref);
   return out;

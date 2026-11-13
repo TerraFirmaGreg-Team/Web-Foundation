@@ -18,7 +18,6 @@ export interface DumpSearchBlob {
 
 export type DumpSearchSource = {
   getJson(rel: string): Promise<unknown | undefined>;
-  getLang(lang: string): Promise<Record<string, string>>;
 };
 
 export type DumpSearchIndexBuilder = (

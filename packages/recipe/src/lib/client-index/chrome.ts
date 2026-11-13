@@ -5,7 +5,7 @@ import type {
   RecipeStackGroup,
 } from '@terrafirmagreg-team/recipe/types';
 import {
-  clientDumpLang,
+  clientDumpLangNames,
   clientDumpNames,
   loadClientManifest,
 } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
@@ -47,7 +47,7 @@ async function clientNamedCategories(
   types: string[],
   categories: RecipeCategory[],
 ): Promise<Record<string, string>> {
-  const map = await clientDumpLang(dataset, lang);
+  const map = await clientDumpLangNames(dataset, lang);
   const byId = new Map(categories.map((row) => [row.id, row]));
   const names: Record<string, string> = {};
   for (const id of types) {
@@ -67,7 +67,7 @@ async function clientRecipeGroups(
 ): Promise<RecipeStackGroup[]> {
   const rows = await loadClientRegistryGroups(dataset);
   if (!rows.length) return [];
-  const map = await clientDumpLang(dataset, lang);
+  const map = await clientDumpLangNames(dataset, lang);
   return rows.map((row) => ({
     id: row.id,
     ...(row.name ? { name: dumpTextString(map, row.name) } : {}),
@@ -93,7 +93,7 @@ const loadChrome = createDatasetCache(
       clientRecipeGroups(dataset, lang),
       loadClientModNames(dataset, lang),
       clientNamedCategories(dataset, lang, types, categories),
-      clientDumpLang(dataset, lang).then((map) => {
+      clientDumpLangNames(dataset, lang).then((map) => {
         const names: Record<string, string> = {};
         for (const tab of tabs) {
           names[tab.id] = creativeTabName(map, tab.display.name ?? tab.id);

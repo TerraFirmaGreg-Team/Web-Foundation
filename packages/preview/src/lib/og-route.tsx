@@ -11,9 +11,10 @@ import { ImageResponse } from 'next/og';
 import sharp from 'sharp';
 import { sectionConfig } from '@terrafirmagreg-team/kit/lib/config';
 import { OgDock } from '../components/og-dock';
-import { ogSectionIcon } from './og-icon';
+import { ogGlyphIcon, ogSectionIcon } from './og-icon';
 import {
   ogHumanize,
+  resolveOgIcon,
   SECTION_PAGE_KIND,
   type OgBrand,
   type OgEntity,
@@ -81,6 +82,12 @@ export async function ogImageResponse(
       (date ? String(date).slice(0, 10) : undefined));
 
   const accent = sectionConfig().sectionAccent?.[section] ?? '#ff96ff';
+  const iconParam = variant.get('icon');
+  const entityIcon = iconParam?.startsWith('glyph:')
+    ? ogGlyphIcon(iconParam.slice('glyph:'.length), accent)
+    : iconParam
+      ? await resolveOgIcon({ id: datasetId, version }, iconParam)
+      : undefined;
   const rendered = new ImageResponse(
     <OgDock
       title={title}
@@ -92,6 +99,7 @@ export async function ogImageResponse(
       badge={ogHumanize(datasetId)}
       version={version}
       icon={ogSectionIcon(section, accent)}
+      entityIcon={entityIcon}
       siteUrl={new URL(brand.siteUrl).host}
       entity={entity}
     />,

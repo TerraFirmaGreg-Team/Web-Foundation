@@ -10,7 +10,6 @@ import { CopyIdMenu } from '@terrafirmagreg-team/game/components/entry/copy-id-m
 import { EmptyState } from '@terrafirmagreg-team/ui/components/blocks/page/empty-state';
 import { Skeleton } from '@terrafirmagreg-team/ui/components/ui/skeleton';
 import {
-  recipeCardImageUrl,
   recipeHref,
   recipeImageUrl,
 } from '@terrafirmagreg-team/recipe/lib/links';
@@ -86,8 +85,8 @@ function RecipeGridCard({
           modId: row.id.split(':', 1)[0],
           image: row.image,
         })
-      : undefined) ??
-    recipeCardImageUrl(dataset, row.id);
+      : undefined);
+  const expectsImage = recipe?.image !== undefined || row.image !== undefined;
 
   const focus = () =>
     pushUrlState(
@@ -159,7 +158,7 @@ function RecipeGridCard({
         style={fit < 1 ? { zoom: fit } : undefined}
       >
         {recipe ? (
-          src && !failed ? (
+          !expectsImage || (src && !failed) ? (
             <PagedCard
               recipe={recipe}
               dataset={dataset}
@@ -167,7 +166,7 @@ function RecipeGridCard({
               langMap={langMap}
               nav={nav}
               title={title}
-              src={src}
+              src={src ?? ''}
               naturalW={row.d?.w}
               naturalH={row.d?.h}
               maxH={maxH}

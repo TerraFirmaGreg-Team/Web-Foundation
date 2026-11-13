@@ -56,6 +56,9 @@ export function atlasPagePublicUrl(
 ): string | undefined {
   const src = cleanDumpRel(page.image);
   if (!src || !atlas.modId) return undefined;
+  if (src.startsWith('textures/atlas/')) {
+    return dumpRelPublicUrl(dataset, `assets/atlas/${src}`);
+  }
   return dumpRelPublicUrl(dataset, `assets/${atlas.modId}/${src}`);
 }
 

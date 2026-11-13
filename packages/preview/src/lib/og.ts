@@ -6,6 +6,7 @@ export type OgEntity = {
   kind: string;
   name: string;
   id?: string;
+  icon?: string;
 };
 
 export const SECTION_PAGE_KIND: Record<string, string> = {
@@ -41,6 +42,7 @@ export function ogImageQuery(
   const params = new URLSearchParams();
   params.set('kind', entity.kind);
   params.set('name', entity.name);
+  if (entity.icon) params.set('icon', entity.icon);
   if (description) params.set('desc', description);
   return params.toString();
 }
@@ -78,5 +80,34 @@ export async function resolveOgContext(
     return (await resolvers.get(section)?.(dataset, search, lang)) ?? {};
   } catch {
     return {};
+  }
+}
+
+export type OgIconResolver = (
+  dataset: DatasetRef,
+  icon: string,
+) => Promise<string | undefined>;
+
+const iconResolvers = ((globalThis as Record<symbol, unknown>)[
+  Symbol.for('terrafirmagreg.preview.ogIcon')
+] ??= new Map<string, OgIconResolver>()) as Map<
+  string,
+  OgIconResolver
+>;
+
+export function registerOgIconResolver(
+  resolve: OgIconResolver,
+): void {
+  iconResolvers.set('default', resolve);
+}
+
+export async function resolveOgIcon(
+  dataset: DatasetRef,
+  icon: string,
+): Promise<string | undefined> {
+  try {
+    return await iconResolvers.get('default')?.(dataset, icon);
+  } catch {
+    return undefined;
   }
 }

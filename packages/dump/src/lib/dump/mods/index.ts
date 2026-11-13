@@ -19,7 +19,7 @@ function registryRel(
   if (!meta.registry.includes(file)) return null;
   return SHARDED_REGISTRY.has(file)
     ? `registry/${file}/${namespace}.ndjson`
-    : `registry/${file}.json`;
+    : `registry/${file}.ndjson`;
 }
 
 function loadBooks(
@@ -45,7 +45,7 @@ function loadMod(
 ): DumpMod {
   return {
     namespace,
-    keybindsFile: meta.keybinds ? 'keybinds.json' : null,
+    keybindsFile: meta.keybinds ? 'keybinds.ndjson' : null,
     items: registryRel(meta, namespace, 'items'),
     blocks: registryRel(meta, namespace, 'blocks'),
     fluids: registryRel(meta, namespace, 'fluids'),
@@ -92,7 +92,7 @@ export function dumpRegistryRel(
   const field = REGISTRY_FIELD[file as keyof typeof REGISTRY_FIELD];
   if (!field || SHARDED_REGISTRY.has(file)) return undefined;
   return dump?.mods.some((mod) => mod[field] != null)
-    ? `registry/${file}.json`
+    ? `registry/${file}.ndjson`
     : undefined;
 }
 
@@ -132,16 +132,6 @@ function dumpRegistryProjectionRel(
   return field && SHARDED_REGISTRY.has(file) && mod?.[field]
     ? `registry/${file}/${namespace}.${suffix}.ndjson`
     : undefined;
-}
-
-export function dumpRegistryIconsRel(
-  dump: DumpIndex | null | undefined,
-  namespace: string,
-  file: string,
-): string | undefined {
-  return file === 'entities'
-    ? undefined
-    : dumpRegistryProjectionRel(dump, namespace, file, 'icons');
 }
 
 export function dumpRegistryTooltipsRel(

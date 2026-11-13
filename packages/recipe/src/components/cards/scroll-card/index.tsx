@@ -328,7 +328,11 @@ export function ScrollCard(props: Props) {
           top: horizontal ? y : shifted,
           fontSize: 8 * scale,
           color: `#${rgb.toString(16).padStart(6, '0')}`,
-          textShadow: `${scale}px ${scale}px 0 #${shadowRgb.toString(16).padStart(6, '0')}`,
+          ...(shadowRgb !== rgb
+            ? {
+                textShadow: `${scale}px ${scale}px 0 #${shadowRgb.toString(16).padStart(6, '0')}`,
+              }
+            : {}),
         }}
       >
         <McText text={el.text ?? ''} surface="dark" />

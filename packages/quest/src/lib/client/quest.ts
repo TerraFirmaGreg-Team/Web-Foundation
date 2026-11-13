@@ -1,5 +1,5 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
-import { clientDumpJson, clientDumpLang } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
+import { clientDumpJson, clientDumpLangQuest } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import { createDatasetCache } from '@terrafirmagreg-team/dump/lib/dump/reader';
 import { langString } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names';
 import { loadDumpQuestIndex } from '@terrafirmagreg-team/quest/lib/data/load';
@@ -50,7 +50,7 @@ export const loadQuestCompactIndex = createDatasetCache(
   async (dataset: DatasetRef, lang: string): Promise<QuestCompactIndex> => {
     const [index, map] = await Promise.all([
       loadDumpQuestIndex(dataset),
-      clientDumpLang(dataset, lang),
+      clientDumpLangQuest(dataset, lang),
     ]);
     const base: QuestCompactIndex = index ?? {
       groups: [],
@@ -117,6 +117,6 @@ export function loadQuestLangMap(
   dataset: DatasetRef,
   lang: string,
 ): Promise<Record<string, string>> {
-  return clientDumpLang(dataset, lang);
+  return clientDumpLangQuest(dataset, lang);
 }
 

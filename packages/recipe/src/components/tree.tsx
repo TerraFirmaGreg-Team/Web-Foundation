@@ -3,7 +3,8 @@ import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { createElement } from 'react';
 import type * as PageTree from 'fumadocs-core/page-tree';
 import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
-import { loadMergedLangMap, creativeTabName } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/load';
+import { creativeTabName } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/load';
+import { clientDumpLangNames } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import { DUMP_POINTER_TTL } from '@terrafirmagreg-team/dump/lib/dump/json-reader';
 import { createAsyncCache } from '@terrafirmagreg-team/data/lib/async-cache';
 import { getRecipeSource } from '@terrafirmagreg-team/recipe/lib/source';
@@ -70,7 +71,7 @@ async function buildRecipeTrees(lang: Lang): Promise<SectionTrees> {
   for (const { id, title: datasetTitle, languages } of datasets) {
     if (!(languages ?? [defaultLanguage]).includes(lang)) continue;
     const ref = { id };
-    const map = await loadMergedLangMap(ref, lang);
+    const map = await clientDumpLangNames(ref, lang);
     const source = getRecipeSource();
     const categories = await source.categories(ref);
     const types = (await source.manifest(ref))?.indexes.recipes.types;

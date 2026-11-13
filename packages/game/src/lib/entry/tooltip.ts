@@ -6,13 +6,13 @@ import {
   type ReferenceKind,
 } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 import {
-  clientDumpLang,
+  clientDumpLangNames,
   loadClientManifest,
 } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import {
   clientRegistryKindFor,
   loadClientRegistryEntry,
-  loadClientRegistryIconsRow,
+  loadClientRegistryIcons,
   loadClientRegistryTooltipRow,
 } from '@terrafirmagreg-team/dump/lib/dump/client/registry';
 import type { DumpDisplay } from '@terrafirmagreg-team/dump/lib/dump/contract/text';
@@ -37,28 +37,24 @@ export const loadStackDisplay = createDatasetCache(
     const ofKind = async (
       registry: 'items' | 'fluids' | 'blocks' | 'entities',
     ) => {
-      const [base, tooltips] = await Promise.all([
+      const base =
         registry === 'entities'
-          ? loadClientRegistryEntry(dataset, registry, parsed.id)
-          : loadClientRegistryIconsRow(dataset, registry, ns).then((rows) =>
-              rows.get(parsed.id),
-            ),
-        loadClientRegistryTooltipRow(dataset, registry, ns).then((rows) =>
-          rows.get(parsed.id),
-        ),
-      ]);
+          ? await loadClientRegistryEntry(dataset, registry, parsed.id)
+          : (await loadClientRegistryIcons(dataset, registry).then(
+              (rows) => rows.get(parsed.id),
+            )) ??
+            (await loadClientRegistryTooltipRow(
+              dataset,
+              registry,
+              ns,
+            ).then((rows) => rows.get(parsed.id)));
       const display = base ? displayOf(base, parsed.nbt) : undefined;
-      const tooltipDisplay = tooltips
-        ? displayOf(tooltips, parsed.nbt)
-        : undefined;
-      if (!display && !tooltipDisplay) return undefined;
+      if (!display) return undefined;
       return {
         ...(display?.name ? { name: display.name } : {}),
-        ...(tooltipDisplay?.tooltip
-          ? { tooltip: tooltipDisplay.tooltip }
-          : {}),
-        ...(tooltipDisplay?.tooltipMods
-          ? { tooltipMods: tooltipDisplay.tooltipMods }
+        ...(display?.tooltip ? { tooltip: display.tooltip } : {}),
+        ...(display?.tooltipMods
+          ? { tooltipMods: display.tooltipMods }
           : {}),
       };
     };
@@ -82,7 +78,7 @@ export async function stackTooltip(
   kind: ReferenceKind | undefined,
 ): Promise<StackTooltip> {
   const map =
-    langMap ?? (lang ? await clientDumpLang(dataset, lang) : undefined);
+    langMap ?? (lang ? await clientDumpLangNames(dataset, lang) : undefined);
   if (id.startsWith('#')) {
     if (!map) return { lines: [], mods: {} };
     const members = await fetchTagMembers(
@@ -100,7 +96,18 @@ export async function stackTooltip(
     memberKind === 'fluid' || memberKind === 'entity' || memberKind === 'block'
       ? memberKind
       : 'item';
-  const display = await loadStackDisplay(dataset, id, loadKind);
+  const parsed = parseStackId(id);
+  const ns = parsed.id.includes(':')
+    ? parsed.id.split(':', 1)[0]
+    : 'minecraft';
+  const tooltipRow = await loadClientRegistryTooltipRow(
+    dataset,
+    clientRegistryKindFor(loadKind),
+    ns,
+  ).then((rows) => rows.get(parsed.id));
+  const display = tooltipRow
+    ? displayOf(tooltipRow, parsed.nbt)
+    : undefined;
   if (!display || !map) return { lines: [], mods: {} };
   const mods: Record<string, string[]> = {};
   for (const [mod, raw] of Object.entries(display.tooltipMods ?? {})) {

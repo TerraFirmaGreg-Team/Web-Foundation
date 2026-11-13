@@ -2,7 +2,7 @@ import 'server-only';
 import { createElement } from 'react';
 import type * as PageTree from 'fumadocs-core/page-tree';
 import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
-import { loadMergedLangMap } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/load';
+import { clientDumpLangGuide } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import { asRecord, asString } from '@terrafirmagreg-team/dump/lib/dump/contract/read';
 import { loadDatasetDump } from '@terrafirmagreg-team/dump/lib/dump/mods/load';
 import { DUMP_POINTER_TTL } from '@terrafirmagreg-team/dump/lib/dump/json-reader';
@@ -124,7 +124,7 @@ async function buildGuideTrees(lang: Lang): Promise<SectionTrees> {
   const trees: SectionTrees = {};
   for (const { id, title: datasetTitle, languages } of datasets) {
     if (!(languages ?? [defaultLanguage]).includes(lang)) continue;
-    const map = await loadMergedLangMap({ id }, lang);
+    const map = await clientDumpLangGuide({ id }, lang);
     (trees[lang] ??= {})[id] = {
       name: datasetTitle ?? id,
       children: await datasetBookLeaves({ id }, map),

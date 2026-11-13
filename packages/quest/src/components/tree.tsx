@@ -2,10 +2,8 @@ import 'server-only';
 import { createElement } from 'react';
 import type * as PageTree from 'fumadocs-core/page-tree';
 import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
-import {
-  loadMergedLangMap,
-  langString,
-} from '@terrafirmagreg-team/dump/lib/dump/assets/lang/load';
+import { langString } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/load';
+import { clientDumpLangQuest } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import { getQuestSource } from '@terrafirmagreg-team/quest/lib/source';
 import {
   loadDumpQuestSummary,
@@ -94,7 +92,7 @@ async function buildQuestTrees(lang: Lang): Promise<SectionTrees> {
   for (const { id, title: datasetTitle, languages } of datasets) {
     if (!(languages ?? [defaultLanguage]).includes(lang)) continue;
     const ref = { id };
-    const map = await loadMergedLangMap(ref, lang);
+    const map = await clientDumpLangQuest(ref, lang);
     const summary = await loadDumpQuestSummary(ref);
     const index =
       summary && questSummaryComplete(summary)

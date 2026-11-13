@@ -64,14 +64,17 @@ function fetchCache(url: string, mutable: boolean): RequestCache {
 async function request(
   url: string,
   mutable: boolean,
+  high = false,
 ): Promise<Response | undefined> {
   const cache = fetchCache(url, mutable);
+  const init: RequestInit = {
+    signal: AbortSignal.timeout(FETCH_TIMEOUT),
+    cache,
+  };
+  if (high) init.priority = 'high';
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
-      return await fetch(url, {
-        signal: AbortSignal.timeout(FETCH_TIMEOUT),
-        cache,
-      });
+      return await fetch(url, init);
     } catch {
 
     }
@@ -122,7 +125,7 @@ function circuitOpen(datasetId: string | undefined): boolean {
 
 class DumpNotFound extends Error {}
 
-const PARSE_WORKER_SOURCE = `self.onmessage=(e)=>{const{id,text,ndjson}=e.data;try{self.postMessage({id,value:ndjson?ndjsonMap(text):JSON.parse(text)})}catch(error){self.postMessage({id,error:String(error)})}};function ndjsonMap(text){const out={};let start=0;for(let i=0;i<=text.length;i++){if(i===text.length||text.charCodeAt(i)===10){const line=text.slice(start,i);start=i+1;if(line){const row=JSON.parse(line);if(row&&typeof row==='object'){if(row.$ids!==undefined){out.$ids=row.$ids}else if(typeof row.id==='string'){out[row.id]=row}}}}}return out};`;
+const PARSE_WORKER_SOURCE = `self.onmessage=(e)=>{const{id,text}=e.data;try{self.postMessage({id,value:JSON.parse(text)})}catch(error){self.postMessage({id,error:String(error)})}}`;
 
 let parseWorker: Worker | undefined;
 let parseSeq = 0;
@@ -131,27 +134,97 @@ const parsePending = new Map<
   { resolve: (value: unknown) => void; reject: (error: Error) => void }
 >();
 
-function parseNdjsonText(text: string): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
-  let start = 0;
-  for (let i = 0; i <= text.length; i += 1) {
-    if (i !== text.length && text.charCodeAt(i) !== 10) continue;
-    const line = text.slice(start, i);
-    start = i + 1;
-    if (!line) continue;
-    const row = JSON.parse(line) as Record<string, unknown> | null;
-    if (!row || typeof row !== 'object') continue;
-    if (row.$ids !== undefined) out.$ids = row.$ids;
-    else if (typeof row.id === 'string') out[row.id] = row;
-  }
-  return out;
+function ndjsonRowEntry(
+  line: string,
+): [string, unknown] | undefined {
+  const row = JSON.parse(line) as Record<string, unknown> | null;
+  if (!row || typeof row !== 'object' || Array.isArray(row)) return undefined;
+  const keys = Object.keys(row);
+  if (keys.length === 1) return [keys[0]!, row[keys[0]!]];
+  if (typeof row.id === 'string') return [row.id, row];
+  return undefined;
 }
 
-function parseJson(text: string, ndjson = false): Promise<unknown> {
+async function readNdjsonRows(
+  body: ReadableStream<Uint8Array>,
+  onRow: (entry: [string, unknown]) => void,
+  onBytes?: (n: number) => void,
+): Promise<void> {
+  const reader = body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (!value) continue;
+      onBytes?.(value.length);
+      buffer += decoder.decode(value, { stream: true });
+      let nl: number;
+      while ((nl = buffer.indexOf('\n')) >= 0) {
+        const line = buffer.slice(0, nl);
+        buffer = buffer.slice(nl + 1);
+        if (!line) continue;
+        const entry = ndjsonRowEntry(line);
+        if (entry) onRow(entry);
+      }
+    }
+    buffer += decoder.decode();
+    if (buffer) {
+      const entry = ndjsonRowEntry(buffer);
+      if (entry) onRow(entry);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+}
+
+export async function* streamNdjson(
+  url: string,
+  mutable = false,
+): AsyncGenerator<[string, unknown][]> {
+  const res = await request(url, mutable);
+  if (!res?.ok || !res.body) return;
+  const body = url.endsWith('.gz')
+    ? res.body.pipeThrough(new DecompressionStream('gzip'))
+    : res.body;
+  const reader = body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let batch: [string, unknown][] = [];
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (!value) continue;
+      buffer += decoder.decode(value, { stream: true });
+      let nl: number;
+      while ((nl = buffer.indexOf('\n')) >= 0) {
+        const line = buffer.slice(0, nl);
+        buffer = buffer.slice(nl + 1);
+        if (!line) continue;
+        const entry = ndjsonRowEntry(line);
+        if (entry) batch.push(entry);
+      }
+      if (batch.length) {
+        yield batch;
+        batch = [];
+      }
+    }
+    buffer += decoder.decode();
+    if (buffer) {
+      const entry = ndjsonRowEntry(buffer);
+      if (entry) batch.push(entry);
+    }
+    if (batch.length) yield batch;
+  } finally {
+    reader.releaseLock();
+  }
+}
+
+function parseJson(text: string): Promise<unknown> {
   if (typeof Worker === 'undefined') {
-    return Promise.resolve(
-      ndjson ? (parseNdjsonText(text) as unknown) : JSON.parse(text),
-    );
+    return Promise.resolve(JSON.parse(text));
   }
   try {
     if (!parseWorker) {
@@ -184,12 +257,10 @@ function parseJson(text: string, ndjson = false): Promise<unknown> {
     const id = ++parseSeq;
     return new Promise((resolve, reject) => {
       parsePending.set(id, { resolve, reject });
-      parseWorker!.postMessage({ id, text, ndjson });
+      parseWorker!.postMessage({ id, text });
     });
   } catch {
-    return Promise.resolve(
-      ndjson ? (parseNdjsonText(text) as unknown) : JSON.parse(text),
-    );
+    return Promise.resolve(JSON.parse(text));
   }
 }
 
@@ -205,10 +276,10 @@ async function fetchAndParse(
   url: string,
   gz: boolean,
   mutable: boolean,
+  high: boolean,
   datasetId?: string,
-  ndjson = false,
 ): Promise<unknown> {
-  const res = await request(url, mutable);
+  const res = await request(url, mutable, high);
   if (res?.status === 404) {
     markDumpFetch(datasetId, url, res, false);
     throw new DumpNotFound(url);
@@ -224,7 +295,7 @@ async function fetchAndParse(
           res.body!.pipeThrough(new DecompressionStream('gzip')),
         ).text()
       : await res.text();
-    const value = await parseJson(text, ndjson);
+    const value = await parseJson(text);
     if (text.length > SERVER_CACHE_MAX) throw new DumpTooBig(value);
     return value;
   } catch (error) {
@@ -238,11 +309,41 @@ async function fetchAndParseNdjson(
   url: string,
   gz: boolean,
   mutable: boolean,
+  high: boolean,
   datasetId?: string,
 ): Promise<Record<string, unknown>> {
-  return fetchAndParse(url, gz, mutable, datasetId, true) as Promise<
-    Record<string, unknown>
-  >;
+  const res = await request(url, mutable, high);
+  if (res?.status === 404) {
+    markDumpFetch(datasetId, url, res, false);
+    throw new DumpNotFound(url);
+  }
+  if (!res?.ok || !res.body) {
+    markDumpFetch(datasetId, url, res, false);
+    throw new Error(`dump fetch failed: ${url}`);
+  }
+  markDumpFetch(datasetId, url, res, true);
+  try {
+    const body = gz
+      ? res.body.pipeThrough(new DecompressionStream('gzip'))
+      : res.body;
+    const out: Record<string, unknown> = {};
+    let bytes = 0;
+    await readNdjsonRows(
+      body,
+      ([key, value]) => {
+        out[key] = value;
+      },
+      (n) => {
+        bytes += n;
+      },
+    );
+    if (bytes > SERVER_CACHE_MAX) throw new DumpTooBig(out);
+    return out;
+  } catch (error) {
+    if (error instanceof DumpTooBig) throw error;
+    if (datasetId) markDumpResult(datasetId, false);
+    throw new Error(`dump parse failed: ${url}`);
+  }
 }
 
 const makeLoader =
@@ -253,6 +354,7 @@ const makeLoader =
       url: string,
       gz: boolean,
       mutable: boolean,
+      high: boolean,
       datasetId?: string,
     ) => Promise<unknown>,
   ) =>
@@ -263,7 +365,7 @@ const makeLoader =
   ): Promise<unknown> => {
     if (isBuildPhase() || circuitOpen(datasetId)) return undefined;
     const load = () =>
-      fetchLane(() => fetcher(url, gz, mutable, datasetId), high);
+      fetchLane(() => fetcher(url, gz, mutable, high, datasetId), high);
     const attempt = async () => {
       try {
         return await load();
@@ -343,37 +445,33 @@ function toLangMap(raw: unknown): Record<string, string> {
 export class JsonDumpReader implements DumpReader {
   private manifestCache: Promise<ReturnType<typeof parseDumpManifest>> | undefined;
   private locationCache: Promise<DumpLocation> | undefined;
-  private langCache = createAsyncCache((code: string) => this.loadLang(code));
-  private langRawCache = createAsyncCache((code: string) =>
-    this.loadLangRaw(code),
-  );
   private namesCache = createAsyncCache((code: string) =>
-    this.getJson(`names/${code}.json`).then((raw) => {
-      if (
-        !raw ||
-        typeof raw !== 'object' ||
-        Array.isArray(raw) ||
-        !Object.entries(raw).every(
-          ([key, value]) =>
-            key.length > 0 &&
-            typeof value === 'string' &&
-            value.length > 0,
-        )
-      ) {
-        throw new Error(
-          `dump names file missing or invalid: names/${code}.json (${this.packId})`,
-        );
-      }
-      const map = toLangMap(raw);
-      for (const key of Object.keys(map)) {
-        if (!key.includes('{')) continue;
-        const canonical = canonicalStackId(key);
-        if (canonical !== key && map[canonical] === undefined) {
-          map[canonical] = map[key];
+    this.getJson(`names/${code}.ndjson`).then((raw) => {
+        if (
+          !raw ||
+          typeof raw !== 'object' ||
+          Array.isArray(raw) ||
+          !Object.entries(raw).every(
+            ([key, value]) =>
+              key.length > 0 &&
+              typeof value === 'string' &&
+              value.length > 0,
+          )
+        ) {
+          throw new Error(
+            `dump names file missing or invalid: names/${code} (${this.packId})`,
+          );
         }
-      }
-      return map;
-    }),
+        const map = toLangMap(raw);
+        for (const key of Object.keys(map)) {
+          if (!key.includes('{')) continue;
+          const canonical = canonicalStackId(key);
+          if (canonical !== key && map[canonical] === undefined) {
+            map[canonical] = map[key];
+          }
+        }
+        return map;
+      }),
   );
   private readonly dataset: DatasetRef;
   private readonly packId: string;
@@ -432,14 +530,14 @@ export class JsonDumpReader implements DumpReader {
     });
   }
 
-  getLang(lang: string): Promise<Record<string, string>> {
-    const code = cleanLangCode(lang);
-    return code ? this.langCache(code) : Promise.resolve({});
-  }
-
-  getLangRaw(lang: string): Promise<Record<string, string>> {
-    const code = cleanLangCode(lang);
-    return code ? this.langRawCache(code) : Promise.resolve({});
+  async *ndjsonRows(path: string): AsyncGenerator<[string, unknown][]> {
+    const loc = await this.location();
+    const key = loc.files?.[path];
+    if (loc.files && !key) return;
+    const rel =
+      key ??
+      `${loc.root}/${path}${COMPRESSED_TREE.test(path) ? '.gz' : ''}`;
+    yield* streamNdjson(dumpStorageUrl(rel), loc.root === this.packId);
   }
 
   getNames(lang: string): Promise<Record<string, string>> {
@@ -513,33 +611,13 @@ export class JsonDumpReader implements DumpReader {
   }
 
   private manifest() {
-    const p = (this.manifestCache ??= this.getJson('manifest.json').then((raw) =>
+    const p = (this.manifestCache ??= this.getJson('manifest.json', 'high').then((raw) =>
       parseDumpManifest(raw),
     ));
     p.catch(() => {
       if (this.manifestCache === p) this.manifestCache = undefined;
     });
     return p;
-  }
-
-  private async loadLang(lang: string): Promise<Record<string, string>> {
-    const codes = lang === 'en_us' ? ['en_us'] : ['en_us', lang];
-    const loc = await this.location();
-    const base = loc.files ? 'lang' : 'meta/lang';
-    const metaMaps = await Promise.all(
-      codes.map((code) =>
-        this.getJson(`${base}/${code}.json`).then(toLangMap),
-      ),
-    );
-    return metaMaps.length === 1
-      ? metaMaps[0]!
-      : Object.assign({}, ...metaMaps);
-  }
-
-  private async loadLangRaw(code: string): Promise<Record<string, string>> {
-    const loc = await this.location();
-    const base = loc.files ? 'lang' : 'meta/lang';
-    return this.getJson(`${base}/${code}.json`).then(toLangMap);
   }
 }
 

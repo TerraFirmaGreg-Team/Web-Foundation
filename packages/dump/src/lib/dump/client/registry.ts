@@ -13,7 +13,7 @@ import type {
 } from '@terrafirmagreg-team/dump/lib/dump/data/registry/dto';
 import {
   clientRegistryEntries,
-  clientRegistryIconsEntries,
+  clientRegistryIconsMerged,
   clientRegistryNsEntries,
   clientRegistryTooltipsEntries,
 } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
@@ -147,17 +147,15 @@ export function loadClientRegistryTooltipRow<K extends DumpRegistryKind>(
   >;
 }
 
-const clientIconsNs = createDatasetCache(
+const clientIconsMerged = createDatasetCache(
   async (
     dataset: DatasetRef,
     kind: DumpRegistryKind,
-    ns: string,
   ): Promise<Map<string, DumpRegistryEntry>> => {
     const out = new Map<string, DumpRegistryEntry>();
-    const rows = await clientRegistryIconsEntries(
+    const rows = await clientRegistryIconsMerged(
       dataset,
       KIND_FILE[kind],
-      ns,
       'high',
     );
     for (const [id, raw] of Object.entries(rows ?? {})) {
@@ -169,12 +167,11 @@ const clientIconsNs = createDatasetCache(
   },
 );
 
-export function loadClientRegistryIconsRow<K extends DumpRegistryKind>(
+export function loadClientRegistryIcons<K extends DumpRegistryKind>(
   dataset: DatasetRef,
   kind: K,
-  ns: string,
 ): Promise<Map<string, RegistryByKind[K]>> {
-  return clientIconsNs(dataset, kind, ns) as Promise<
+  return clientIconsMerged(dataset, kind) as Promise<
     Map<string, RegistryByKind[K]>
   >;
 }

@@ -19,7 +19,7 @@ import {
   resolveRecipeRows,
 } from '@terrafirmagreg-team/recipe/lib/client-index';
 import { loadClientRecipe } from '@terrafirmagreg-team/recipe/lib/client/recipe';
-import { clientDumpLang } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
+import { clientDumpLangRecipe } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import { recipeTitle } from '@terrafirmagreg-team/recipe/lib/data/parse';
 import { recipeImageUrl } from '@terrafirmagreg-team/dump/lib/dump/assets/urls';
 import { recipeCardImageUrl, recipeHref } from '@terrafirmagreg-team/recipe/lib/links';
@@ -54,7 +54,7 @@ export function Recipe({
           const [recipe, chrome, langMap] = await Promise.all([
             loadClientRecipe(dataset, row.id, row.bucket),
             loadRecipeChromeClient(dataset, lang),
-            clientDumpLang(dataset, lang),
+            clientDumpLangRecipe(dataset, lang),
           ]);
           const title = recipe
             ? recipeTitle(recipe, langMap)

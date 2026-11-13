@@ -1,5 +1,5 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
-import { clientDumpLang } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
+import { clientDumpLangNames } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import { loadClientKeybinds } from '@terrafirmagreg-team/dump/lib/dump/client/keybinds';
 import {
   loadClientRegistryTooltips,
@@ -20,7 +20,7 @@ const tooltipsApiCache = createDatasetCache(
   }> => {
     const kinds = ['item', 'block', 'fluid', 'entity'] as const;
     const [map, keybinds, shards, modShards] = await Promise.all([
-      clientDumpLang(dataset, lang),
+      clientDumpLangNames(dataset, lang),
       loadClientKeybinds(dataset),
       Promise.all(
         kinds.map((kind) => loadClientRegistryTooltips(dataset, kind)),

@@ -1,6 +1,7 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import type { AdvancedIndex } from 'fumadocs-core/search/server';
 import { dumpTextString, langString } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names';
+import { clientDumpLangGuide } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import { formatGuide } from '@terrafirmagreg-team/guide/lib/display/format';
 import { isIndexPage } from '@terrafirmagreg-team/guide/lib/page-kind';
 import type { DumpIndex } from '@terrafirmagreg-team/dump/lib/dump/mods/dto';
@@ -9,7 +10,6 @@ export type GuideIndex = AdvancedIndex & { locale: string };
 
 export interface DumpSource {
   getJson(rel: string): Promise<unknown | undefined>;
-  getLang(lang: string): Promise<Record<string, string>>;
 }
 
 type DumpTextNode = Parameters<typeof dumpTextString>[1];
@@ -121,7 +121,7 @@ async function bookIndexes(
   const maps = new Map(
     await Promise.all(
       langs.map(
-        async (lang) => [lang, await source.getLang(lang)] as const,
+        async (lang) => [lang, await clientDumpLangGuide(dataset, lang)] as const,
       ),
     ),
   );

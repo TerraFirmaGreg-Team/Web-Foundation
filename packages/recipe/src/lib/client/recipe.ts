@@ -15,7 +15,7 @@ const recipeIndex = createDatasetCache(async (dataset: DatasetRef, ns: string) =
   const listed = manifest?.namespaces[ns];
   if (!listed || !listed.registry.includes('recipes')) return undefined;
   return asRecord(
-    await clientDumpJson(dataset, 'registry/recipes.json', 'high'),
+    await clientDumpJson(dataset, 'registry/recipes.ndjson', 'high'),
   ) as Record<string, string | string[]> | undefined;
 });
 
@@ -43,7 +43,7 @@ export async function clientRecipeFileRels(
         : category,
     )
     .filter((path) => !!path)
-    .map((path) => `data/${ns}/recipes/${path}.json`);
+    .map((path) => `data/${ns}/recipes/${path}.ndjson`);
 }
 
 async function clientRecipeFileRel(

@@ -74,6 +74,16 @@ export function useRecipeIndex(dataset: DatasetRef | undefined, lang: string) {
 
   useAsyncEffect(async (isCancelled) => {
     if (!dataset || warmKey !== key) return;
+    const conn = (
+      navigator as Navigator & {
+        connection?: { effectiveType?: string; saveData?: boolean };
+      }
+    ).connection;
+    if (
+      conn?.saveData ||
+      (conn?.effectiveType && conn.effectiveType !== '4g')
+    )
+      return;
     for (const entry of locales.filter((item) => item !== lang)) {
       await idle();
       if (isCancelled()) return;

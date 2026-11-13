@@ -3,6 +3,7 @@ import {
   asNumber,
   asRecord,
   asString,
+  asStringList,
 } from '@terrafirmagreg-team/dump/lib/dump/contract/read';
 import { asTaggedReference } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 import type {
@@ -49,6 +50,7 @@ export function parseTask(
     stage: asString(row.stage),
     biome: asString(row.biome),
     filter: taskFilter(row),
+    filterItems: asStringList(row.filterItems),
     filterRaw: asString(row.filterRaw),
     itemFilter: asString(row.itemFilter),
     icon,

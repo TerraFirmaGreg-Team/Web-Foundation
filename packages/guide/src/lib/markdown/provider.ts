@@ -1,7 +1,7 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { registerMarkdownProvider } from '@terrafirmagreg-team/mdx/lib/markdown';
 import { loadClientGuidePayload } from '@terrafirmagreg-team/guide/lib/client/payload';
-import { clientDumpLang } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
+import { clientDumpLangGuide } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import { categoryMap } from '@terrafirmagreg-team/guide/lib/nav/breadcrumb';
 import {
   guideCategoryMarkdown,
@@ -19,7 +19,7 @@ export async function guideMarkdown(
 ): Promise<Response | undefined> {
   if (!dataset) return undefined;
   const search = new URL(req.url).searchParams;
-  const langMap = await clientDumpLang(dataset, lang);
+  const langMap = await clientDumpLangGuide(dataset, lang);
   const payload = await loadClientGuidePayload(
     dataset,
     lang,

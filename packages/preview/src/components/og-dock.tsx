@@ -13,6 +13,7 @@ export type OgDockProps = {
   version?: string;
   siteUrl?: string;
   entity?: { kind: string; name: string };
+  entityIcon?: string;
 };
 
 const BG = '#121212';
@@ -58,12 +59,6 @@ function BrandLogo({ logo, size = 56 }: { logo?: string; size?: number }) {
   return <img src={logo} width={size} height={size} alt="" />;
 }
 
-function Glyph({ glyph, size }: { glyph?: string; size: number }) {
-  if (!glyph) return null;
-  // eslint-disable-next-line @next/next/no-img-element -- ImageResponse requires img
-  return <img src={glyph} width={size} height={size} alt="" />;
-}
-
 function SectionIcon({
   icon,
   accent,
@@ -89,7 +84,15 @@ function SectionIcon({
   );
 }
 
-function ItemSlot({ logo, size = 200 }: { logo?: string; size?: number }) {
+function ItemSlot({
+  logo,
+  icon,
+  size = 200,
+}: {
+  logo?: string;
+  icon?: string;
+  size?: number;
+}) {
   const border = Math.max(3, Math.round(size * 0.018));
   const inner = Math.floor(size * 0.74);
   return (
@@ -105,7 +108,18 @@ function ItemSlot({ logo, size = 200 }: { logo?: string; size?: number }) {
         borderRadius: Math.max(4, Math.round(size * 0.03)),
       }}
     >
-      <BrandLogo logo={logo} size={inner} />
+      {icon ? (
+        // eslint-disable-next-line @next/next/no-img-element -- ImageResponse requires img
+        <img
+          src={icon}
+          width={inner}
+          height={inner}
+          alt=""
+          style={{ imageRendering: 'pixelated' }}
+        />
+      ) : (
+        <BrandLogo logo={logo} size={inner} />
+      )}
     </div>
   );
 }
@@ -173,6 +187,7 @@ export function OgDock(props: OgDockProps) {
             section={props.section}
             accent={props.accent}
             logo={props.logo}
+            entityIcon={props.entityIcon}
           />
         </div>
         <div
@@ -278,7 +293,7 @@ function MotifCraft({
   glyph,
 }: {
   accent: string;
-  glyph?: string;
+  glyph?: ReactNode;
 }) {
   const cell = 88;
   const gap = 8;
@@ -293,7 +308,7 @@ function MotifCraft({
     >
       {Array.from({ length: 9 }).map((_, i) => (
         <ChipCell key={i} size={cell} selected={i === 4} accent={accent}>
-          {i === 4 && <Glyph glyph={glyph} size={Math.floor(cell * 0.72)} />}
+          {i === 4 && glyph}
         </ChipCell>
       ))}
     </div>
@@ -305,7 +320,7 @@ function MotifQuest({
   glyph,
 }: {
   accent: string;
-  glyph?: string;
+  glyph?: ReactNode;
 }) {
   const nodes = [
     { x: 22, y: 26, s: 38 },
@@ -377,7 +392,7 @@ function MotifQuest({
             border: `4px solid ${n.hot ? accent : CHIP_BORDER}`,
           }}
         >
-          {n.hot && <Glyph glyph={glyph} size={Math.floor(n.s * 0.55)} />}
+          {n.hot && glyph}
         </div>
       ))}
     </div>
@@ -389,7 +404,7 @@ function MotifGuide({
   glyph,
 }: {
   accent: string;
-  glyph?: string;
+  glyph?: ReactNode;
 }) {
   const page = 140;
   const height = 210;
@@ -408,7 +423,7 @@ function MotifGuide({
           borderBottomLeftRadius: 10,
         }}
       >
-        <Glyph glyph={glyph} size={Math.floor(page * 0.55)} />
+        {glyph}
       </div>
       <div style={{ display: 'flex', width: 6, height, backgroundColor: accent }} />
       <div
@@ -558,19 +573,33 @@ function SectionMotif({
   section,
   accent,
   logo,
+  entityIcon,
 }: {
   section?: string;
   accent: string;
   logo?: string;
+  entityIcon?: string;
 }) {
-  const glyph = ogMotifGlyph(section, accent);
+  const glyph = entityIcon ?? ogMotifGlyph(section, accent);
+  const pixel = entityIcon
+    ? ({ imageRendering: 'pixelated' } as const)
+    : undefined;
+  const glyphEl = (size: number) =>
+    glyph ? (
+      // eslint-disable-next-line @next/next/no-img-element -- ImageResponse requires img
+      <img src={glyph} width={size} height={size} alt="" style={pixel} />
+    ) : null;
   if (section === 'recipe')
-    return <MotifCraft accent={accent} glyph={glyph} />;
+    return <MotifCraft accent={accent} glyph={glyphEl(Math.floor(88 * 0.72))} />;
   if (section === 'quest')
-    return <MotifQuest accent={accent} glyph={glyph} />;
+    return (
+      <MotifQuest accent={accent} glyph={glyphEl(Math.floor(104 * 0.55))} />
+    );
   if (section === 'guide')
-    return <MotifGuide accent={accent} glyph={glyph} />;
+    return (
+      <MotifGuide accent={accent} glyph={glyphEl(Math.floor(140 * 0.55))} />
+    );
   if (section === 'changelog') return <MotifChangelog accent={accent} />;
   if (section === 'docs') return <MotifDoc accent={accent} />;
-  return <ItemSlot logo={logo} size={210} />;
+  return <ItemSlot logo={logo} icon={entityIcon} size={210} />;
 }

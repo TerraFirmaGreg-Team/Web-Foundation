@@ -1,5 +1,5 @@
 import { registerPreviewResolver } from '@terrafirmagreg-team/preview/lib';
-import { clientDumpLang } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
+import { clientDumpLangNames } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import { loadDatasetRecipeCategories } from '@terrafirmagreg-team/recipe/lib/data/category/load';
 import { langString } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names';
 import { entryPreviewIcon } from '@terrafirmagreg-team/game/lib/preview';
@@ -28,5 +28,5 @@ export async function recipeLinkPreview({
   };
 }
 
-registerPreviewResolver('recipe', recipeLinkPreview, { langMap: clientDumpLang });
+registerPreviewResolver('recipe', recipeLinkPreview, { langMap: clientDumpLangNames });
 

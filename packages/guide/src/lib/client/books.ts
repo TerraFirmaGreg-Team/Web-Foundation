@@ -18,8 +18,8 @@ import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import type { GuideIndex } from '@terrafirmagreg-team/guide/types';
 import {
   clientDumpJson,
-  clientDumpLang,
-  clientDumpLangRaw,
+  clientDumpLangGuide,
+  clientDumpLangGuideRaw,
 } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import { loadDatasetDump } from '@terrafirmagreg-team/dump/lib/dump/mods/load';
 import { createDatasetCache } from '@terrafirmagreg-team/dump/lib/dump/reader';
@@ -155,8 +155,8 @@ export const loadClientGuideBook = createDatasetCache(
     if (!row) return null;
     const [rows, langMap, rawLang] = await Promise.all([
       bookRows(dataset, row, lang),
-      clientDumpLang(dataset, lang),
-      clientDumpLangRaw(dataset, lang),
+      clientDumpLangGuide(dataset, lang),
+      clientDumpLangGuideRaw(dataset, lang),
     ]);
     if (!rows) return null;
     return indexBookRows(rows, dataset, lang, langMap, rawLang);
@@ -250,7 +250,7 @@ export async function listClientGuideBookSummaries(
     landingText?: string;
   }>
 > {
-  const langMap = await clientDumpLang(dataset, lang);
+  const langMap = await clientDumpLangGuide(dataset, lang);
   const rows = await listedBookRows(dataset);
   return rows
     .map((row) => {

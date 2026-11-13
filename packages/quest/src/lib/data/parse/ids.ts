@@ -2,7 +2,7 @@ import {
   asResourceKind,
   referenceKindFromResource,
 } from '@terrafirmagreg-team/dump/lib/dump/contract/kind';
-import { asRecord, asString } from '@terrafirmagreg-team/dump/lib/dump/contract/read';
+import { asRecord, asString, asStringList } from '@terrafirmagreg-team/dump/lib/dump/contract/read';
 import {
   asTaggedReference,
   compactRefId,
@@ -26,6 +26,8 @@ export function itemIdsFrom(value: unknown): string[] {
   const row = asRecord(value);
   if (!row) return [];
   const id = asString(row.id);
+  const filterItems = asStringList(row.filterItems);
+  if (filterItems.length) return filterItems;
   const filter = asString(row.filter);
   if (filter) {
     const fromFilter = parseFilterIds(filter);
@@ -38,6 +40,8 @@ export function itemIdsFrom(value: unknown): string[] {
 export function refIds(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return value.flatMap((item) => {
+    const filterItems = asStringList(asRecord(item)?.filterItems);
+    if (filterItems.length) return filterItems;
     const filter = asString(asRecord(item)?.filter);
     if (filter) {
       const ids = parseFilterIds(filter);
