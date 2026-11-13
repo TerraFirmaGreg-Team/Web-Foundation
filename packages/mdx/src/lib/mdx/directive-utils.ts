@@ -13,6 +13,8 @@ export type {
   MdastNode,
 } from '../../types/mdx';
 
+import { toJs } from 'estree-util-to-js';
+import { valueToEstree } from 'estree-util-value-to-estree';
 import { visit, SKIP, CONTINUE } from 'unist-util-visit';
 
 export function walkContainers(
@@ -43,7 +45,7 @@ export function toJsxAttributes(node: DirectiveNode): JsxAttribute[] {
   return Object.entries(node.attributes ?? {}).map(([name, value]) => ({
     type: 'mdxJsxAttribute',
     name,
-    value: value == null || value === '' ? jsxExpression(estreeBoolean(true)) : value,
+    value: jsxAttrValue(value),
   }));
 }
 
@@ -84,35 +86,31 @@ export function contentChildren(node: DirectiveNode): MdastNode[] {
 }
 
 export function jsxAttr(name: string, value: string | boolean): JsxAttribute {
-  return { type: 'mdxJsxAttribute', name, value };
+  return {
+    type: 'mdxJsxAttribute',
+    name,
+    value: typeof value === 'boolean' ? jsxExpression(value) : value,
+  };
 }
 
-export function jsxExpression(expression: unknown): JsxAttributeValue {
+export function jsxAttrValue(value: unknown): JsxAttributeValue {
+  if (value == null || value === '') return jsxExpression(true);
+  if (typeof value === 'boolean') return jsxExpression(value);
+  return String(value);
+}
+
+export function jsxExpression(value: unknown): JsxAttributeValue {
+  const expression = valueToEstree(value);
   return {
     type: 'mdxJsxAttributeValueExpression',
-    value: '',
+    value: toJs(expression as unknown as Parameters<typeof toJs>[0]).value,
     data: {
       estree: {
         type: 'Program',
         body: [{ type: 'ExpressionStatement', expression }],
-        sourceType: 'script',
+        sourceType: 'module',
       },
     },
   };
-}
-
-export function estreeString(value: string): unknown {
-  return { type: 'Literal', value, raw: JSON.stringify(value) };
-}
-
-export function estreeStringArray(labels: string[]): unknown {
-  return {
-    type: 'ArrayExpression',
-    elements: labels.map(estreeString),
-  };
-}
-
-export function estreeBoolean(value: boolean): unknown {
-  return { type: 'Literal', value, raw: String(value) };
 }
 

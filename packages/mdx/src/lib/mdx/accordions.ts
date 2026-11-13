@@ -1,10 +1,9 @@
 import {
   contentChildren,
-  estreeBoolean,
-  estreeStringArray,
   extractDirectiveLabel,
   extractLeafLabel,
   jsxAttr,
+  jsxAttrValue,
   jsxExpression,
   walkContainers,
   type DirectiveNode,
@@ -46,9 +45,7 @@ function wrapSingle(node: DirectiveNode): void {
           {
             type: 'mdxJsxAttribute',
             name: 'defaultValue',
-            value: jsxExpression(
-              estreeStringArray([String(extractDirectiveLabel(node))]),
-            ),
+            value: jsxExpression([extractDirectiveLabel(node)]),
           } as JsxAttribute,
         ]
       : [],
@@ -71,10 +68,7 @@ function accordionsAttributes(node: DirectiveNode): JsxAttribute[] {
     out.push({
       type: 'mdxJsxAttribute',
       name,
-      value:
-        value == null || value === ''
-          ? jsxExpression(estreeBoolean(true))
-          : value,
+      value: jsxAttrValue(value),
     });
   }
 

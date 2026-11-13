@@ -16,7 +16,7 @@
   ],
   "dependencies": {
     "fumadb": "0.7.2",
-    "kysely": "^0.29.8",
+    "kysely": "^0.29.9",
     "kysely-d1": "^0.4.0",
     "server-only": "catalog:"
   },

@@ -1,5 +1,4 @@
 import {
-  estreeStringArray,
   extractLeafLabel,
   jsxExpression,
   toJsxAttributes,
@@ -19,7 +18,7 @@ export function remarkTabs() {
 }
 
 function escapeValue(value: string): string {
-  return value.toLowerCase().replace(/\s/, '-');
+  return value.toLowerCase().replace(/\s/g, '-');
 }
 
 function toTabs(node: DirectiveNode): void {
@@ -51,18 +50,18 @@ function toTabs(node: DirectiveNode): void {
   }
 
   const attributes = toJsxAttributes(node).map((attribute) =>
-    attribute.name === 'default'
+    attribute.name === 'default' && typeof attribute.value === 'string'
       ? {
           type: 'mdxJsxAttribute' as const,
           name: 'defaultValue',
-          value: escapeValue(String(attribute.value)),
+          value: escapeValue(attribute.value),
         }
       : attribute,
   );
   attributes.unshift({
     type: 'mdxJsxAttribute',
     name: 'items',
-    value: jsxExpression(estreeStringArray(items)),
+    value: jsxExpression(items),
   });
 
   Object.assign(node, {

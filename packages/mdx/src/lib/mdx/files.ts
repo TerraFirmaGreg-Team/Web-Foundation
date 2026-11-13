@@ -5,7 +5,7 @@ import type {
 } from 'fumadocs-core/mdx-plugins/remark-mdx-files';
 import { toString } from 'mdast-util-to-string';
 import { visit } from 'unist-util-visit';
-import type { DirectiveNode } from './directive-utils.ts';
+import { jsxAttr, type DirectiveNode } from './directive-utils.ts';
 import type { JsxAttribute, JsxElement, MdastNode } from '../../types/mdx';
 
 type TreeNode = FileNode | FolderNode;
@@ -49,8 +49,7 @@ function nodeToMdx(node: TreeNode, options: ToMdxOptions): JsxElement {
       attributes: attrs,
       children: [],
     };
-  if (options.defaultOpenAll)
-    attrs.push({ type: 'mdxJsxAttribute', name: 'defaultOpen', value: true });
+  if (options.defaultOpenAll) attrs.push(jsxAttr('defaultOpen', true));
   const children =
     node.type === 'folder'
       ? node.children.map((item) => nodeToMdx(item, options) as unknown as MdastNode)

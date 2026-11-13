@@ -1,6 +1,5 @@
 import {
-  estreeBoolean,
-  estreeStringArray,
+  jsxAttrValue,
   jsxExpression,
   walkContainers,
   type DirectiveNode,
@@ -18,7 +17,7 @@ export function remarkBanner() {
           {
             type: 'mdxJsxAttribute',
             name: 'changeLayout',
-            value: jsxExpression(estreeBoolean(false)),
+            value: jsxExpression(false),
           },
           ...toAttributes(directive),
         ],
@@ -40,16 +39,13 @@ function toAttributes(directive: DirectiveNode) {
         return {
           type: 'mdxJsxAttribute' as const,
           name,
-          value: jsxExpression(estreeStringArray(colors)),
+          value: jsxExpression(colors),
         };
       }
       return {
         type: 'mdxJsxAttribute' as const,
         name,
-        value:
-          value == null || value === ''
-            ? jsxExpression(estreeBoolean(true))
-            : value,
+        value: jsxAttrValue(value),
       };
     });
 }

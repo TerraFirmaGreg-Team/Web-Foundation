@@ -2,10 +2,8 @@ import {
   contentChildren,
   extractDirectiveLabel,
   extractLeafLabel,
-  estreeBoolean,
-  estreeString,
   jsxAttr,
-  jsxExpression,
+  jsxAttrValue,
   walkDirectives,
   type DirectiveNode,
   type JsxAttribute,
@@ -37,12 +35,7 @@ export function toAttributes(directive: DirectiveNode): JsxAttribute[] {
   return Object.entries(directive.attributes ?? {}).map(([name, value]) => ({
     type: 'mdxJsxAttribute' as const,
     name,
-    value:
-      value == null || value === ''
-        ? jsxExpression(estreeBoolean(true))
-        : typeof value === 'string'
-          ? value
-          : jsxExpression(estreeString(String(value))),
+    value: jsxAttrValue(value),
   }));
 }
 

@@ -19,7 +19,7 @@
     "src"
   ],
   "dependencies": {
-    "@crowdin/crowdin-api-client": "1.59.2",
+    "@crowdin/crowdin-api-client": "1.60.0",
     "@terrafirmagreg-team/data": "workspace:^",
     "@terrafirmagreg-team/kit": "workspace:^",
     "@terrafirmagreg-team/translate": "workspace:^",

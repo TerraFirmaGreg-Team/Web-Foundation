@@ -9,7 +9,7 @@
     "@types/node": "catalog:",
     "@typescript/native": "npm:typescript@7.0.2",
     "eslint": "^10.14.0",
-    "eslint-config-next": "16.4.5",
+    "eslint-config-next": "16.4.6",
     "typescript": "npm:@typescript/typescript6@^6.0.2"
   }
 }
