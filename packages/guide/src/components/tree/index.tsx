@@ -1,4 +1,5 @@
 import 'server-only';
+import { resolveDatasetSnapshot } from '@terrafirmagreg-team/dump/lib/dump/snapshot';
 import { createElement } from 'react';
 import type * as PageTree from 'fumadocs-core/page-tree';
 import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
@@ -12,6 +13,7 @@ import { keyTreeNode } from '@terrafirmagreg-team/translate/server';
 import { loadLocaleRegistry } from '@terrafirmagreg-team/translate/server';
 import { encodeQueryValue } from '@terrafirmagreg-team/translate/lib/url';
 import {
+  datasetCacheKey,
   type DatasetRef,
   sectionUrl,
   versionSuffix,
@@ -64,7 +66,7 @@ function bookLeaf(
     name: book.name,
     url: `${sectionUrl('guide', dataset.id)}?book=${encodeQueryValue(bookId)}${versionSuffix(dataset)}`,
     icon: bookIcon(dataset, raw),
-    $id: `${dataset.id}/${dataset.version ?? ''}/book/${bookId}`,
+    $id: datasetCacheKey(dataset, 'book', bookId),
   }) as PageTree.Item;
 }
 
@@ -124,13 +126,13 @@ async function buildGuideTrees(lang: Lang): Promise<SectionTrees> {
   const trees: SectionTrees = {};
   for (const { id, title: datasetTitle, languages } of datasets) {
     if (!(languages ?? [defaultLanguage]).includes(lang)) continue;
-    const map = await clientDumpLangGuide({ id }, lang);
+    const ref = await resolveDatasetSnapshot({ id });
+    const map = await clientDumpLangGuide(ref, lang);
     (trees[lang] ??= {})[id] = {
       name: datasetTitle ?? id,
-      children: await datasetBookLeaves({ id }, map),
+      children: await datasetBookLeaves(ref, map),
       $id: `guide/${id}/${lang}`,
     } satisfies PageTree.Root;
   }
   return trees;
 }
-

@@ -1,4 +1,4 @@
-import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
+import { datasetCacheKey, type DatasetRef } from '@terrafirmagreg-team/sites/location';
 import type { AtlasBundle, IconAtlas } from '@terrafirmagreg-team/dump/lib/dump/assets/atlas/dto';
 import {
   iconAtlasFromEntries,
@@ -79,13 +79,12 @@ export const loadClientModAtlases = createDatasetCache(
     if (!cache) return load();
     try {
       return (await cache(
-        `atlas-bundle:${dataset.id}:${dataset.version ?? ''}:${modId}`,
+        `atlas-bundle:${datasetCacheKey(dataset, modId)}`,
         load,
-        dataset.version ? false : 60,
+        false,
       )) as AtlasBundle;
     } catch {
       return load();
     }
   },
 );
-

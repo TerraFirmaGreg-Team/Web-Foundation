@@ -1,6 +1,6 @@
-import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
+import { datasetCacheKey, type DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { asRecord, asString } from '@terrafirmagreg-team/dump/lib/dump/contract/read';
-import { parseRecipe } from '@terrafirmagreg-team/recipe/lib/data/parse';
+import { parseRecipe } from '@terrafirmagreg-team/recipe/lib/data/parse/index';
 import type { Recipe } from '@terrafirmagreg-team/recipe/lib/data/dto';
 import { dumpRelPublicUrl } from '@terrafirmagreg-team/dump/lib/dump/paths';
 import {
@@ -9,41 +9,36 @@ import {
 } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import { clientRecipeLayout } from '@terrafirmagreg-team/recipe/lib/client/recipe-categories';
 import { createDatasetCache } from '@terrafirmagreg-team/dump/lib/dump/reader';
+import type {
+  PreparedRecipeRow,
+  RegistryRecipes,
+} from '@terrafirmagreg-team/dump/lib/dump/gen';
 
-const recipeIndex = createDatasetCache(async (dataset: DatasetRef, ns: string) => {
+const recipeIndex = createDatasetCache(async (dataset: DatasetRef) => {
   const manifest = await loadClientManifest(dataset);
-  const listed = manifest?.namespaces[ns];
-  if (!listed || !listed.registry.includes('recipes')) return undefined;
+  if (!manifest || !Object.values(manifest.namespaces).some(
+    (namespace) => namespace?.registry.includes('recipes'),
+  )) return undefined;
   return asRecord(
     await clientDumpJson(dataset, 'registry/recipes.ndjson', 'high'),
-  ) as Record<string, string | string[]> | undefined;
+  ) as RegistryRecipes | undefined;
 });
+
+export async function clientPreparedRecipeRows(
+  dataset: DatasetRef,
+  recipeIds: Iterable<string>,
+): Promise<PreparedRecipeRow[]> {
+  const index = await recipeIndex(dataset);
+  return [...new Set(recipeIds)].flatMap((id) => index?.[id] ?? []);
+}
 
 export async function clientRecipeFileRels(
   dataset: DatasetRef,
   recipeId: string,
 ): Promise<string[]> {
-  const ns = recipeId.split(':', 1)[0];
-  if (!ns) return [];
-  const index = await recipeIndex(dataset, ns);
-  const value = index?.[recipeId];
-  const categories = Array.isArray(value)
-    ? value
-    : typeof value === 'string'
-      ? [value]
-      : [];
-  return categories
-    .filter(
-      (category): category is string =>
-        typeof category === 'string' && !!category,
-    )
-    .map((category) =>
-      category.includes(':')
-        ? category.slice(category.indexOf(':') + 1)
-        : category,
-    )
-    .filter((path) => !!path)
-    .map((path) => `data/${ns}/recipes/${path}.ndjson`);
+  return [...new Set(
+    (await clientPreparedRecipeRows(dataset, [recipeId])).map((row) => row.bucket),
+  )];
 }
 
 async function clientRecipeFileRel(
@@ -80,6 +75,5 @@ export const loadClientRecipe: (
       ...(layout ? { layout } : {}),
     });
   },
-  (dataset, id, bucket) => JSON.stringify([dataset, id, bucket ?? '']),
+  (dataset, id, bucket) => datasetCacheKey(dataset, id, bucket ?? ''),
 );
-

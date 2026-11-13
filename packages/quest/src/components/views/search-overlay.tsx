@@ -2,7 +2,7 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 
 import { useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { pushUrlState } from '@terrafirmagreg-team/ui/lib/utils/history';
 import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
 import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
@@ -28,6 +28,7 @@ export function SearchOverlay({
   dataset,
   langMap,
   index,
+  version,
 }: {
   open: boolean;
   query: string;
@@ -36,9 +37,9 @@ export function SearchOverlay({
   dataset: DatasetRef;
   langMap: Record<string, string>;
   index: QuestCompactIndex | null;
+  version?: string;
 }) {
   const t = useTranslations();
-  const router = useRouter();
   const resolved = useResolvedLang();
   const results = useMemo(
     () => (index ? filterCompactQuests(index, query) : []),
@@ -86,8 +87,12 @@ export function SearchOverlay({
       onPick={(item) => {
         const row = item.data;
         if (!row) return;
-        router.push(
-          questHref(dataset, resolved, { category: row.filename, id: row.id }),
+        pushUrlState(
+          questHref(dataset, resolved, {
+            category: row.filename,
+            id: row.id,
+            version,
+          }),
         );
       }}
     />

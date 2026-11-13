@@ -5,9 +5,10 @@ import {
   useRef,
   useState,
   type ReactNode,
+  type RefObject,
 } from 'react';
-import { useRouter } from 'next/navigation';
 import { useLocationSearchParams } from '@terrafirmagreg-team/ui/hooks/page/use-location-search';
+import { replaceUrlState } from '@terrafirmagreg-team/ui/lib/utils/history';
 import { X } from 'lucide-react';
 import { questConfig } from '@terrafirmagreg-team/quest/lib/config';
 import {
@@ -16,6 +17,9 @@ import {
 } from '@terrafirmagreg-team/ui/hooks/use-async-value';
 import { useLastResult } from '@terrafirmagreg-team/ui/hooks/use-last-result';
 import { useVersionedDataset } from '@terrafirmagreg-team/kit/hooks/use-versioned-dataset';
+import { SnapshotBoundary } from '@terrafirmagreg-team/kit/components/dump-status/snapshot-boundary';
+import { datasetSnapshotKey } from '@terrafirmagreg-team/kit/lib/dataset-snapshots';
+import type { DatasetRef, DatasetSnapshot } from '@terrafirmagreg-team/sites/location';
 import {
   isDatasetFailed,
   useDumpRetryNonce,
@@ -34,6 +38,7 @@ import {
   DEFAULT_QUEST_SPACING,
 } from '@terrafirmagreg-team/quest/lib/grid';
 import { questHref } from '@terrafirmagreg-team/quest/lib/links';
+import { createQuestCanonicalization } from '@terrafirmagreg-team/quest/lib/canonicalization';
 import { questFromCompact } from '@terrafirmagreg-team/quest/lib/data/parse';
 import { chapterEntryQuestId } from '@terrafirmagreg-team/quest/lib/data/entry';
 import { groupQuestChapters } from '@terrafirmagreg-team/quest/lib/data/groups';
@@ -148,23 +153,50 @@ export function QuestBrowserFallback() {
   );
 }
 
-export function QuestBrowser({
-  dataset: id,
-  datasetTitle,
-  lang,
-  versions,
-  actionsRight,
-}: {
+type QuestBrowserProps = {
   dataset: string;
   datasetTitle: string;
   lang: Lang;
   versions?: readonly string[];
   actionsRight?: ReactNode;
+};
+
+export function QuestBrowser(props: QuestBrowserProps) {
+  const selection = useVersionedDataset(props.dataset, { versions: props.versions }) ??
+    { id: props.dataset };
+  const canonicalization = useRef(createQuestCanonicalization());
+  return (
+    <SnapshotBoundary selection={selection} fallback={<QuestBrowserFallback />}>
+      {(dataset) => (
+        <QuestBrowserContent
+          {...props}
+          dataset={dataset}
+          selection={selection}
+          canonicalization={canonicalization}
+        />
+      )}
+    </SnapshotBoundary>
+  );
+}
+
+function QuestBrowserContent({
+  dataset: snapshot,
+  datasetTitle,
+  lang,
+  actionsRight,
+  selection,
+  canonicalization,
+}: Omit<QuestBrowserProps, 'dataset'> & {
+  dataset: DatasetSnapshot;
+  selection: DatasetRef;
+  canonicalization: RefObject<ReturnType<typeof createQuestCanonicalization>>;
 }) {
-  const router = useRouter();
+  const dataset = useMemo(
+    () => ({ ...snapshot, pin: selection.version }),
+    [snapshot, selection.version],
+  );
   const t = useTranslations();
   const params = useLocationSearchParams();
-  const dataset = useVersionedDataset(id, { versions }) ?? { id };
   const category = params.get('category') ?? undefined;
   const selectedId = params.get('id') ?? undefined;
   const item = params.get('item') ?? undefined;
@@ -179,7 +211,7 @@ export function QuestBrowser({
       () => source.index(dataset, lang),
       [dataset, lang, nonce],
     ),
-    dataset.id,
+    datasetSnapshotKey(dataset),
   );
   const langMap =
     useAsyncValue(
@@ -197,16 +229,19 @@ export function QuestBrowser({
 
   const resolved = useResolvedLang();
   useEffect(() => {
-    if (!row || row.filename === category) return;
-    router.replace(
+    if (!row) return;
+    if (!canonicalization.current.claimCategory(selection, category) ||
+      row.filename === category) return;
+    replaceUrlState(
       questHref(dataset, resolved, {
         category: row.filename,
         id: selectedId,
         item,
+        version: selection.version,
       }),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps -- params change per render
-  }, [row?.filename, category, dataset, resolved]);
+  }, [row?.filename, category, dataset, resolved, selection, canonicalization]);
 
   const chapter = useLastResult(
     useAsyncResult(
@@ -216,31 +251,30 @@ export function QuestBrowser({
         : undefined,
       [dataset, row?.file, index.value, nonce],
     ),
-    `${dataset.id}:${row?.filename ?? ''}`,
+    `${datasetSnapshotKey(dataset)}:${row?.filename ?? ''}`,
   );
 
   const autoOpenedRef = useRef<string | null>(null);
-  const prevChapterRef = useRef<string>(undefined);
   useEffect(() => {
     const current = chapter.value;
     if (!current) return;
     const filename = current.filename;
-    if (prevChapterRef.current === filename) return;
-    prevChapterRef.current = filename;
+    if (!canonicalization.current.claimChapter(selection, category)) return;
     autoOpenedRef.current = null;
     if (selectedId) return;
     const entryId = chapterEntryQuestId(current);
     if (!entryId) return;
     autoOpenedRef.current = entryId;
-    router.replace(
+    replaceUrlState(
       questHref(dataset, resolved, {
         category: filename,
         id: entryId,
         item,
+        version: selection.version,
       }),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps -- params change per render
-  }, [chapter.value, selectedId, dataset, resolved]);
+  }, [chapter.value, selectedId, category, dataset, resolved, selection, canonicalization]);
 
   const chapterTitle = chapter.value
     ? plainQuestText(chapter.value.title ?? chapter.value.filename, langMap)
@@ -268,11 +302,12 @@ export function QuestBrowser({
   );
 
   const replaceQuest = (opts?: { category?: string; id?: string }) => {
-    router.replace(
+    replaceUrlState(
       questHref(dataset, resolved, {
         category: opts?.category ?? row?.filename,
         id: opts?.id,
         item,
+        version: selection.version,
       }),
     );
   };
@@ -285,6 +320,7 @@ export function QuestBrowser({
         lang={lang}
         langMap={langMap}
         index={index.value}
+        version={selection.version}
         actionsRight={viewActions ? actionsRight : null}
         chapterJump={
           linkTarget
@@ -403,9 +439,9 @@ export function QuestBrowser({
           dataset={dataset}
           langMap={langMap}
           index={index.value ?? null}
+          version={selection.version}
         />
       </div>
     </EntryProvider>
   );
 }
-

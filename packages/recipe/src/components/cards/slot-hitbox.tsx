@@ -79,7 +79,10 @@ export function SlotHitbox({
 
   tooltipLevel?: EntryTooltipLevel;
 }) {
-  const name = stackDisplayName(langMap, widget.id);
+  const name =
+    widget.kind === 'tag'
+      ? `#${widget.id.replace(/^#+/, '')}`
+      : stackDisplayName(langMap, widget.id);
   const kind =
     widget.kind === 'fluid' || widget.kind === 'tag' ? widget.kind : 'item';
   const checkKind = kind === 'tag' || !interactive ? undefined : kind;
@@ -114,9 +117,11 @@ export function SlotHitbox({
       ? (alternatives[altIndex] ?? alternatives[0]!)
       : widget.id;
   const iconKind = alternatives?.length
-    ? widget.tagKind === 'fluid' || widget.tagKind === 'block'
-      ? widget.tagKind
-      : undefined
+    ? widget.kind === 'fluid'
+      ? 'fluid'
+      : widget.tagKind === 'fluid' || widget.tagKind === 'block'
+        ? widget.tagKind
+        : undefined
     : widgetRefKind(widget);
   const icon = (
     <span className="pointer-events-none flex size-full items-center justify-center">
@@ -134,6 +139,19 @@ export function SlotHitbox({
         size={iconSize}
         missing="placeholder"
       />
+      {widget.kind === 'tag' ? (
+        <span
+          aria-hidden
+          className="font-mc pointer-events-none absolute top-0 left-0 leading-none text-amber-300"
+          style={{
+            paddingLeft: scale / 2,
+            fontSize: (Math.min(widget.w, widget.h) / 16) * 7 * scale,
+            textShadow: `${scale}px ${scale}px 0 var(--color-mc-arrow)`,
+          }}
+        >
+          #
+        </span>
+      ) : null}
     </span>
   );
   const pos = {

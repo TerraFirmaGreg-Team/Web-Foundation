@@ -1,5 +1,6 @@
 import 'server-only';
-import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
+import { datasetCacheKey, type DatasetRef } from '@terrafirmagreg-team/sites/location';
+import { resolveDatasetSnapshot } from '@terrafirmagreg-team/dump/lib/dump/snapshot';
 import { createElement } from 'react';
 import type * as PageTree from 'fumadocs-core/page-tree';
 import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
@@ -50,7 +51,7 @@ function categoryLeaf(
     name: creativeTabName(map, category.display?.name),
     url: `${recipeBasePath(dataset)}?type=${encodeQueryValue(category.id)}`,
     icon: categoryIcon(dataset, category),
-    $id: `${dataset.id}/${dataset.version ?? ''}/type/${category.id}`,
+    $id: datasetCacheKey(dataset, 'type', category.id),
   }) as PageTree.Item;
 }
 
@@ -70,7 +71,7 @@ async function buildRecipeTrees(lang: Lang): Promise<SectionTrees> {
   const trees: SectionTrees = {};
   for (const { id, title: datasetTitle, languages } of datasets) {
     if (!(languages ?? [defaultLanguage]).includes(lang)) continue;
-    const ref = { id };
+    const ref = await resolveDatasetSnapshot({ id });
     const map = await clientDumpLangNames(ref, lang);
     const source = getRecipeSource();
     const categories = await source.categories(ref);
@@ -97,4 +98,3 @@ async function buildRecipeTrees(lang: Lang): Promise<SectionTrees> {
   }
   return trees;
 }
-

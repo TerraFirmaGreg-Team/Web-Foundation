@@ -13,7 +13,8 @@ import {
   isDatasetFailed,
   useFailedDatasets,
 } from '@terrafirmagreg-team/kit/hooks/use-dump-status';
-import { useVersionPreference } from '@terrafirmagreg-team/kit/hooks/use-version-pref';
+import { useVersionedDataset } from '@terrafirmagreg-team/kit/hooks/use-versioned-dataset';
+import { useSectionCatalog } from '@terrafirmagreg-team/kit/hooks/use-catalog';
 
 export function RecipeAxisSwitcher() {
   const t = useTranslations();
@@ -22,12 +23,10 @@ export function RecipeAxisSwitcher() {
   const params = useLocationSearchParams();
   const axis = recipePlaceFromParams(params).kind;
   const failed = useFailedDatasets();
-  const preferred = useVersionPreference(datasetId);
-  const dataset = {
-    id: datasetId ?? '',
-    version: params.get('version') ?? preferred,
-  };
-  if (!datasetId || isDatasetFailed(failed, dataset)) return null;
+  const catalog = useSectionCatalog();
+  const meta = catalog.recipe?.find(({ id }) => id === datasetId);
+  const dataset = useVersionedDataset(datasetId, meta);
+  if (!datasetId || !dataset || isDatasetFailed(failed, dataset)) return null;
   return (
     <Switcher
       options={[

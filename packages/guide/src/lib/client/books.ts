@@ -1,4 +1,4 @@
-import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
+import { datasetCacheKey, type DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { asRecord, asString } from '@terrafirmagreg-team/dump/lib/dump/contract/read';
 import { joinDumpRel } from '@terrafirmagreg-team/dump/lib/dump/paths';
 import { bareId } from '@terrafirmagreg-team/guide/lib/nav/paths';
@@ -19,7 +19,7 @@ import type { GuideIndex } from '@terrafirmagreg-team/guide/types';
 import {
   clientDumpJson,
   clientDumpLangGuide,
-  clientDumpLangGuideRaw,
+  clientDumpLangGuideMissing,
 } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import { loadDatasetDump } from '@terrafirmagreg-team/dump/lib/dump/mods/load';
 import { createDatasetCache } from '@terrafirmagreg-team/dump/lib/dump/reader';
@@ -153,15 +153,15 @@ export const loadClientGuideBook = createDatasetCache(
         entry.slug === bookSlugValue || entry.ref.bookId === bookSlugValue,
     );
     if (!row) return null;
-    const [rows, langMap, rawLang] = await Promise.all([
+    const [rows, langMap, missing] = await Promise.all([
       bookRows(dataset, row, lang),
       clientDumpLangGuide(dataset, lang),
-      clientDumpLangGuideRaw(dataset, lang),
+      clientDumpLangGuideMissing(dataset, lang),
     ]);
     if (!rows) return null;
-    return indexBookRows(rows, dataset, lang, langMap, rawLang);
+    return indexBookRows(rows, dataset, lang, langMap, missing);
   },
-  (dataset, lang, bookSlugValue) => `${dataset.id}/${dataset.version ?? ''}${lang}${bookSlugValue}`,
+  (dataset, lang, bookSlugValue) => datasetCacheKey(dataset, lang, bookSlugValue),
 );
 
 export type ClientGuideEntryHit = {
@@ -265,4 +265,3 @@ export async function listClientGuideBookSummaries(
     })
     .sort((a, b) => a.bookId.localeCompare(b.bookId));
 }
-

@@ -21,9 +21,7 @@ export interface RecipeTypesIndex {
 }
 export interface RecipeTypeRow {
   count: number;
-  files: {
-    [k: string]: string | undefined;
-  };
+  rows: string;
   id: string;
 }
 export interface NamespaceDisplay {
@@ -57,4 +55,3 @@ export interface DumpProducer {
   name: string;
   platform: string;
 }
-

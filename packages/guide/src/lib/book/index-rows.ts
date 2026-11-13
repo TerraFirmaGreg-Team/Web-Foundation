@@ -28,12 +28,12 @@ function toEntry(
   fallbackId: string,
   langMap: Record<string, string>,
   contentLanguage: Lang,
-  rawLang?: Record<string, string>,
+  missing?: ReadonlySet<string>,
 ): GuideEntry {
   const id = rawId(raw, fallbackId);
   const display = displayRecord(raw);
   const nameKey = stringField(display, 'name');
-  const tracker = fallbackTracker(rawLang);
+  const tracker = fallbackTracker(missing);
   return {
     id,
     name: nameKey ? localize(langMap, nameKey, nameKey, tracker) : id,
@@ -52,11 +52,11 @@ function toCategory(
   raw: RawRecord,
   fallbackId: string,
   langMap: Record<string, string>,
-  rawLang?: Record<string, string>,
+  missing?: ReadonlySet<string>,
 ): Omit<GuideCategory, 'entries'> {
   const id = rawId(raw, fallbackId);
   const nameKey = stringField(raw, 'name');
-  const tracker = fallbackTracker(rawLang);
+  const tracker = fallbackTracker(missing);
   return {
     id,
     name: nameKey ? localize(langMap, nameKey, nameKey, tracker) : id,
@@ -103,14 +103,14 @@ export function indexBookRows(
   dataset: DatasetRef,
   lang: Lang,
   langMap: Record<string, string>,
-  rawLang?: Record<string, string>,
+  missing?: ReadonlySet<string>,
 ): GuideIndex {
   const { ref, slug, raw } = rows;
   const entries = rows.entries.map((entryRow) =>
-    toEntry(entryRow.raw, entryRow.id, langMap, rows.contentLanguage, rawLang),
+    toEntry(entryRow.raw, entryRow.id, langMap, rows.contentLanguage, missing),
   );
   const categoryRows = rows.categories.map((categoryRow) =>
-    toCategory(categoryRow.raw, categoryRow.id, langMap, rawLang),
+    toCategory(categoryRow.raw, categoryRow.id, langMap, missing),
   );
   const categories: GuideCategory[] = categoryRows
     .sort(compareGuideOrder)
@@ -118,7 +118,7 @@ export function indexBookRows(
       ...category,
       entries: refsForCategory(category, entries),
     }));
-  const book = toBook(raw, ref, slug, langMap, rawLang);
+  const book = toBook(raw, ref, slug, langMap, missing);
   return {
     status: categories.length || book.name ? 'ready' : 'missing',
     root: ref.dir,

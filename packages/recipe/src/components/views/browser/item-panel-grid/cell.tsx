@@ -27,7 +27,6 @@ function PanelChip({
   names,
   lang,
   favIds,
-  tooltip,
 }: {
   id: string;
   size: EntrySize;
@@ -37,13 +36,11 @@ function PanelChip({
   names: Record<string, Record<string, string>>;
   lang: Lang;
   favIds?: ReadonlySet<string>;
-  tooltip?: boolean;
 }) {
   return (
     <Entry
       id={id}
       kind={kind}
-      tooltip={tooltip === false ? false : undefined}
       name={recipeItemName(names, lang, id)}
       size={size}
       variant="chip"
@@ -71,7 +68,6 @@ export const PanelCell = memo(function PanelCell({
   favIds,
   expandLabel,
   draggableStacks,
-  tooltip,
   onPress,
   onHover,
   onToggleGroup,
@@ -84,7 +80,6 @@ export const PanelCell = memo(function PanelCell({
   favIds?: ReadonlySet<string>;
   expandLabel: string;
   draggableStacks?: boolean;
-  tooltip?: boolean;
   onPress: (id: string, ref?: 'item' | 'fluid') => void;
   onHover?: (target: FavoriteHoverTarget | undefined) => void;
   onToggleGroup?: (id: string) => void;
@@ -173,7 +168,6 @@ export const PanelCell = memo(function PanelCell({
               names={names}
               lang={lang}
               favIds={favIds}
-              tooltip={tooltip}
             />
           </button>
         </CopyIdMenu>

@@ -1,4 +1,5 @@
-import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
+import { datasetCacheKey, type DatasetRef } from '@terrafirmagreg-team/sites/location';
+import type { ArtifactDescriptor } from '../../types/snapshot';
 import { dumpStorageBase } from '@terrafirmagreg-team/data/lib/env';
 import { stackIdBase } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 
@@ -7,6 +8,7 @@ export type DumpLocation = {
   root: string;
 
   files?: Record<string, string>;
+  artifacts?: Record<string, ArtifactDescriptor>;
 };
 
 const store = globalThis as Record<symbol, unknown>;
@@ -20,7 +22,8 @@ export function registerDumpLocation(
   dataset: DatasetRef,
   location: DumpLocation,
 ): void {
-  dumpLocations.set(`${dataset.id}/${dataset.version ?? ''}`, location);
+  if (!dataset.version || !dataset.revision) throw new Error('Dump location requires a snapshot');
+  dumpLocations.set(datasetCacheKey(dataset), location);
   for (const listener of dumpLocationListeners) listener();
 }
 
@@ -30,7 +33,7 @@ export function subscribeDumpLocations(listener: () => void): () => void {
 }
 
 export function dumpLocation(dataset: DatasetRef): DumpLocation | undefined {
-  return dumpLocations.get(`${dataset.id}/${dataset.version ?? ''}`);
+  return dumpLocations.get(datasetCacheKey(dataset));
 }
 
 export function dumpStorageUrl(storageRel: string): string {
@@ -58,6 +61,7 @@ export function dumpPublicUrl(
   const loc = dumpLocation(dataset);
   if (!loc) return undefined;
   const key = rel ? loc.files?.[rel] : undefined;
+  if (loc.files && !key) return undefined;
   const storageRel = key ?? `${loc.root}${rel ? `/${rel}` : ''}`;
   return dumpStorageUrl(storageRel);
 }
@@ -170,4 +174,3 @@ export function dumpRelPublicUrl(
   const cleaned = typeof rel === 'string' ? cleanDumpRel(rel) : null;
   return cleaned ? dumpPublicUrl(dataset, cleaned) : undefined;
 }
-

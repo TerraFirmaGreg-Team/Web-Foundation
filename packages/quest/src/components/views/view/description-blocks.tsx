@@ -49,13 +49,15 @@ export function DescriptionBlocks({
   dataset,
   lang,
   index,
+  version,
 }: {
   blocks: QuestDescriptionBlock[];
   dataset: DatasetRef;
   lang: Lang;
   index: QuestCompactIndex | null;
+  version?: string;
 }) {
-  const ctx = { dataset, lang, index };
+  const ctx = { dataset, lang, index, version };
   const segments = groupImages(blocks);
   return (
     <>

@@ -78,6 +78,7 @@ export function Pager({
   onPage,
   label,
   leading,
+  loop,
   className,
 }: {
   page: number;
@@ -87,6 +88,7 @@ export function Pager({
   onPage: (page: number) => void;
   label: string;
   leading?: ReactNode;
+  loop?: boolean;
   className?: string;
 }) {
   return (
@@ -95,7 +97,7 @@ export function Pager({
         <PaginationItem className="flex items-center gap-1">
           <PagerArrow
             dir={-1}
-            disabled={page <= 0}
+            disabled={loop ? pages <= 1 : page <= 0}
             onClick={(event) => onPage(event.shiftKey ? 0 : page - 1)}
           />
           {leading}
@@ -115,7 +117,7 @@ export function Pager({
         <PaginationItem>
           <PagerArrow
             dir={1}
-            disabled={page + 1 >= pages}
+            disabled={loop ? pages <= 1 : page + 1 >= pages}
             onClick={(event) => onPage(event.shiftKey ? pages - 1 : page + 1)}
           />
         </PaginationItem>

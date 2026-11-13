@@ -1,12 +1,18 @@
 {
   "cached(kit.stale_badge)": "кэш",
+  "Could not load dataset.(kit.snapshot_error)": "Не удалось загрузить данные.",
+  "Could not load updated data. Your current data is still available.(kit.snapshot_update_error)": "Не удалось загрузить обновление. Текущие данные по-прежнему доступны.",
   "Dismiss(kit.dismiss)": "Скрыть",
   "Failed to copy(ui.copy_error)": "Не удалось скопировать",
+  "Load updated data(kit.snapshot_load)": "Загрузить обновлённые данные",
+  "Loading data…(kit.snapshot_loading)": "Загрузка данных…",
   "Retry now(kit.retry_now)": "Повторить",
+  "Retry(kit.snapshot_retry)": "Повторить",
   "retrying in {seconds}s(kit.retrying_in)": "повтор через {seconds} с",
   "Section data is temporarily unavailable. Try again later.(kit.section_unavailable)": "Данные раздела временно недоступны. Попробуйте позже.",
   "Select dataset(ui.select_dataset)": "Выберите набор данных",
   "Select section(ui.select_section)": "Выберите раздел",
+  "Updated dataset available(kit.snapshot_available)": "Доступно обновление данных",
   "View as Markdown(ui.view_markdown)": "Просмотр Markdown",
   "{datasets} data is temporarily unavailable(kit.dump_unavailable)": "Данные {datasets} временно недоступны",
   "latest(ui.version_latest)": "последняя"

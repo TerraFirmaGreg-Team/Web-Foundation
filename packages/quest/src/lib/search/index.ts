@@ -1,4 +1,4 @@
-import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
+import { datasetCacheKey, type DatasetRef } from '@terrafirmagreg-team/sites/location';
 import type { AdvancedIndex } from 'fumadocs-core/search/server';
 import type { DumpIndex } from '@terrafirmagreg-team/dump/lib/dump/mods/dto';
 import type {
@@ -57,7 +57,7 @@ function questIndex(
   const title = questTitle(quest, map);
   const contents = questContents(quest, title ?? questId, map);
   if (!title && !contents.length) return null;
-  const refKey = `${dataset.id}/${dataset.version ?? ''}`;
+  const refKey = datasetCacheKey(dataset);
   return {
     title: title ?? questId,
     url: questHref(dataset, undefined, {
@@ -143,4 +143,3 @@ export async function questSearchIndexes(
   }
   return out;
 }
-

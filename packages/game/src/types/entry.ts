@@ -15,6 +15,7 @@ export type EntryHrefOpts = {
   bookPath?: string;
   entry?: string;
   hash?: string;
+  version?: string;
 };
 
 export type EntryProps = {
@@ -52,6 +53,8 @@ export type EntryProps = {
   icon?: TaggedReference;
 
   entityView?: 'auto' | 'texture' | 'egg';
+
+  members?: string[];
 } & Omit<EntryHrefOpts, 'tab'>;
 
 export type KindEntryProps = Omit<EntryProps, 'kind'>;

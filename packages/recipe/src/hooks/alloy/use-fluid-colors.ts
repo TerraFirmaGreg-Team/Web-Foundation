@@ -1,5 +1,5 @@
 'use client';
-import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
+import { datasetCacheKey, type DatasetRef } from '@terrafirmagreg-team/sites/location';
 
 import { useEffect, useMemo, useReducer } from 'react';
 import { loadClientModAtlases } from '@terrafirmagreg-team/dump/lib/dump/client/atlases';
@@ -86,7 +86,7 @@ const loadFluidColor = createDatasetCache(
     }
     return n ? displayColor(r / n, g / n, b / n) : null;
   },
-  (dataset, id) => `${dataset.id}/${dataset.version ?? ''}|${id}`,
+  (dataset, id) => datasetCacheKey(dataset, id),
 );
 
 export function useFluidColors(
@@ -122,4 +122,3 @@ export function useFluidColors(
     id ? (loadFluidColor.peek(dataset, id) ?? undefined) : undefined,
   );
 }
-

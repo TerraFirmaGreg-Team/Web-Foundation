@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { notFound, redirect } from 'next/navigation';
+import { cookies, headers } from 'next/headers';
 import type { Metadata } from 'next';
 import { flattenTree } from 'fumadocs-core/page-tree';
 import { LangContentSwitch } from '@terrafirmagreg-team/ui/components/blocks/lang/content';
@@ -102,6 +103,7 @@ export interface SectionRoutesOptions<
 
 interface RouteParams {
   params: Promise<{ slug?: string[] }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }
 
 type Resolved = { page: unknown; isFallback: boolean } | undefined;
@@ -230,15 +232,20 @@ export function createSectionRoutes<
       ),
   });
 
-  async function Page({ params }: RouteParams) {
+  async function Page({ params, searchParams }: RouteParams) {
     const { slug } = await params;
+    const { languages, defaultLanguage } = loadLocaleRegistry();
+    const preferred = resolveLang(
+      (await searchParams)?.lang ?? splitLandingSlug(slug).variant?.get('lang'),
+      languages,
+      defaultLanguage,
+    );
     const [src, datasets] = await Promise.all([
       source.getSource(),
       sectionDatasets(section),
     ]);
 
     if (slug?.length === 1 && !landing && PageView) {
-      const { defaultLanguage } = loadLocaleRegistry();
       if (!getPage(src as SectionSource, slug, defaultLanguage)) {
         const resolvedTrees = trees ? await trees(defaultLanguage) : undefined;
         const first = flattenTree(
@@ -263,11 +270,13 @@ export function createSectionRoutes<
           page,
           lang,
         ) as ReactNode,
+      preferred,
     );
     if (!content) notFound();
     return (
       <LangContentSwitch
         key={[section, ...(slug ?? [])].join('/')}
+        cacheKey={[section, ...(slug ?? [])].join('/')}
         content={content}
         loadLang={localeLoader()?.bind(null, { section, slug })}
       />
@@ -390,14 +399,20 @@ export type SectionRoutes = ReturnType<typeof createSectionRoutes>;
 
 export async function SectionLayout({ children }: { children?: ReactNode }) {
   const { slots } = baseOptions();
-  const { defaultLanguage } = loadLocaleRegistry();
+  const { languages, defaultLanguage } = loadLocaleRegistry();
+  const lang = resolveLang(
+    (await cookies()).get('wiki_lang')?.value ??
+      (await headers()).get('x-wiki-lang'),
+    languages,
+    defaultLanguage,
+  );
   const sections = sectionTabs.map((tab) => tab.key);
   const [treesBySection, catalog] = await Promise.all([
     Promise.all(
       sections.map(async (section) => [
         section,
         (await sectionTreesLoader(section)
-          ?.(defaultLanguage)
+          ?.(lang)
           .catch((): SectionTrees => ({}))) ?? {},
       ] as const),
     ).then((entries) =>

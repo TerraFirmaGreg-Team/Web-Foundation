@@ -9,6 +9,12 @@ import {
 } from '@terrafirmagreg-team/ui/hooks/use-async-value';
 import { useLastResult } from '@terrafirmagreg-team/ui/hooks/use-last-result';
 import { useVersionedDataset } from '@terrafirmagreg-team/kit/hooks/use-versioned-dataset';
+import { SnapshotBoundary } from '@terrafirmagreg-team/kit/components/dump-status/snapshot-boundary';
+import { datasetSnapshotKey } from '@terrafirmagreg-team/kit/lib/dataset-snapshots';
+import type {
+  DatasetRef,
+  DatasetSnapshot,
+} from '@terrafirmagreg-team/sites/location';
 import {
   isDatasetFailed,
   useDumpRetryNonce,
@@ -100,15 +106,7 @@ export function GuideBrowserFallback() {
   );
 }
 
-export function GuideBrowser({
-  dataset: id,
-  datasetTitle,
-  lang,
-  versions,
-  onBlockFeedback,
-  actionsRight,
-  footer,
-}: {
+type GuideBrowserProps = {
   dataset: string;
   datasetTitle: string;
   lang: Lang;
@@ -116,11 +114,39 @@ export function GuideBrowser({
   onBlockFeedback?: ComponentProps<typeof FeedbackText>['onSendAction'];
   actionsRight?: ReactNode;
   footer?: ReactNode;
+};
+
+export function GuideBrowser(props: GuideBrowserProps) {
+  const selection = useVersionedDataset(props.dataset, { versions: props.versions }) ??
+    { id: props.dataset };
+  return (
+    <SnapshotBoundary selection={selection} fallback={<GuideBrowserFallback />}>
+      {(dataset) => (
+        <GuideBrowserContent {...props} dataset={dataset} selection={selection} />
+      )}
+    </SnapshotBoundary>
+  );
+}
+
+function GuideBrowserContent({
+  dataset: snapshot,
+  datasetTitle,
+  lang,
+  onBlockFeedback,
+  actionsRight,
+  footer,
+  selection,
+}: Omit<GuideBrowserProps, 'dataset'> & {
+  dataset: DatasetSnapshot;
+  selection: DatasetRef;
 }) {
+  const dataset = useMemo(
+    () => ({ ...snapshot, pin: selection.version }),
+    [snapshot, selection.version],
+  );
   const t = useTranslations();
   const router = useRouter();
   const params = useLocationSearchParams();
-  const dataset = useVersionedDataset(id, { versions }) ?? { id };
   const { bookId, entryId, categoryId } = useMemo(
     () => guideQueryFromParams(params),
     [params],
@@ -133,7 +159,7 @@ export function GuideBrowser({
       () => source.books(dataset, lang),
       [dataset, lang, nonce],
     ),
-    dataset.id,
+    datasetSnapshotKey(dataset),
   );
   const langMap = useLangMap(dataset, lang);
   const messages = useMemo<GuideMessages>(
@@ -165,7 +191,15 @@ export function GuideBrowser({
           if (!book) return undefined;
           const index = await source.book(dataset, lang, book.bookId);
           const first = index ? firstGuideEntryId(index) : undefined;
-          return guideHref(dataset, resolved, book.bookId, first);
+          return guideHref(
+            dataset,
+            resolved,
+            book.bookId,
+            first,
+            undefined,
+            undefined,
+            selection.version,
+          );
         }
       : undefined,
     [books.value, bookId, dataset, lang, resolved],
@@ -191,8 +225,9 @@ export function GuideBrowser({
         : undefined,
       [dataset, lang, bookId, entryId, categoryId, langMap, messages, nonce],
     ),
-    `${dataset.id}:${bookId ?? ''}`,
+    `${datasetSnapshotKey(dataset)}:${bookId ?? ''}`,
   );
+
 
   useEffect(() => {
     if (payload.value?.title) {
@@ -247,4 +282,3 @@ export function GuideBrowser({
     </div>
   );
 }
-

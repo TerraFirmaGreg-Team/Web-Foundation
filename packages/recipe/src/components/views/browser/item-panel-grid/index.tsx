@@ -27,7 +27,8 @@ export const ItemPanelGrid = memo(function ItemPanelGrid({
   onHover,
   onToggleGroup,
   draggableStacks,
-  tooltip,
+  eager,
+  frozen,
 }: {
   cells: ItemPanelCell[];
 
@@ -43,12 +44,17 @@ export const ItemPanelGrid = memo(function ItemPanelGrid({
   onHover?: (target: FavoriteHoverTarget | undefined) => void;
   onToggleGroup?: (id: string) => void;
   draggableStacks?: boolean;
-  tooltip?: boolean;
+  eager?: boolean;
+  frozen?: boolean;
 }) {
   const t = useTranslations();
   const expandLabel = t('Expand', { note: 'recipe.expand' });
-  const limit = useMountLimit(cells.length, resetKey);
-  const shown = limit >= cells.length ? cells : cells.slice(0, limit);
+  const limit = useMountLimit(cells.length, resetKey, eager);
+  const shown = frozen
+    ? []
+    : limit >= cells.length
+      ? cells
+      : cells.slice(0, limit);
   const { gridRef, outlines } = useGroupOutlines(shown, cols, rows);
 
   return (
@@ -77,7 +83,6 @@ export const ItemPanelGrid = memo(function ItemPanelGrid({
           favIds={favIds}
           expandLabel={expandLabel}
           draggableStacks={draggableStacks}
-          tooltip={tooltip}
           onPress={onPress}
           onHover={onHover}
           onToggleGroup={onToggleGroup}

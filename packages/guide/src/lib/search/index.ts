@@ -1,4 +1,4 @@
-import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
+import { datasetCacheKey, datasetUrlVersion, type DatasetRef } from '@terrafirmagreg-team/sites/location';
 import type { AdvancedIndex } from 'fumadocs-core/search/server';
 import { dumpTextString, langString } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names';
 import { clientDumpLangGuide } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
@@ -94,8 +94,9 @@ function entryIndex(
   const body = contents.map((c) => c.content).join('\n');
   if (!body && !title) return null;
   const params = new URLSearchParams({ book: bookId, entry: entryId });
-  if (dataset.version) params.set('version', dataset.version);
-  const refKey = `${dataset.id}/${dataset.version ?? ''}`;
+  const pinned = datasetUrlVersion(dataset);
+  if (pinned) params.set('version', pinned);
+  const refKey = datasetCacheKey(dataset);
   return {
     title,
     url: `/guide/${dataset.id}?${params}`,
@@ -180,4 +181,3 @@ export async function guideSearchIndexes(
     return true;
   });
 }
-

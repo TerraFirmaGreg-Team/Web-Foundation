@@ -1,4 +1,4 @@
-import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
+import { datasetCacheKey, type DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { clientRegistryUsesEntries } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import { loadClientTagMembers } from '@terrafirmagreg-team/dump/lib/dump/client/tags';
 import {
@@ -82,7 +82,7 @@ const tagMembersByKindCache = createDatasetCache(
     return (await loadClientTagMembers(dataset, memberKind)) ?? {};
   },
   (dataset, kind) =>
-    `${dataset.id}/${dataset.version ?? ''} ${registryField(kind) === 'blocks' ? 'block' : 'item'}`,
+    datasetCacheKey(dataset, registryField(kind) === 'blocks' ? 'block' : 'item'),
 );
 
 const allTagMembersCache = createDatasetCache(
@@ -97,7 +97,7 @@ const allTagMembersCache = createDatasetCache(
     }
     return merged;
   },
-  (dataset) => `${dataset.id}/${dataset.version ?? ''} all`,
+  (dataset) => datasetCacheKey(dataset, 'all'),
 );
 
 function loadTagMembersByKind(
@@ -112,4 +112,3 @@ export function loadAllTagMembers(
 ): Promise<Record<string, string[]>> {
   return allTagMembersCache(dataset);
 }
-

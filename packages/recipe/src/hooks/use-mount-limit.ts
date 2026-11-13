@@ -2,12 +2,18 @@
 
 import { useEffect, useState } from 'react';
 
-export function useMountLimit(length: number, resetKey: unknown): number {
-  const [limit, setLimit] = useState(40);
+export function useMountLimit(
+  length: number,
+  resetKey: unknown,
+  eager = false,
+): number {
+  const [limit, setLimit] = useState(() => (eager ? length : 40));
   const [lastKey, setLastKey] = useState(resetKey);
   if (lastKey !== resetKey) {
     setLastKey(resetKey);
-    setLimit(40);
+    setLimit(eager ? length : 40);
+  } else if (eager && limit < length) {
+    setLimit(length);
   }
   useEffect(() => {
     if (limit >= length) return;

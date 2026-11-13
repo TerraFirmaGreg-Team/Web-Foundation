@@ -1,5 +1,5 @@
 'use client';
-import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
+import { datasetCacheKey, type DatasetRef } from '@terrafirmagreg-team/sites/location';
 
 import { memo, useCallback, useMemo } from 'react';
 import {
@@ -179,7 +179,7 @@ function CanvasInner({
         backgroundGap={Math.max(12, Math.round(gridStepPx(gridScale) / 3))}
         viewportConfig={{
           storageKey: viewportStorageKey(dataset, chapter.filename),
-          resetKey: `${dataset.id}/${dataset.version ?? ''}:${chapter.filename}`,
+          resetKey: datasetCacheKey(dataset, chapter.filename),
           selectedId,
           suppressPanRef,
           focusZoom: QUEST_ZOOM_BASE,
@@ -254,4 +254,3 @@ export const CanvasFlow = memo(function CanvasFlow({
     </ReactFlowProvider>
   );
 });
-

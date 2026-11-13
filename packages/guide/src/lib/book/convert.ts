@@ -39,11 +39,11 @@ export function toBook(
   ref: GuideBookRef,
   slug: string,
   langMap: Record<string, string>,
-  rawLang?: Record<string, string>,
+  missing?: ReadonlySet<string>,
 ): GuideBook {
   const display = displayRecord(raw);
   const landing = asLanding(display?.landing);
-  const tracker = fallbackTracker(rawLang);
+  const tracker = fallbackTracker(missing);
   markTextKeys(landing, tracker);
   return {
     id: stringField(raw, 'id') ?? ref.bookId,

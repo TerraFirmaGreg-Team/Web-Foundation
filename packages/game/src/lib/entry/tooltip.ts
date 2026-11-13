@@ -18,11 +18,9 @@ import {
 import type { DumpDisplay } from '@terrafirmagreg-team/dump/lib/dump/contract/text';
 import {
   dumpTextLines,
-  stackDisplayName,
   stripMcFormat,
 } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names';
 import { createDatasetCache } from '@terrafirmagreg-team/dump/lib/dump/reader';
-import { fetchTagMembers } from '@terrafirmagreg-team/game/lib/entry/icon-load';
 
 export const loadStackDisplay = createDatasetCache(
   async (
@@ -77,20 +75,18 @@ export async function stackTooltip(
   langMap: Record<string, string> | undefined,
   kind: ReferenceKind | undefined,
 ): Promise<StackTooltip> {
+  if (id.startsWith('#')) {
+    const map =
+      langMap ?? (lang ? await clientDumpLangNames(dataset, lang) : undefined);
+    if (!map) return { lines: [], mods: {} };
+    const manifest = await loadClientManifest(dataset);
+    const ns = id.slice(1).split(':', 1)[0];
+    const key = ns ? manifest?.namespaces?.[ns]?.display?.name : undefined;
+    const mod = key ? map[key] : undefined;
+    return { lines: mod ? [mod] : [], mods: {} };
+  }
   const map =
     langMap ?? (lang ? await clientDumpLangNames(dataset, lang) : undefined);
-  if (id.startsWith('#')) {
-    if (!map) return { lines: [], mods: {} };
-    const members = await fetchTagMembers(
-      dataset,
-      id.slice(1),
-      tagKindOf(kind) ?? 'item',
-    );
-    return {
-      lines: members.map((member) => stackDisplayName(map, member)),
-      mods: {},
-    };
-  }
   const memberKind = tagKindOf(kind) ?? kind;
   const loadKind =
     memberKind === 'fluid' || memberKind === 'entity' || memberKind === 'block'

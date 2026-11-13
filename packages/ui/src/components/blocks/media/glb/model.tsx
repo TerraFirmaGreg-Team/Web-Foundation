@@ -44,9 +44,13 @@ const glbLoaderClasses = new WeakMap<
   ResourceResolver,
   Map<string, typeof GLTFLoader>
 >();
+const loaderModifiers = new WeakMap<
+  object,
+  (resourceUrl: string) => string
+>();
 
 export function glbLoaderClass(
-  url: string,
+  modelSource: string,
   resolveResource?: ResourceResolver,
 ): typeof GLTFLoader {
   if (!resolveResource) return GLTFLoader;
@@ -55,19 +59,21 @@ export function glbLoaderClass(
     byUrl = new Map();
     glbLoaderClasses.set(resolveResource, byUrl);
   }
-  let cls = byUrl.get(url);
+  let cls = byUrl.get(modelSource);
   if (!cls) {
-    const resolve = resolveResource;
     cls = class extends GLTFLoader {
       constructor() {
         const manager = new LoadingManager();
-        manager.setURLModifier(
-          (resourceUrl) => resolve(resourceUrl, url) ?? resourceUrl,
-        );
         super(manager);
+        const modifier = loaderModifiers.get(this.constructor);
+        if (modifier) manager.setURLModifier(modifier);
       }
     };
-    byUrl.set(url, cls);
+    loaderModifiers.set(
+      cls,
+      (resourceUrl) => resolveResource(resourceUrl, modelSource) ?? resourceUrl,
+    );
+    byUrl.set(modelSource, cls);
   }
   return cls;
 }

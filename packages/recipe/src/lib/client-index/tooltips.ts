@@ -1,4 +1,4 @@
-import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
+import { datasetCacheKey, type DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { clientDumpLangNames } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import { loadClientKeybinds } from '@terrafirmagreg-team/dump/lib/dump/client/keybinds';
 import {
@@ -62,7 +62,7 @@ const tooltipsCache = createDatasetCache(
     lang: string,
   ): Promise<Record<string, string[]>> =>
     (await tooltipsApiCache(dataset, lang)).lines,
-  (dataset, lang) => `${dataset.id}/${dataset.version ?? ''} ${lang}`,
+  (dataset, lang) => datasetCacheKey(dataset, lang),
 );
 
 export async function loadItemTooltips(
@@ -71,4 +71,3 @@ export async function loadItemTooltips(
 ): Promise<Record<string, string[]>> {
   return tooltipsCache(dataset, lang);
 }
-

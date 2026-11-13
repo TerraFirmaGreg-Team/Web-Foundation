@@ -115,13 +115,9 @@ function asRecipeTypeRow(value: unknown): RecipeTypeRow | undefined {
   if (!row) return undefined;
   const id = asString(row.id);
   const count = asNumber(row.count);
-  const filesRow = asRecord(row.files);
-  if (!id || count === undefined || !filesRow) return undefined;
-  const files: Record<string, string> = {};
-  for (const [ns, path] of Object.entries(filesRow)) {
-    if (typeof path === 'string' && path) files[ns] = path;
-  }
-  return { id, count, files };
+  const rows = asString(row.rows);
+  if (!id || count === undefined || !rows) return undefined;
+  return { id, count, rows };
 }
 
 function asIndexes(value: unknown): DumpIndexes | undefined {
@@ -165,4 +161,3 @@ export function parseDumpManifest(value: unknown): DumpManifest | undefined {
     indexes,
   };
 }
-

@@ -72,7 +72,11 @@ export function countCoveredText(
   return slots.some(
     (slot) =>
       slot.count !== undefined &&
-      scales.some((scale) => Math.round(num * scale) === slot.count) &&
+      scales.some(
+        (scale) =>
+          Math.abs(num * scale - slot.count!) <=
+          Math.max(1, num * scale * 0.01),
+      ) &&
       widget.x + widget.w > slot.x &&
       widget.x < slot.x + slot.w,
   );

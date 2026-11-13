@@ -35,9 +35,12 @@ export function isDatasetFailed(
   failed: readonly string[],
   dataset: { id: string; version?: string },
 ): boolean {
-  return (
-    failed.includes(dataset.id) ||
-    (dataset.version !== undefined &&
-      failed.includes(`${dataset.id}@${dataset.version}`))
+  const prefix = JSON.stringify(
+    dataset.version !== undefined
+      ? [dataset.id, dataset.version]
+      : [dataset.id],
+  ).slice(0, -1);
+  return failed.some(
+    (key) => key === dataset.id || key.startsWith(prefix),
   );
 }

@@ -25,7 +25,7 @@ function urlRelation(
   return value === 'uses' || value === 'tags' ? value : undefined;
 }
 
-export function useRecipeQuery(dataset: DatasetRef) {
+export function useRecipeQuery(dataset: DatasetRef, version?: string) {
   const params = useLocationSearchParams();
   const resolved = useResolvedLang();
 
@@ -80,13 +80,14 @@ export function useRecipeQuery(dataset: DatasetRef) {
     if (!stray) return;
     replaceUrlState(
       isCalc
-        ? recipeCalcHref(dataset, resolved, tree || undefined)
+        ? recipeCalcHref(dataset, resolved, tree || undefined, version)
         : recipeHref(dataset, resolved, {
             tool: place.kind,
             id: recipeId,
             unit: alloyUnit,
             mix: alloyMix,
             tab,
+            version,
           }),
     );
   }, [
@@ -95,6 +96,7 @@ export function useRecipeQuery(dataset: DatasetRef) {
     place.kind,
     resolved,
     dataset,
+    version,
     params,
     tree,
     recipeId,
@@ -117,6 +119,7 @@ export function useRecipeQuery(dataset: DatasetRef) {
           tab,
           search: searchParam || undefined,
           rpage: rpageValue + 1,
+          version,
         }),
       );
     }
@@ -124,6 +127,7 @@ export function useRecipeQuery(dataset: DatasetRef) {
     isTool,
     resolved,
     dataset,
+    version,
     params,
     rawItem,
     rawFluid,
@@ -151,12 +155,14 @@ export function useRecipeQuery(dataset: DatasetRef) {
         tab,
         search: searchParam || undefined,
         rpage: rpageValue + 1,
+        version,
       }),
     );
   }, [
     isTool,
     resolved,
     dataset,
+    version,
     params,
     rawItem,
     rawFluid,

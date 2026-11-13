@@ -18,11 +18,13 @@ export function NavList({
   lang,
   langMap,
   empty,
+  version,
 }: {
   rows: QuestCompactRow[];
   dataset: DatasetRef;
   lang: Lang;
   langMap: Record<string, string>;
+  version?: string;
   empty: string;
 }) {
   if (!rows.length) {
@@ -38,6 +40,7 @@ export function NavList({
             href={questHref(dataset, lang, {
               category: row.filename,
               id: row.id,
+              version,
             })}
             size="xs"
             className="px-1.5 py-1"

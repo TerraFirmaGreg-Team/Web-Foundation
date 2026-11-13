@@ -44,10 +44,11 @@ export function useAddToCalc(session: RecipeSession) {
           dataset,
           resolved,
           encodeCalcState({ ...state, cards }),
+          session.nav.version,
         ),
       );
     },
-    [tree, dataset, resolved],
+    [tree, dataset, resolved, session.nav.version],
   );
 }
 

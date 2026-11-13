@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { parseSectionLocation } from '@terrafirmagreg-team/sites/location';
+import { datasetCacheKey, parseSectionLocation } from '@terrafirmagreg-team/sites/location';
 import type { ReactElement } from 'react';
 import { EntryIcon } from '@terrafirmagreg-team/game/components/entry/icon';
 import { EntryTooltip } from '@terrafirmagreg-team/game/components/entry/tooltip';
@@ -31,6 +31,7 @@ import { stackIdFromRef } from '@terrafirmagreg-team/dump/lib/dump/contract/ref'
 import { stackDisplay } from '@terrafirmagreg-team/game/lib/entry/display';
 import { loadStackDisplay } from '@terrafirmagreg-team/game/lib/entry/tooltip';
 import { useAsyncResult } from '@terrafirmagreg-team/ui/hooks/use-async-value';
+import { useDismissibleTooltip } from '@terrafirmagreg-team/ui/hooks/use-dismissible-tooltip';
 import {
   resolveEntryHref,
   tooltipLoadKind,
@@ -70,9 +71,11 @@ export function Entry({
   children,
   entityView,
   icon: iconProp,
+  members,
   ...hrefOpts
 }: EntryProps) {
   const ctx = useEntryContext();
+  const [tipOpen, setTipOpen] = useDismissibleTooltip();
   const pathname = usePathname();
   const locId = parseSectionLocation(pathname).dataset;
   const dataset =
@@ -100,7 +103,7 @@ export function Entry({
       refKind === 'block' ||
       refKind === 'fluid' ||
       refKind === 'entity')
-      ? `${dataset.id}/${dataset.version ?? ''}:${stackId}`
+      ? datasetCacheKey(dataset, stackId)
       : undefined;
   const displayPeek =
     displayKey && dataset
@@ -185,6 +188,7 @@ export function Entry({
       chip={variant === 'chip'}
       preferVariant={preferVariant}
       entityView={entityView}
+      members={members}
       badge={badge}
       badgeClassName={badgeClassName}
     >
@@ -235,7 +239,7 @@ export function Entry({
     );
   }
   return (
-    <Tooltip>
+    <Tooltip open={tipOpen} onOpenChange={setTipOpen}>
       <TooltipTrigger render={face} />
       <TooltipContent>{name}</TooltipContent>
     </Tooltip>
@@ -267,7 +271,7 @@ export function EntityEntry({
       datasetProp ?? ctx?.dataset ?? (locId ? { id: locId } : undefined),
     [datasetProp, ctx, locId],
   );
-  const modelKey = dataset && id ? `${dataset.id}/${dataset.version ?? ''}:${id}` : undefined;
+  const modelKey = dataset && id ? datasetCacheKey(dataset, id) : undefined;
   const modelRes = useAsyncResult(
     view === 'model' && modelKey
       ? async () => ({
@@ -305,4 +309,3 @@ export function EntityEntry({
 }
 export const TagEntry = kindEntry<TagDirectiveProps>('itemTag');
 export const RecipeEntry = kindEntry<RecipeDirectiveProps>('recipe');
-

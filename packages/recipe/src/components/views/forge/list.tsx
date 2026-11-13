@@ -75,6 +75,7 @@ export function ForgeList({ session }: { session: RecipeSession }) {
             tool: 'forge',
             id: recipe.id,
             tab: session.tab,
+            version: session.nav.version,
           }),
           name: (
             <Entry

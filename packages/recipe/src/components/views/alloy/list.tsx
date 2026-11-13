@@ -41,6 +41,7 @@ export function AlloyList({ session }: { session: RecipeSession }) {
           id: recipe.id,
           unit: session.alloyUnit,
           tab: session.tab,
+          version: session.nav.version,
         }),
         name: (
           <>

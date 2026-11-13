@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
 import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
-import { useAsyncResult, useAsyncValue } from '@terrafirmagreg-team/ui/hooks/use-async-value';
+import { useAsyncResult } from '@terrafirmagreg-team/ui/hooks/use-async-value';
 import { RecipeFrame } from '@terrafirmagreg-team/recipe/components/views/browser/frame';
 import {
   RecipeCardGrid,
@@ -51,13 +51,14 @@ export function TypeView({ session }: { session: RecipeSession }) {
     placeId !== RECIPE_ALL_TYPE && nonEmptyIds.includes(placeId)
       ? placeId
       : nonEmptyIds[0];
-  const rows = useAsyncValue(
+  const rowsRes = useAsyncResult(
     () =>
       index && shown
         ? loadTypeRows(dataset, index, shown)
         : Promise.resolve(EMPTY_ROWS),
     [dataset, index, shown],
   );
+  const rows = rowsRes.error ? EMPTY_ROWS : rowsRes.value;
 
   const allRows = rows ?? EMPTY_ROWS;
   const focusIndex = recipeId
@@ -123,7 +124,7 @@ export function TypeView({ session }: { session: RecipeSession }) {
     );
   };
 
-  const body = index && !index.types.length && !indexLoading ? (
+  const body = !indexLoading && (!index || !index.types.length) ? (
     <RecipeCardGrid
       session={session}
       rows={EMPTY_ROWS}
@@ -137,7 +138,7 @@ export function TypeView({ session }: { session: RecipeSession }) {
       boxRef={boxRef}
       maxH={list.box.h}
       maxW={list.box.w}
-      loading={index == null || (shown != null && rows === undefined)}
+      loading={indexLoading || (shown != null && rows === undefined)}
       empty={t('No recipes of this type.', { note: 'recipe.empty_type' })}
       onSwipe={onSwipe}
     />

@@ -1,23 +1,19 @@
-import { parseDumpManifest } from '@terrafirmagreg-team/dump/lib/dump/manifest/parse';
 import {
   dumpStorageUrl,
   registerDumpLocation,
   type DumpLocation,
 } from '@terrafirmagreg-team/dump/lib/dump/paths';
-import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
+import { datasetCacheKey, type DatasetRef } from '@terrafirmagreg-team/sites/location';
 import type { DumpReader } from '@terrafirmagreg-team/dump/lib/dump/reader';
 import {
   createAsyncCache,
   type AsyncCache,
 } from '@terrafirmagreg-team/data/lib/async-cache';
-import {
-  dumpRetryDelay,
-  dumpStatusSnapshot,
-  markDumpResult,
-} from '@terrafirmagreg-team/data/lib/dump-status';
+import { markDumpResult } from '@terrafirmagreg-team/data/lib/dump-status';
 import { serverCache } from '@terrafirmagreg-team/data/lib/server-cache';
 import { isBuildPhase } from '@terrafirmagreg-team/data/lib/env';
-import { canonicalStackId } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
+import { parseSnapshotIndex, resolveDatasetSnapshot, snapshotPath, type ResolvedSnapshot } from './snapshot';
+export { DUMP_POINTER_TTL } from './snapshot';
 
 const SAFE_LANG_CODE = /^[a-z0-9]+(_[a-z0-9]+)*$/i;
 
@@ -82,24 +78,6 @@ async function request(
   return undefined;
 }
 
-async function headOk(url: string): Promise<boolean> {
-  if (isBuildPhase()) return false;
-  for (let attempt = 0; attempt < 2; attempt += 1) {
-    try {
-      const res = await fetch(url, {
-        method: 'HEAD',
-        signal: AbortSignal.timeout(FETCH_TIMEOUT),
-      });
-      return res.ok;
-    } catch {
-
-    }
-  }
-  return false;
-}
-
-export const DUMP_POINTER_TTL = 60_000;
-
 const REQUIRED_FILE = /\/(?:versions|manifest|objects)\.json(?:\.gz)?$/;
 
 function markDumpFetch(
@@ -111,16 +89,6 @@ function markDumpFetch(
   if (!datasetId) return;
   if (res?.status === 404 && !REQUIRED_FILE.test(url)) return;
   markDumpResult(datasetId, ok);
-}
-
-function circuitOpen(datasetId: string | undefined): boolean {
-  if (!datasetId) return false;
-  const state = dumpStatusSnapshot().statuses[datasetId];
-  return (
-    state?.status === 'failed' &&
-    state.fails >= 2 &&
-    Date.now() - state.lastFail < dumpRetryDelay(state.fails)
-  );
 }
 
 class DumpNotFound extends Error {}
@@ -181,11 +149,11 @@ async function readNdjsonRows(
 
 export async function* streamNdjson(
   url: string,
-  mutable = false,
+  compression: 'gzip' | 'none',
 ): AsyncGenerator<[string, unknown][]> {
-  const res = await request(url, mutable);
-  if (!res?.ok || !res.body) return;
-  const body = url.endsWith('.gz')
+  const res = await request(url, false);
+  if (!res?.ok || !res.body) throw new Error(`dump fetch failed: ${url}`);
+  const body = compression === 'gzip'
     ? res.body.pipeThrough(new DecompressionStream('gzip'))
     : res.body;
   const reader = body.getReader();
@@ -296,6 +264,7 @@ async function fetchAndParse(
         ).text()
       : await res.text();
     const value = await parseJson(text);
+    if (url.endsWith('/objects.json.gz')) parseSnapshotIndex(value);
     if (text.length > SERVER_CACHE_MAX) throw new DumpTooBig(value);
     return value;
   } catch (error) {
@@ -363,14 +332,13 @@ const makeLoader =
     high: boolean,
     datasetId?: string,
   ): Promise<unknown> => {
-    if (isBuildPhase() || circuitOpen(datasetId)) return undefined;
+    if (isBuildPhase()) throw new Error(`Dump unavailable during build: ${url}`);
     const load = () =>
       fetchLane(() => fetcher(url, gz, mutable, high, datasetId), high);
     const attempt = async () => {
       try {
         return await load();
       } catch (error) {
-        if (error instanceof DumpNotFound) return undefined;
         if (error instanceof DumpTooBig) return error.value;
         throw error;
       }
@@ -380,7 +348,6 @@ const makeLoader =
     try {
       return await cache(`dump-json:${url}`, load, mutable ? 60 : false);
     } catch (error) {
-      if (error instanceof DumpNotFound) return undefined;
       if (error instanceof DumpTooBig) return error.value;
       return attempt();
     }
@@ -396,18 +363,6 @@ const fetchJsonGz = createAsyncCache(
   (url: string) => url,
 ) as AsyncCache<[url: string, high: boolean, datasetId?: string], unknown>;
 
-const fetchJsonMutable = createAsyncCache(
-  makeLoader(false, true, fetchAndParse),
-  (url: string) => url,
-  DUMP_POINTER_TTL,
-) as AsyncCache<[url: string, high: boolean, datasetId?: string], unknown>;
-
-const fetchJsonGzMutable = createAsyncCache(
-  makeLoader(true, true, fetchAndParse),
-  (url: string) => url,
-  DUMP_POINTER_TTL,
-) as AsyncCache<[url: string, high: boolean, datasetId?: string], unknown>;
-
 const fetchNdjson = createAsyncCache(
   makeLoader(false, false, fetchAndParseNdjson),
   (url: string) => url,
@@ -418,33 +373,9 @@ const fetchNdjsonGz = createAsyncCache(
   (url: string) => url,
 ) as AsyncCache<[url: string, high: boolean, datasetId?: string], unknown>;
 
-const fetchNdjsonMutable = createAsyncCache(
-  makeLoader(false, true, fetchAndParseNdjson),
-  (url: string) => url,
-  DUMP_POINTER_TTL,
-) as AsyncCache<[url: string, high: boolean, datasetId?: string], unknown>;
-
-const fetchNdjsonGzMutable = createAsyncCache(
-  makeLoader(true, true, fetchAndParseNdjson),
-  (url: string) => url,
-  DUMP_POINTER_TTL,
-) as AsyncCache<[url: string, high: boolean, datasetId?: string], unknown>;
-
-export const COMPRESSED_TREE = /^(?:data|meta)\//;
-
-function toLangMap(raw: unknown): Record<string, string> {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
-  const map: Record<string, string> = {};
-  for (const key in raw) {
-    const value = (raw as Record<string, unknown>)[key];
-    map[key] = typeof value === 'string' ? value : JSON.stringify(value);
-  }
-  return map;
-}
-
 export class JsonDumpReader implements DumpReader {
-  private manifestCache: Promise<ReturnType<typeof parseDumpManifest>> | undefined;
   private locationCache: Promise<DumpLocation> | undefined;
+  private snapshotCache: Promise<ResolvedSnapshot> | undefined;
   private namesCache = createAsyncCache((code: string) =>
     this.getJson(`names/${code}.ndjson`).then((raw) => {
         if (
@@ -462,82 +393,61 @@ export class JsonDumpReader implements DumpReader {
             `dump names file missing or invalid: names/${code} (${this.packId})`,
           );
         }
-        const map = toLangMap(raw);
-        for (const key of Object.keys(map)) {
-          if (!key.includes('{')) continue;
-          const canonical = canonicalStackId(key);
-          if (canonical !== key && map[canonical] === undefined) {
-            map[canonical] = map[key];
-          }
-        }
-        return map;
+        return raw as Record<string, string>;
       }),
   );
   private readonly dataset: DatasetRef;
   private readonly packId: string;
   private readonly statusKey: string;
-  private readonly version?: string;
 
   constructor(dataset: DatasetRef) {
     this.dataset = dataset;
     this.packId = dataset.id;
-    this.statusKey = dataset.version
-      ? `${dataset.id}@${dataset.version}`
-      : dataset.id;
-    this.version = dataset.version;
+    this.statusKey = datasetCacheKey(dataset);
   }
 
   getJson(path: string, priority?: 'high'): Promise<unknown | undefined> {
     const high = priority === 'high';
-    if (path === 'versions.json') {
-      return fetchJsonMutable(
-        dumpStorageUrl(`${this.packId}/versions.json`),
-        high,
-        this.packId,
-      );
-    }
+    snapshotPath(path);
     return this.location().then((loc) => {
       const key = loc.files?.[path];
-      if (key) {
-        const url = dumpStorageUrl(`${key}`);
-        if (key.endsWith('.ndjson.gz')) return fetchNdjsonGz(url, high, this.statusKey);
-        if (key.endsWith('.ndjson')) return fetchNdjson(url, high, this.statusKey);
-        if (key.endsWith('.gz')) return fetchJsonGz(url, high, this.statusKey);
-        return fetchJson(url, high, this.statusKey);
-      }
-
-      if (loc.files) return undefined;
-      const rel = `${loc.root}/${path}`;
-      const mutable = loc.root === this.packId;
-      const ndjson = path.endsWith('.ndjson');
-      const json = mutable
-        ? ndjson
-          ? fetchNdjsonMutable
-          : fetchJsonMutable
-        : ndjson
-          ? fetchNdjson
-          : fetchJson;
-      const jsonGz = mutable
-        ? ndjson
-          ? fetchNdjsonGzMutable
-          : fetchJsonGzMutable
-        : ndjson
-          ? fetchNdjsonGz
-          : fetchJsonGz;
-      return COMPRESSED_TREE.test(path)
-        ? jsonGz(dumpStorageUrl(`${rel}.gz`), high, this.statusKey)
-        : json(dumpStorageUrl(`${rel}`), high, this.statusKey);
+      if (!key) return undefined;
+      const artifact = loc.artifacts![path]!;
+      if (artifact.codec === 'binary') throw new Error(`Binary dump artifact: ${path}`);
+      const loader = artifact.codec === 'ndjson'
+        ? artifact.compression === 'gzip' ? fetchNdjsonGz : fetchNdjson
+        : artifact.compression === 'gzip' ? fetchJsonGz : fetchJson;
+      return loader(dumpStorageUrl(key), high, this.statusKey).then((value) => {
+        if (value === undefined) throw new Error(`Snapshot artifact missing: ${path}`);
+        return value;
+      });
     });
   }
 
   async *ndjsonRows(path: string): AsyncGenerator<[string, unknown][]> {
+    snapshotPath(path);
     const loc = await this.location();
     const key = loc.files?.[path];
-    if (loc.files && !key) return;
-    const rel =
-      key ??
-      `${loc.root}/${path}${COMPRESSED_TREE.test(path) ? '.gz' : ''}`;
-    yield* streamNdjson(dumpStorageUrl(rel), loc.root === this.packId);
+    if (!key) return;
+    const artifact = loc.artifacts![path]!;
+    if (artifact.codec === 'binary') throw new Error(`Binary dump artifact: ${path}`);
+    if (artifact.codec === 'ndjson') {
+      yield* streamNdjson(dumpStorageUrl(key), artifact.compression);
+      return;
+    }
+    const raw = await this.getJson(path);
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+      throw new Error(`Invalid row map: ${path}`);
+    }
+    let batch: [string, unknown][] = [];
+    for (const entry of Object.entries(raw)) {
+      batch.push(entry);
+      if (batch.length === 1024) {
+        yield batch;
+        batch = [];
+      }
+    }
+    if (batch.length) yield batch;
   }
 
   getNames(lang: string): Promise<Record<string, string>> {
@@ -557,67 +467,25 @@ export class JsonDumpReader implements DumpReader {
   }
 
   private async resolveLocation(): Promise<DumpLocation> {
-    if (this.version) {
-      const root = `${this.packId}/${this.version}`;
-      const loc: DumpLocation = { root, files: await this.objectsIndex(root) };
-      registerDumpLocation(this.dataset, loc);
-      return loc;
+    if (!this.snapshotCache) {
+      const pending = resolveDatasetSnapshot(this.dataset);
+      this.snapshotCache = pending;
+      pending.catch(() => {
+        if (this.snapshotCache === pending) this.snapshotCache = undefined;
+      });
     }
-    const versions = (await fetchJsonMutable(
-      dumpStorageUrl(`${this.packId}/versions.json`),
+    const snapshot = await this.snapshotCache;
+    const raw = await fetchJsonGz(
+      dumpStorageUrl(snapshot.index),
       true,
-      this.packId,
-    )) as { latest?: string } | undefined;
-    if (versions?.latest) {
-      const root = `${this.packId}/${versions.latest}`;
-
-      const files = await this.objectsIndex(root).catch(() => undefined);
-      const exists =
-        files !== undefined ||
-        (await headOk(dumpStorageUrl(`${root}/objects.json.gz`))) ||
-        (await headOk(dumpStorageUrl(`${root}/manifest.json`)));
-      if (exists) {
-        const loc: DumpLocation = { root, files };
-        registerDumpLocation(this.dataset, loc);
-        registerDumpLocation({ id: this.packId, version: versions.latest }, loc);
-        return loc;
-      }
-    }
-    const loc: DumpLocation = { root: this.packId };
-    registerDumpLocation(this.dataset, loc);
+      datasetCacheKey(snapshot),
+    );
+    const root = snapshot.index.slice(
+      0,
+      snapshot.index.length - '/objects.json.gz'.length,
+    );
+    const loc = { root, ...parseSnapshotIndex(raw) };
+    registerDumpLocation(snapshot, loc);
     return loc;
   }
-
-  private async objectsIndex(
-    root: string,
-  ): Promise<Record<string, string>> {
-    const raw = await fetchJsonGz(
-      dumpStorageUrl(`${root}/objects.json.gz`),
-      true,
-      this.packId,
-    );
-    const files =
-      raw && typeof raw === 'object' && !Array.isArray(raw)
-        ? (raw as Record<string, unknown>).files
-        : undefined;
-    if (!files || typeof files !== 'object' || Array.isArray(files)) {
-      throw new Error(`objects index missing: ${root}`);
-    }
-    const out: Record<string, string> = {};
-    for (const [rel, key] of Object.entries(files)) {
-      if (typeof key === 'string') out[rel] = key;
-    }
-    return out;
-  }
-
-  private manifest() {
-    const p = (this.manifestCache ??= this.getJson('manifest.json', 'high').then((raw) =>
-      parseDumpManifest(raw),
-    ));
-    p.catch(() => {
-      if (this.manifestCache === p) this.manifestCache = undefined;
-    });
-    return p;
-  }
 }
-

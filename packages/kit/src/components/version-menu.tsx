@@ -115,7 +115,8 @@ function VersionMenuItems({
   return ordered.map((version, index) => {
     const isLatest = version === latest;
     const selected = currentRef.id === datasetId &&
-      currentRef.version === (isLatest ? undefined : version);
+      (currentRef.version === version ||
+        (isLatest && currentRef.version === undefined));
     const href = hrefs[index];
     return (
       <DropdownMenuItem
@@ -147,4 +148,3 @@ function VersionMenuItems({
     );
   });
 }
-

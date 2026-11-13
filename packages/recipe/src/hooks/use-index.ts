@@ -1,5 +1,5 @@
 'use client';
-import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
+import { datasetCacheKey, type DatasetRef } from '@terrafirmagreg-team/sites/location';
 
 import { startTransition, useMemo, useState } from 'react';
 import { useLang } from '@terrafirmagreg-team/translate/provider';
@@ -37,17 +37,29 @@ export function useRecipeIndex(dataset: DatasetRef | undefined, lang: string) {
     () => items?.map((item) => item.locale) ?? [lang],
     [items, lang],
   );
-  const key = `${dataset ? `${dataset.id}/${dataset.version ?? ''}` : ''} ${lang}`;
+  const key = dataset ? datasetCacheKey(dataset, lang) : '';
 
   useAsyncEffect(async (isCancelled) => {
     if (!dataset) return;
-    const skeleton = await loadRecipeSkeletonIndex(dataset);
-    if (isCancelled()) return;
+    const skeleton = await loadRecipeSkeletonIndex(dataset).catch(
+      () => undefined,
+    );
+    if (!skeleton || isCancelled()) {
+      if (!isCancelled()) setComplete(key);
+      return;
+    }
     setLoaded({ key, index: skeleton });
     publishRecipeIndex(dataset, lang, skeleton);
-    const chrome = await loadRecipeChromeClient(dataset, lang);
-    const index = await loadRecipeCompactIndex(dataset, chrome);
-    if (isCancelled()) return;
+    const chrome = await loadRecipeChromeClient(dataset, lang).catch(
+      () => undefined,
+    );
+    const index = chrome
+      ? await loadRecipeCompactIndex(dataset, chrome).catch(() => undefined)
+      : undefined;
+    if (!chrome || !index || isCancelled()) {
+      if (!isCancelled()) setComplete(key);
+      return;
+    }
     startTransition(() => {
       setLoaded({ key, index });
       setComplete(key);
@@ -100,4 +112,3 @@ export function useRecipeIndex(dataset: DatasetRef | undefined, lang: string) {
   const index = active?.items.length ? active : (lastFull ?? active);
   return { index, indexLoading: complete !== key };
 }
-

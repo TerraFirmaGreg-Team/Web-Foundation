@@ -23,9 +23,11 @@ export function CalcSidebar({
   summary,
   onFocus,
   trees,
+  version,
 }: {
   dataset: DatasetRef;
   lang: string;
+  version?: string;
   langMap?: Record<string, string>;
   summary: {
     raw: CalcMaterial[];
@@ -82,6 +84,7 @@ export function CalcSidebar({
         children: rows.map((row): PageTree.Item => {
           const url = recipeStackHref(dataset, lang, row.id, {
             kind: row.kind,
+            version,
           });
           focusByUrl.set(url, row.id);
           return {
@@ -123,7 +126,7 @@ export function CalcSidebar({
       tree: { name: 'calc', $id: `calc:${stamp}`, children } as PageTree.Root,
       focusByUrl,
     };
-  }, [dataset, lang, langMap, summary, t]);
+  }, [dataset, lang, langMap, summary, t, version]);
 
   const CalcItem = useMemo(() => {
     const focus = focusByUrl;

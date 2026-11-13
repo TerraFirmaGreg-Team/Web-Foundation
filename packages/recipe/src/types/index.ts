@@ -26,6 +26,7 @@ export type RecipeHrefOpts = {
   type?: string;
   relation?: RecipeRelation;
   tool?: RecipeTool;
+  version?: string;
 
   unit?: 'mb' | 'ingot';
 

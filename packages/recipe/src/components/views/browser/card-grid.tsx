@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, type ReactNode, type RefObject } from 'react';
-import { useAsyncValue } from '@terrafirmagreg-team/ui/hooks/use-async-value';
+import { useAsyncResult } from '@terrafirmagreg-team/ui/hooks/use-async-value';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
 import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { PagedCard } from '@terrafirmagreg-team/recipe/components/cards/paged-card';
@@ -17,6 +17,7 @@ import { recipeItemName } from '@terrafirmagreg-team/recipe/lib/client-index';
 import { loadClientRecipe } from '@terrafirmagreg-team/recipe/lib/client/recipe';
 import { pushUrlState } from '@terrafirmagreg-team/ui/lib/utils/history';
 import { useSwipe } from '@terrafirmagreg-team/ui/hooks/use-swipe';
+import { dismissOpenTooltips } from '@terrafirmagreg-team/ui/lib/dismiss-tooltips';
 import { favoriteHover } from '@terrafirmagreg-team/recipe/lib/browser/favorite-hover';
 import { recipeTitle } from '@terrafirmagreg-team/recipe/lib/data/parse';
 import { cn } from '@terrafirmagreg-team/ui/lib/utils/cn';
@@ -69,10 +70,12 @@ function RecipeGridCard({
   const t = useTranslations();
   const resolved = useResolvedLang();
   const { dataset, lang, langMap, names, nav, index } = session;
-  const recipe = useAsyncValue(
+  const recipeRes = useAsyncResult(
     () => loadClientRecipe(dataset, row.id, row.bucket),
     [dataset, row.id, row.bucket],
   );
+  const recipe = recipeRes.value;
+  const recipeMissing = !recipeRes.pending && !recipe;
   const [failed, setFailed] = useState(false);
 
   const title = recipe
@@ -188,6 +191,10 @@ function RecipeGridCard({
             onError={() => setFailed(true)}
             className="block rounded-sm"
           />
+        ) : recipeMissing ? (
+          <EmptyState variant="empty">
+            {t('No recipe image in dump.', { note: 'recipe.no_image' })}
+          </EmptyState>
         ) : (
           <Skeleton
             className="rounded-sm"
@@ -267,6 +274,7 @@ export function RecipeCardGrid({
     <div
       ref={boxRef}
       {...swipe}
+      onScroll={dismissOpenTooltips}
       className="flex min-h-0 flex-1 flex-col items-center justify-start gap-2 overflow-x-auto overflow-y-clip"
     >
       {body}

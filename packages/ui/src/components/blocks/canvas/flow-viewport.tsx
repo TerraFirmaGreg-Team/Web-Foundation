@@ -237,11 +237,32 @@ export function FlowViewport({
     if (selectedId === suppressPanRef?.current) return;
     const node = nodesRef.current.find((entry) => entry.id === selectedId);
     if (!node) return;
+    const { transform, width, height } = storeApi.getState();
+    const px = -transform[0] / transform[2];
+    const py = -transform[1] / transform[2];
+    const pw = width / transform[2];
+    const ph = height / transform[2];
+    if (
+      node.position.x > px + pw * 0.12 &&
+      node.position.x < px + pw * 0.88 &&
+      node.position.y > py + ph * 0.12 &&
+      node.position.y < py + ph * 0.88
+    ) {
+      return;
+    }
     void setCenter(node.position.x, node.position.y, {
       zoom: getZoom() || focusZoom,
       duration: 300,
     });
-  }, [focusZoom, getZoom, initKey, selectedId, suppressPanRef, setCenter]);
+  }, [
+    focusZoom,
+    getZoom,
+    initKey,
+    selectedId,
+    storeApi,
+    suppressPanRef,
+    setCenter,
+  ]);
 
   return null;
 }

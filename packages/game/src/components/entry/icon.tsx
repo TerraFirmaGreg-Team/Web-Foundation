@@ -38,6 +38,7 @@ export function EntryIcon({
   chip = false,
   preferVariant = false,
   entityView,
+  members,
   badge,
   badgeClassName,
   children,
@@ -56,6 +57,7 @@ export function EntryIcon({
 
   preferVariant?: boolean;
   entityView?: 'auto' | 'texture' | 'egg';
+  members?: string[];
   badge?: React.ReactNode;
   badgeClassName?: string;
   children?: React.ReactNode;
@@ -72,6 +74,7 @@ export function EntryIcon({
     missing,
     preferVariant,
     entityView,
+    members,
   });
   const caption = label || undefined;
   const name = caption ?? source.rawId;

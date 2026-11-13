@@ -1,4 +1,4 @@
-import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
+import { datasetCacheKey, type DatasetRef } from '@terrafirmagreg-team/sites/location';
 import type { RecipeCompactIndex } from '@terrafirmagreg-team/recipe/types';
 import { outputBoundary } from '@terrafirmagreg-team/recipe/lib/data/slot-io';
 import { loadTypeRows } from '@terrafirmagreg-team/recipe/lib/client-index';
@@ -11,7 +11,7 @@ export type FluidIoIndex = {
 
 const cache = createDatasetCache(
   build,
-  (dataset) => `${dataset.id}/${dataset.version ?? ''}`,
+  (dataset) => datasetCacheKey(dataset),
 );
 
 function tankCategories(index: RecipeCompactIndex, role: 'input' | 'output') {
@@ -67,4 +67,3 @@ export function loadFluidIoIndex(
 ): Promise<FluidIoIndex> {
   return cache(dataset, index);
 }
-

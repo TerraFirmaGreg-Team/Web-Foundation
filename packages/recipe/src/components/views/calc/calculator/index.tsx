@@ -70,6 +70,7 @@ export function Calculator({ session }: { session: RecipeSession }) {
   } = useCalcActions({
     dataset,
     lang,
+    linkVersion: session.nav.version,
     cards: displayCards,
     wires,
     tagSelections,
@@ -108,6 +109,7 @@ export function Calculator({ session }: { session: RecipeSession }) {
         <CalcSidebar
           dataset={dataset}
           lang={lang}
+          version={session.nav.version}
           langMap={deferredLangMap}
           summary={summary}
           onFocus={onFocusNode}

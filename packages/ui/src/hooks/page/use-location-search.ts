@@ -13,7 +13,15 @@ export function publishLocationSearch(value: string) {
 
 function subscribe(listener: () => void) {
   listeners.add(listener);
-  return () => listeners.delete(listener);
+  const onPopState = () => {
+    search = window.location.search.slice(1);
+    for (const entry of listeners) entry();
+  };
+  window.addEventListener('popstate', onPopState);
+  return () => {
+    listeners.delete(listener);
+    window.removeEventListener('popstate', onPopState);
+  };
 }
 
 export function useLocationSearch(): string {

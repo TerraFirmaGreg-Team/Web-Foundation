@@ -1,7 +1,6 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useMemo } from 'react';
 import { BookOpen } from 'lucide-react';
 import { useAsyncValue } from '@terrafirmagreg-team/ui/hooks/use-async-value';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
@@ -10,6 +9,7 @@ import { useLocationSearchParams } from '@terrafirmagreg-team/ui/hooks/page/use-
 import { guideQueryFromParams } from '@terrafirmagreg-team/guide/lib/nav/query';
 import { listGuideBooks } from '@terrafirmagreg-team/guide/lib/book/list';
 import { guideHref } from '@terrafirmagreg-team/guide/lib/links';
+import { useVersionedDataset } from '@terrafirmagreg-team/kit/hooks/use-versioned-dataset';
 import { parseSectionLocation } from '@terrafirmagreg-team/sites/location';
 import { Switcher } from '@terrafirmagreg-team/ui/components/blocks/nav/switcher';
 
@@ -25,11 +25,7 @@ export function GuideBookSwitcher() {
   const lang = useResolvedLang();
   const params = useLocationSearchParams();
   const { bookId } = guideQueryFromParams(params);
-  const version = params.get('version') ?? undefined;
-  const dataset = useMemo(
-    () => (datasetId ? { id: datasetId, version } : undefined),
-    [datasetId, version],
-  );
+  const dataset = useVersionedDataset(datasetId);
   const books = useAsyncValue(
     dataset ? () => listGuideBooks(dataset, lang) : undefined,
     [dataset, lang],

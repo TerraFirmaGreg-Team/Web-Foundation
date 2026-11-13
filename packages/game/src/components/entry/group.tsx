@@ -1,5 +1,5 @@
 'use client';
-import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
+import { datasetCacheKey, type DatasetRef } from '@terrafirmagreg-team/sites/location';
 
 import {
   SPRITE_CLUSTER_INSET,
@@ -93,9 +93,7 @@ export function EntryGroup({
     cycle !== undefined &&
     dataset &&
     references.some((ref) => isTagKind(ref.kind))
-      ? `${dataset.id}/${dataset.version ?? ''}|${references
-          .map((ref) => `${ref.kind}:${stackIdFromRef(ref)}`)
-          .join('|')}`
+      ? datasetCacheKey(dataset, references.map((ref) => [ref.kind, stackIdFromRef(ref)]))
       : null;
   const expandedHit = useAsyncResult(
     expandKey
@@ -158,4 +156,3 @@ export function EntryGroup({
     />
   );
 }
-

@@ -7,16 +7,16 @@ export type FallbackTracker = {
 };
 
 export function fallbackTracker(
-  rawLang: Record<string, string> | undefined,
+  missingKeys: ReadonlySet<string> | undefined,
 ): FallbackTracker | undefined {
-  if (!rawLang) return undefined;
+  if (!missingKeys) return undefined;
   let total = 0;
   let missing = 0;
   return {
     mark(key) {
       if (!key) return;
       total += 1;
-      if (!langString(rawLang, key)) missing += 1;
+      if (missingKeys.has(key)) missing += 1;
     },
     get flag() {
       if (!missing) return undefined;
@@ -44,9 +44,9 @@ export function localize(
   tracker?: FallbackTracker,
 ): string {
   if (!key) return fallback;
-  tracker?.mark(key);
   const bare =
     key.startsWith('{') && key.endsWith('}') ? key.slice(1, -1).trim() : key;
+  tracker?.mark(bare);
   return langString(map, key) ?? (bare !== key ? bare : fallback);
 }
 
@@ -59,7 +59,7 @@ export function localizeGuideValue(
 ): unknown {
   if (typeof value === 'string') {
     if (!LANG_KEY_WRAP.test(value)) return value;
-    tracker?.mark(value);
+    tracker?.mark(value.slice(1, -1).trim());
     return langString(map, value) ?? value;
   }
   if (Array.isArray(value)) {

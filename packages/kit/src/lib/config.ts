@@ -1,4 +1,4 @@
-import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
+import type { DatasetRef, DatasetSnapshot } from '@terrafirmagreg-team/sites/location';
 import type {
   SectionKey,
   SectionSourceEntry,
@@ -107,6 +107,7 @@ export interface LayoutDeps {
     datasetId: string,
     lang: string,
   ) => Promise<import('fumadocs-core/page-tree').Root | null>;
+  warmLang?: (dataset: DatasetRef, lang: string) => void;
 }
 
 export function registerLayoutDeps(input: LayoutDeps): void {
@@ -118,6 +119,7 @@ export function layoutDeps(): LayoutDeps {
 }
 
 export type ClientDumpLoader = {
+  resolveSnapshot(dataset: DatasetRef): Promise<DatasetSnapshot>;
   loadDump(dataset: DatasetRef): Promise<SectionDump | null | undefined>;
   loadVersions(
     datasetId: string,
@@ -146,4 +148,3 @@ export function createConfig<T>(label: string) {
     },
   };
 }
-

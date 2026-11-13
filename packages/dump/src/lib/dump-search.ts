@@ -4,7 +4,8 @@ import {
   initAdvancedSearch,
   type AdvancedIndex,
 } from 'fumadocs-core/search/server';
-import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
+import { datasetCacheKey, resolveDatasetRef, type DatasetRef, type DatasetSnapshot } from '@terrafirmagreg-team/sites/location';
+import { loadDatasetVersions, resolveDatasetSnapshot, snapshotStorageRoot } from './dump/snapshot';
 import { dumpReader } from '@terrafirmagreg-team/dump/lib/dump/reader';
 import { parseDumpManifest } from '@terrafirmagreg-team/dump/lib/dump/manifest/parse';
 import { dumpIndexFromManifest } from '@terrafirmagreg-team/dump/lib/dump/mods/index';
@@ -31,11 +32,7 @@ export async function resolveDumpVersion(
   version: string | undefined,
 ): Promise<string | undefined> {
   if (version) return version;
-  const reader = await dumpReader({ id });
-  const versions = (await reader.getJson('versions.json')) as
-    | { latest?: string }
-    | undefined;
-  return versions?.latest;
+  return (await loadDatasetVersions(id))?.latest ?? undefined;
 }
 
 export async function buildDumpSearchBlob(
@@ -44,18 +41,34 @@ export async function buildDumpSearchBlob(
   lang: string,
   indexBuilders: DumpSearchIndexBuilder[],
 ): Promise<DumpSearchBlob> {
-  const ver = await resolveDumpVersion(id, version);
-  if (!ver) return { type: 'i18n', data: {} };
-  const reader = await dumpReader({ id, version: ver });
+  const [dataset, info] = await Promise.all([
+    resolveDatasetSnapshot({ id, version }),
+    loadDatasetVersions(id),
+  ]);
+  return buildSnapshotSearchBlob(
+    dataset,
+    resolveDatasetRef(id, version, info ?? undefined).ref.version,
+    lang,
+    indexBuilders,
+  );
+}
+
+async function buildSnapshotSearchBlob(
+  dataset: DatasetSnapshot,
+  pin: string | undefined,
+  lang: string,
+  indexBuilders: DumpSearchIndexBuilder[],
+): Promise<DumpSearchBlob> {
+  const reader = await dumpReader(dataset);
   const manifest = parseDumpManifest(
     await reader.getJson('manifest.json'),
   ) as DumpManifest | null;
   if (!manifest) return { type: 'i18n', data: {} };
-  const dataset = { id, version: ver };
-  const dump = dumpIndexFromManifest(manifest, `${id}/${ver}`);
+  const dump = dumpIndexFromManifest(manifest, snapshotStorageRoot(dataset));
+  const pinned: DatasetRef = { ...dataset, pin };
   const indexes = (
     await Promise.all(
-      indexBuilders.map((build) => build(dataset, dump, reader)),
+      indexBuilders.map((build) => build(pinned, dump, reader)),
     )
   ).flat();
   const scoped = indexes.filter((index) => index.locale === lang);
@@ -69,16 +82,25 @@ export async function buildDumpSearchBlob(
 
 const builds = new Map<string, Promise<DumpSearchBlob>>();
 
-export function buildDumpSearchBlobCached(
+export async function buildDumpSearchBlobCached(
   id: string,
   version: string | undefined,
   lang: string,
   indexBuilders: DumpSearchIndexBuilder[],
 ): Promise<DumpSearchBlob> {
-  const key = `${id}/${version ?? ''}/${lang}`;
+  const [dataset, info] = await Promise.all([
+    resolveDatasetSnapshot({ id, version }),
+    loadDatasetVersions(id),
+  ]);
+  const key = datasetCacheKey(dataset, lang);
   const cached = builds.get(key);
   if (cached) return cached;
-  const p = buildDumpSearchBlob(id, version, lang, indexBuilders);
+  const p = buildSnapshotSearchBlob(
+    dataset,
+    resolveDatasetRef(id, version, info ?? undefined).ref.version,
+    lang,
+    indexBuilders,
+  );
   p.catch(() => {
     if (builds.get(key) === p) builds.delete(key);
   });
@@ -98,9 +120,15 @@ function s3Client(): AwsClient | undefined {
   });
 }
 
+export function searchBlobKey(
+  snapshot: DatasetSnapshot & { index?: string },
+  lang: string,
+): string {
+  return `${snapshotStorageRoot(snapshot)}/search/${lang}.json`;
+}
+
 export async function putSearchBlob(
-  id: string,
-  version: string,
+  snapshot: DatasetSnapshot & { index?: string },
   lang: string,
   blob: unknown,
 ): Promise<boolean> {
@@ -108,7 +136,7 @@ export async function putSearchBlob(
   const endpoint = process.env.DUMP_S3_ENDPOINT;
   const bucket = process.env.DUMP_S3_BUCKET;
   if (!aws || !endpoint || !bucket) return false;
-  const key = `${id}/${version}/search/${lang}.json`;
+  const key = searchBlobKey(snapshot, lang);
   const url = `${endpoint.replace(/\/+$/, '')}/${bucket}/${key}`;
   const res = await aws.fetch(url, {
     method: 'PUT',
@@ -116,9 +144,8 @@ export async function putSearchBlob(
     headers: {
       'Content-Type': 'application/json',
       'Content-Encoding': 'gzip',
-      'Cache-Control': 'public, max-age=3600',
+      'Cache-Control': 'public, max-age=31536000, immutable',
     },
   });
   return res.ok;
 }
-

@@ -40,11 +40,20 @@ export function useAsyncResult<T>(
   }>();
   useAsyncEffect(async (isCancelled) => {
     if (!factory) return;
-    try {
-      const next = await factory();
-      if (!isCancelled()) setEntry({ deps, value: next });
-    } catch (error) {
-      if (!isCancelled()) setEntry({ deps, value: undefined, error });
+    for (let attempt = 0; ; attempt += 1) {
+      try {
+        const next = await factory();
+        if (!isCancelled()) setEntry({ deps, value: next });
+        return;
+      } catch (error) {
+        if (isCancelled()) return;
+        if (attempt >= 1) {
+          setEntry({ deps, value: undefined, error });
+          return;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        if (isCancelled()) return;
+      }
     }
   }, deps);
   const resolved =

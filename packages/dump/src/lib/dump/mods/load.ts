@@ -1,4 +1,4 @@
-import { asRecord, asString } from '@terrafirmagreg-team/dump/lib/dump/contract/read';
+import { loadDatasetVersions, resolveDatasetSnapshot } from '../snapshot';
 import { dumpLocation } from '@terrafirmagreg-team/dump/lib/dump/paths';
 import { createDatasetCache, dumpReader } from '@terrafirmagreg-team/dump/lib/dump/reader';
 import { parseDumpManifest } from '@terrafirmagreg-team/dump/lib/dump/manifest/parse';
@@ -31,21 +31,15 @@ export async function discoverDumpDatasets(
 ): Promise<DatasetRef[]> {
   const refs = await Promise.all(
     datasetIds.map(async (id) => {
-      const versions = asRecord(
-        await dumpReader({ id }).then((reader) => reader.getJson('versions.json')),
-      );
-      const latest = asString(versions?.latest);
+      const versions = await loadDatasetVersions(id);
+      const latest = versions?.latest;
       if (!versions || !latest) return [];
-      const listed = Array.isArray(versions.versions)
-        ? versions.versions.filter(
-            (row): row is string => typeof row === 'string',
-          )
-        : [];
+      const listed = versions.versions;
       const [manifest, published] = await Promise.all([
         dumpReader({ id }).then((reader) => reader.getJson('manifest.json')),
         Promise.all(
           listed.map(async (version): Promise<DatasetRef | null> => {
-            const ref = { id, version };
+            const ref = await resolveDatasetSnapshot({ id, version });
             const ok = await dumpReader(ref).then((reader) =>
               reader.getJson('manifest.json'),
             );
@@ -61,4 +55,3 @@ export async function discoverDumpDatasets(
     a.id.localeCompare(b.id) || (a.version ?? '').localeCompare(b.version ?? ''),
   );
 }
-

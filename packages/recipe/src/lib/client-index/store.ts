@@ -1,5 +1,5 @@
 'use client';
-import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
+import { datasetCacheKey, type DatasetRef } from '@terrafirmagreg-team/sites/location';
 
 import { useSyncExternalStore } from 'react';
 import type { RecipeCompactIndex } from '@terrafirmagreg-team/recipe/types';
@@ -8,7 +8,7 @@ const indexes = new Map<string, RecipeCompactIndex>();
 const listeners = new Set<() => void>();
 
 function refKey(dataset: DatasetRef) {
-  return `${dataset.id}/${dataset.version ?? ''}`;
+  return datasetCacheKey(dataset);
 }
 
 function key(dataset: DatasetRef, lang: string) {
@@ -67,4 +67,3 @@ export function useRecipeIndexNames(
     () => null,
   );
 }
-

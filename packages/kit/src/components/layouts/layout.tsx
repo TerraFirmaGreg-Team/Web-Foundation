@@ -39,7 +39,7 @@ import { useLocaleRegistry } from '@terrafirmagreg-team/translate/hooks/use-loca
 import { LangLocalesScope } from '@terrafirmagreg-team/translate/provider';
 import { localeItems } from '@terrafirmagreg-team/translate/create';
 import { siteLinks } from '@terrafirmagreg-team/sites';
-import { isSectionKey } from '@terrafirmagreg-team/sites/location';
+import { datasetUrlVersion, isSectionKey } from '@terrafirmagreg-team/sites/location';
 import { useCurrentDataset } from '@terrafirmagreg-team/kit/hooks/use-current-dataset';
 import { useSectionTree } from '@terrafirmagreg-team/kit/hooks/use-section-tree';
 import {
@@ -98,12 +98,12 @@ export function Layout({
   const sectionDatasets = catalog[section] ?? [];
   const current = useCurrentDataset(sectionDatasets);
   const baseId = current ? current.id : undefined;
-  const pinned = current ? current.version : undefined;
+  const pinned = current ? datasetUrlVersion(current) : undefined;
   const meta = sectionDatasets.find((item) => item.id === baseId);
   const failedDatasets = useFailedDatasets();
   const datasetFailed =
     baseId !== undefined &&
-    isDatasetFailed(failedDatasets, { id: baseId, version: pinned });
+    isDatasetFailed(failedDatasets, { id: baseId, version: current?.version });
   useDatasetAccent(meta?.accent);
   const nav = useNavOptions({ section, catalog });
   const deps = layoutDeps();
@@ -142,7 +142,11 @@ export function Layout({
     [],
   );
   const tree =
-    TreeFeature && feature?.input === serverTree ? feature.tree : serverTree;
+    TreeFeature &&
+    feature?.input.$id != null &&
+    feature.input.$id === serverTree.$id
+      ? feature.tree
+      : serverTree;
   const effectiveTree =
     datasetFailed && !tree.children.length ? skeletonTree() : tree;
   const pinnedTree = useMemo(
@@ -188,7 +192,20 @@ export function Layout({
           menu={<SiteMenu label={t('Site menu', { note: 'ui.site_menu' })} items={menuItems} />}
           footer={
             <>
-              <LeftSidebarLanguage />
+              <div
+                onPointerEnter={
+                  deps.warmLang && current
+                    ? () => {
+                        for (const locale of locales) {
+                          if (locale.locale !== lang)
+                            deps.warmLang?.(current, locale.locale);
+                        }
+                      }
+                    : undefined
+                }
+              >
+                <LeftSidebarLanguage />
+              </div>
               <LeftSidebarActions settings={ReadabilityMenu}>
                 {links?.map((link) => (
                   <a

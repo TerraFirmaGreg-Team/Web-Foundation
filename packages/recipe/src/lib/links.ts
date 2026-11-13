@@ -1,6 +1,7 @@
 import { encodeQueryValue, withLang } from '@terrafirmagreg-team/translate/lib/url';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import {
+  datasetUrlVersion,
   type DatasetRef,
   sectionUrl,
 } from '@terrafirmagreg-team/sites/location';
@@ -46,6 +47,10 @@ export function recipePlaceOpts(
   return place ? { tool: place.kind } : {};
 }
 
+export function hrefVersion(dataset: DatasetRef): string | undefined {
+  return datasetUrlVersion(dataset);
+}
+
 export function recipeHref(
   dataset: DatasetRef,
   lang: Lang | undefined,
@@ -67,7 +72,7 @@ export function recipeHref(
       'rpage',
       opts?.rpage && opts.rpage > 1 ? Math.floor(opts.rpage) : undefined,
     ],
-    ['version', dataset.version],
+    ['version', opts?.version ?? hrefVersion(dataset)],
   ]);
   const base = recipeBasePath(dataset);
   const href = query ? `${base}?${query}` : base;
@@ -78,11 +83,12 @@ export function recipeCalcHref(
   dataset: DatasetRef,
   lang: Lang | undefined,
   tree?: string,
+  version?: string,
 ): string {
   const query = recipeQuery([
     ['tool', 'calc'],
     ['tree', tree],
-    ['version', dataset.version],
+    ['version', version ?? hrefVersion(dataset)],
   ]);
   const href = `${recipeBasePath(dataset)}?${query}`;
   return lang ? withLang(href, lang) : href;
@@ -92,7 +98,7 @@ export function recipeStackHref(
   dataset: DatasetRef,
   lang: Lang,
   id: string,
-  opts?: Pick<RecipeHrefOpts, 'tab' | 'search' | 'relation'> & {
+  opts?: Pick<RecipeHrefOpts, 'tab' | 'search' | 'relation' | 'version'> & {
     kind?: 'item' | 'fluid' | 'tag';
     tagKind?: string;
   },
@@ -101,6 +107,7 @@ export function recipeStackHref(
     tab: opts?.tab,
     search: opts?.search,
     relation: opts?.relation,
+    version: opts?.version,
   };
   if (opts?.kind === 'tag' || id.startsWith('#')) {
     const bare = id.startsWith('#') ? id.slice(1) : id;

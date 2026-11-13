@@ -33,6 +33,7 @@ const newCardId = () =>
 export function useCalcActions({
   dataset,
   lang,
+  linkVersion,
   cards,
   wires,
   tagSelections,
@@ -49,6 +50,7 @@ export function useCalcActions({
 }: {
   dataset: DatasetRef;
   lang: Lang;
+  linkVersion?: string;
   cards: CalcCard[];
   wires: CalcWire[];
   tagSelections: Record<string, string>;
@@ -80,14 +82,14 @@ export function useCalcActions({
       } | null;
       if (res?.id) {
         await navigator.clipboard.writeText(
-          `${window.location.origin}${recipeCalcHref(res.dataset ?? dataset, undefined, `s${res.id}`)}`,
+          `${window.location.origin}${recipeCalcHref(res.dataset ?? dataset, undefined, `s${res.id}`, linkVersion)}`,
         );
         return;
       }
     } catch {
     }
     await navigator.clipboard.writeText(
-      `${window.location.origin}${recipeCalcHref(dataset, undefined, tree)}`,
+      `${window.location.origin}${recipeCalcHref(dataset, undefined, tree, linkVersion)}`,
     );
   });
 
@@ -278,12 +280,12 @@ export function useCalcActions({
   const onOpenItem = useCallback(
     (materialId: string, kind: CalcKind, relation?: RecipeRelation) => {
       window.open(
-        recipeStackHref(dataset, lang, materialId, { kind, relation }),
+        recipeStackHref(dataset, lang, materialId, { kind, relation, version: linkVersion }),
         '_blank',
         'noopener',
       );
     },
-    [dataset, lang],
+    [dataset, lang, linkVersion],
   );
 
   const onRemoveCard = useCallback(

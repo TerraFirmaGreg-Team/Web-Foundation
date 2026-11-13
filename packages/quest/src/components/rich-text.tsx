@@ -62,7 +62,12 @@ export function renderRichInline(
 
 export function renderQuestNodes(
   nodes: RichTextNode[],
-  ctx: { dataset: DatasetRef; lang: Lang; index: QuestCompactIndex | null },
+  ctx: {
+    dataset: DatasetRef;
+    lang: Lang;
+    index: QuestCompactIndex | null;
+    version?: string;
+  },
 ): ReactNode {
   return nodes.map((node, index) => {
     switch (node.type) {
@@ -89,6 +94,7 @@ export function renderQuestNodes(
         const href = questHref(ctx.dataset, ctx.lang, {
           category: row?.filename,
           id: node.questId,
+          version: ctx.version,
         });
         const icon = row ? questTaskIconRefs(questFromCompact(row))[0] : undefined;
         return (

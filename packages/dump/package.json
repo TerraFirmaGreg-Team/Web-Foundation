@@ -5,6 +5,7 @@
   "description": "Game-dump readers and contracts",
   "license": "LGPL-3.0-only",
   "exports": {
+    "./types/*": "./src/types/*.ts",
     "./lib/*": [
       "./src/lib/*.ts",
       "./src/lib/*/index.ts"

@@ -1,6 +1,6 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { dumpReader } from '@terrafirmagreg-team/dump/lib/dump/reader';
-import { DUMP_POINTER_TTL } from '@terrafirmagreg-team/dump/lib/dump/json-reader';
+import { loadDatasetVersions } from '@terrafirmagreg-team/dump/lib/dump/snapshot';
 import { dumpRelPublicUrl, splitDumpId } from '@terrafirmagreg-team/dump/lib/dump/paths';
 import { stackIdBase } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 import {
@@ -11,7 +11,6 @@ import {
   modelPublicUrl,
   texturePublicUrl,
 } from '@terrafirmagreg-team/dump/lib/dump/assets/urls';
-import { createAsyncCache } from '@terrafirmagreg-team/data/lib/async-cache';
 import { yieldToMain } from '@terrafirmagreg-team/data/lib/scheduler';
 import { loadDatasetDump } from '@terrafirmagreg-team/dump/lib/dump/mods/load';
 import {
@@ -30,26 +29,9 @@ export function loadClientManifest(
   return loadDatasetDump(dataset).then((dump) => dump?.manifest ?? null);
 }
 
-export type DatasetVersions = { latest?: string; versions: string[] };
+export type { DatasetVersions } from '../../../types/snapshot';
 
-export const loadClientVersions = createAsyncCache(
-  async (datasetId: string): Promise<DatasetVersions | null> => {
-    const reader = await dumpReader({ id: datasetId });
-    const raw = await reader.getJson('versions.json');
-    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
-    const row = raw as Record<string, unknown>;
-    const versions = Array.isArray(row.versions)
-      ? row.versions.filter((v): v is string => typeof v === 'string')
-      : [];
-    if (!versions.length) return null;
-    return {
-      latest: typeof row.latest === 'string' ? row.latest : undefined,
-      versions,
-    };
-  },
-  undefined,
-  DUMP_POINTER_TTL,
-);
+export const loadClientVersions = loadDatasetVersions;
 
 export function clientDumpJson(
   dataset: DatasetRef,
@@ -175,15 +157,11 @@ async function clientDumpLangPart(
   lang: string,
   part: DumpLangPart,
 ): Promise<Record<string, string>> {
-  const raw = asRecord(
-    await clientDumpJson(dataset, `lang/${lang}.${part}.ndjson`),
-  ) as Record<string, string> | undefined;
-  if (!raw) return {};
-  if (lang === 'en_us') return raw;
-  const en = asRecord(
-    await clientDumpJson(dataset, `lang/en_us.${part}.ndjson`),
-  ) as Record<string, string> | undefined;
-  return { ...en, ...raw };
+  return (
+    (asRecord(
+      await clientDumpJson(dataset, `lang/${lang}.${part}.ndjson`),
+    ) as Record<string, string> | undefined) ?? {}
+  );
 }
 
 export function clientDumpLangNames(
@@ -214,15 +192,23 @@ export function clientDumpLangGuide(
   return clientDumpLangPart(dataset, lang, 'guide');
 }
 
-export async function clientDumpLangGuideRaw(
+export async function clientDumpLangMissing(
   dataset: DatasetRef,
   lang: string,
-): Promise<Record<string, string>> {
-  return (
-    (asRecord(
-      await clientDumpJson(dataset, `lang/${lang}.guide.ndjson`),
-    ) as Record<string, string> | undefined) ?? {}
+  part: DumpLangPart,
+): Promise<Set<string>> {
+  const rows = await clientDumpJson(
+    dataset,
+    `lang/${lang}.${part}.missing.json`,
   );
+  return new Set(Array.isArray(rows) ? (rows as string[]) : []);
+}
+
+export function clientDumpLangGuideMissing(
+  dataset: DatasetRef,
+  lang: string,
+): Promise<Set<string>> {
+  return clientDumpLangMissing(dataset, lang, 'guide');
 }
 
 export function clientDumpNames(
@@ -291,4 +277,3 @@ export async function dumpModelUrl(
 }
 
 export { dumpRelPublicUrl };
-

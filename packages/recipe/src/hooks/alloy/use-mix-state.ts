@@ -103,6 +103,7 @@ export function useMixState(recipe: AlloyRecipe, session: RecipeSession) {
         tab: session.tab,
         unit: unit === 'ingot' ? 'ingot' : undefined,
         mix,
+        version: session.nav.version,
       }),
     );
   }, [
@@ -112,6 +113,7 @@ export function useMixState(recipe: AlloyRecipe, session: RecipeSession) {
     session.dataset,
     resolved,
     session.tab,
+    session.nav.version,
   ]);
   const mix = useMemo(
     () => checkMix(recipe.components, amounts),

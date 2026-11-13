@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, type DependencyList, type ReactElement, type ReactNode } from 'react';
+import type { DependencyList, ReactElement, ReactNode } from 'react';
 import { useAsyncValue } from '@terrafirmagreg-team/ui/hooks/use-async-value';
+import { useDismissibleTooltip } from '@terrafirmagreg-team/ui/hooks/use-dismissible-tooltip';
 import {
   Tooltip,
   TooltipContent,
@@ -23,10 +24,11 @@ export function LazyTooltip<T>({
   contentClassName?: string;
   onOpenChange?: (open: boolean) => void;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useDismissibleTooltip();
   const value = useAsyncValue(open ? load : false, [open, ...deps]);
   return (
     <Tooltip
+      open={open}
       onOpenChange={(next) => {
         setOpen(next);
         onOpenChange?.(next);

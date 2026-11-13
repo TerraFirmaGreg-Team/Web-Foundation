@@ -1,7 +1,6 @@
 'use client';
 import { useLocationSearchParams } from '@terrafirmagreg-team/ui/hooks/page/use-location-search';
 import {
-  resolveDatasetRef,
   type DatasetVersionInfo,
   type DatasetRef,
 } from '@terrafirmagreg-team/sites/location';
@@ -17,8 +16,14 @@ export function useVersionedDataset(
   const preferred = useVersionPreference(id);
   const version = param ?? preferred;
   const key = `${id ?? ''} ${version ?? ''} ${info?.latest ?? ''} ${info?.versions?.join(',') ?? ''}`;
-  if (!refs.has(key))
-    refs.set(key, id ? resolveDatasetRef(id, version, info).ref : undefined);
+  if (!refs.has(key)) {
+    const selectedVersion =
+      version &&
+      version !== (info?.latest ?? info?.versions?.[0]) &&
+      (!info?.versions?.length || info.versions.includes(version))
+        ? version
+        : undefined;
+    refs.set(key, id ? { id, version: selectedVersion } : undefined);
+  }
   return refs.get(key);
 }
-

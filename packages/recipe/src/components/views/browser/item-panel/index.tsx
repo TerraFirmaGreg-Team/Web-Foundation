@@ -9,7 +9,6 @@ import {
   useMemo,
   useRef,
   useState,
-  type UIEvent,
 } from 'react';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
 import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
@@ -33,9 +32,11 @@ import { RecipeSettings } from '@terrafirmagreg-team/recipe/components/views/bro
 import { QuerySearch } from '@terrafirmagreg-team/recipe/components/views/browser/query-controls';
 import { Pager } from '@terrafirmagreg-team/ui/components/blocks/page/pager';
 import { usePanelPage } from '@terrafirmagreg-team/recipe/hooks/use-panel-page';
+import { dismissOpenTooltips } from '@terrafirmagreg-team/ui/lib/dismiss-tooltips';
 import { useItemPress } from '@terrafirmagreg-team/recipe/hooks/use-item-press';
 import { usePanelCells } from '@terrafirmagreg-team/recipe/hooks/use-panel-cells';
 import { usePanelTabs } from '@terrafirmagreg-team/recipe/hooks/use-panel-tabs';
+import { usePanelWarmup } from '@terrafirmagreg-team/recipe/hooks/use-panel-warmup';
 import {
   RecipePanelSkeleton,
   RecipeTabsSkeleton,
@@ -111,6 +112,15 @@ export const ItemPanel = memo(function ItemPanel({
   const favIds = useMemo(() => new Set(favoriteIds), [favoriteIds]);
   const { page: panelPage, setPage: setPanelPage } = usePanelPage(dataset);
   const list = usePagedList(cells, panelPage, pageSize);
+  const stripRef = useRef<HTMLDivElement | null>(null);
+  const drag = useRef(false);
+  const suppressScroll = useRef(0);
+  const lastWheelAt = useRef(0);
+  const flyTimer = useRef<number | undefined>(undefined);
+  const [flying, setFlying] = useState(false);
+  const [viewPage, setViewPage] = useState(list.page);
+  useEffect(() => setViewPage(list.page), [list.page]);
+  usePanelWarmup(dataset, cells, viewPage, pageSize);
 
   const gridResetKey = mode;
   const onToggleGroup = useCallback((groupId: string) => {
@@ -131,6 +141,7 @@ export const ItemPanel = memo(function ItemPanel({
     tool: navTool,
     unit: navUnit,
     mix: navMix,
+    version: navVersion,
   } = nav;
   const cellNav = useMemo<RecipeHrefOpts>(
     () => ({
@@ -139,15 +150,16 @@ export const ItemPanel = memo(function ItemPanel({
       tool: navTool,
       unit: navUnit,
       mix: navMix,
+      version: navVersion,
     }),
-    [navTab, navSearch, navTool, navUnit, navMix],
+    [navTab, navSearch, navTool, navUnit, navMix, navVersion],
   );
   const onHover = useCallback((target: FavoriteHoverTarget | undefined) => {
     favoriteHover.base = target;
   }, []);
 
   const setTab = (next: string) => {
-    setPanelPage(0);
+    selectPage(0);
     replaceUrlState(
       recipeHref(dataset, resolved, {
         ...nav,
@@ -156,70 +168,90 @@ export const ItemPanel = memo(function ItemPanel({
     );
   };
 
-  const stripRef = useRef<HTMLDivElement | null>(null);
-  const fromScroll = useRef(false);
   const pageRef = useRef(list.page);
-  pageRef.current = list.page;
-  const [startRaw, setStartRaw] = useState(list.page - (PAGE_WINDOW >> 1));
-  const maxStart = Math.max(0, list.pages - PAGE_WINDOW);
-  const start = Math.max(
-    0,
-    Math.min(
-      maxStart,
-      Math.max(list.page - (PAGE_WINDOW - 1), Math.min(startRaw, list.page)),
-    ),
-  );
+  useEffect(() => {
+    pageRef.current = list.page;
+  }, [list.page]);
+  const selectPage = (next: number) => {
+    const total = list.pages;
+    const wrapped = total > 1 ? ((next % total) + total) % total : 0;
+    pageRef.current = wrapped;
+    setViewPage(wrapped);
+    setPanelPage(wrapped);
+  };
+  const circular = list.pages > PAGE_WINDOW;
+  const base = circular
+    ? ((list.page - (PAGE_WINDOW >> 1)) % list.pages + list.pages) % list.pages
+    : 0;
   const windowPages = useMemo(() => {
-    const end = Math.min(list.pages, start + PAGE_WINDOW);
-    const out: number[] = [];
-    for (let i = start; i < end; i++) out.push(i);
-    return out;
-  }, [start, list.pages]);
+    if (!circular) {
+      return Array.from({ length: list.pages }, (_, i) => i);
+    }
+    return Array.from(
+      { length: PAGE_WINDOW },
+      (_, i) => (base + i) % list.pages,
+    );
+  }, [circular, base, list.pages]);
   const windowCells = useMemo(
     () =>
       windowPages.map((p) => cells.slice(p * pageSize, (p + 1) * pageSize)),
     [cells, windowPages, pageSize],
   );
 
-  const didInitScroll = useRef(false);
   useLayoutEffect(() => {
     const el = stripRef.current;
     if (!el || w <= 0) return;
-    const target = list.page * w;
+    const target = (circular ? PAGE_WINDOW >> 1 : list.page) * w;
     if (Math.abs(el.scrollLeft - target) > 2) {
-      el.scrollTo({
-        left: target,
-        behavior:
-          fromScroll.current || !didInitScroll.current
-            ? 'instant'
-            : 'smooth',
-      });
+      suppressScroll.current = performance.now() + 120;
+      el.scrollLeft = target;
     }
-    didInitScroll.current = true;
-    fromScroll.current = false;
-  }, [list.page, w]);
+  }, [list.page, circular, w]);
 
   const idle = useRef<number | undefined>(undefined);
   const [scrolling, setScrolling] = useState(false);
-  useEffect(() => () => window.clearTimeout(idle.current), []);
+  useEffect(() => {
+    const up = () => {
+      drag.current = false;
+    };
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', up);
+    return () => {
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', up);
+      window.clearTimeout(idle.current);
+      window.clearTimeout(flyTimer.current);
+    };
+  }, []);
+  const endScroll = useCallback(() => {
+    const el = stripRef.current;
+    if (!el || w <= 0) return;
+    setScrolling(false);
+    const pos = Math.round(el.scrollLeft / w);
+    const next = circular
+      ? (((base + pos) % list.pages) + list.pages) % list.pages
+      : Math.max(0, Math.min(list.pages - 1, pos));
+    setViewPage(next);
+    if (next !== pageRef.current) {
+      pageRef.current = next;
+      setPanelPage(next);
+    }
+  }, [w, circular, base, list.pages, setPanelPage]);
 
-  const onStripScroll = (event: UIEvent<HTMLDivElement>) => {
-    const el = event.currentTarget;
-    if (w <= 0) return;
-    const next = Math.max(
-      0,
-      Math.min(list.pages - 1, Math.round(el.scrollLeft / w)),
-    );
-    setScrolling(true);
+  const onStripScroll = () => {
+    const el = stripRef.current;
+    if (!el || w <= 0) return;
+    dismissOpenTooltips();
+    if (performance.now() < suppressScroll.current) return;
+    if (drag.current) setScrolling(true);
     window.clearTimeout(idle.current);
-    idle.current = window.setTimeout(() => {
-      setScrolling(false);
-      if (next !== pageRef.current) {
-        fromScroll.current = true;
-        setPanelPage(next);
-      }
-      setStartRaw(pageRef.current - (PAGE_WINDOW >> 1));
-    }, 160);
+    idle.current = window.setTimeout(endScroll, 160);
+    const pos = Math.round(el.scrollLeft / w);
+    setViewPage(
+      circular
+        ? (((base + pos) % list.pages) + list.pages) % list.pages
+        : Math.max(0, Math.min(list.pages - 1, pos)),
+    );
   };
 
   const tabOptions = usePanelTabs(dIndex, dNames, dLang);
@@ -248,25 +280,47 @@ export const ItemPanel = memo(function ItemPanel({
       <div
         ref={stripRef}
         onScroll={onStripScroll}
-        onWheel={(event) => {
-          const el = stripRef.current;
-          if (!el || w <= 0) return;
-          el.scrollBy({
-            left: Math.sign(event.deltaY) * w,
-            behavior: 'smooth',
-          });
+        onPointerDown={() => {
+          drag.current = true;
         }}
-        className="flex h-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        onWheel={(event) => {
+          if (w <= 0) return;
+          const delta =
+            Math.abs(event.deltaX) > Math.abs(event.deltaY)
+              ? event.deltaX
+              : event.deltaY;
+          const dir = Math.sign(delta);
+          if (!dir) return;
+          dismissOpenTooltips();
+          const now = performance.now();
+          if (now - lastWheelAt.current < 120) {
+            setFlying(true);
+            window.clearTimeout(flyTimer.current);
+            flyTimer.current = window.setTimeout(
+              () => setFlying(false),
+              140,
+            );
+          }
+          lastWheelAt.current = now;
+          selectPage(pageRef.current + dir);
+        }}
+        className={cn(
+          'flex h-full snap-x snap-proximity overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+          (scrolling || flying) && '[&>*]:pointer-events-none',
+        )}
       >
-        <div
-          aria-hidden
-          className="h-full shrink-0"
-          style={{ width: start * w }}
-        />
         {windowPages.map((pageIndex, i) => (
           <div
             key={pageIndex}
             className="h-full w-full shrink-0 snap-center"
+            style={
+              pageIndex === list.page
+                ? undefined
+                : {
+                    contentVisibility: 'auto',
+                    containIntrinsicSize: `${w}px ${h}px`,
+                  }
+            }
           >
             <ItemPanelGrid
               cells={windowCells[i]}
@@ -282,18 +336,13 @@ export const ItemPanel = memo(function ItemPanel({
               onHover={onHover}
               onToggleGroup={onToggleGroup}
               draggableStacks={isCalc}
-              tooltip={!scrolling}
+              eager={pageIndex === viewPage}
+              frozen={
+                flying || (scrolling && pageIndex !== viewPage)
+              }
             />
           </div>
         ))}
-        <div
-          aria-hidden
-          className="h-full shrink-0"
-          style={{
-            width:
-              Math.max(0, list.pages - start - windowPages.length) * w,
-          }}
-        />
       </div>
     );
   }
@@ -313,19 +362,20 @@ export const ItemPanel = memo(function ItemPanel({
         />
       )}
       <Pager
-        page={list.page}
+        loop
+        page={viewPage}
         pages={list.pages}
-        to={list.to}
+        to={Math.min(list.total, (viewPage + 1) * pageSize)}
         total={list.total}
         label={t('{page}/{pages}', { note: 'recipe.page_of' })}
-        onPage={setPanelPage}
+        onPage={selectPage}
         leading={
           <FavoriteButton
             variant="outline"
             active={mode === 'fav'}
             label={t('Favorites', { note: 'recipe.favorites' })}
             onToggle={() => {
-              setPanelPage(0);
+              selectPage(0);
               setMode(mode === 'fav' ? 'all' : 'fav');
             }}
             className="size-9 [&_svg]:size-4.5"
@@ -342,7 +392,7 @@ export const ItemPanel = memo(function ItemPanel({
           params={nav}
           query={query}
           onQuery={(next) => {
-            setPanelPage(0);
+            selectPage(0);
             setQuery(next);
           }}
           placeholder={t('Search items', { note: 'recipe.search' })}

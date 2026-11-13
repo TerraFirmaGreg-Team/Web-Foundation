@@ -29,6 +29,9 @@ import { EntryProvider } from '@terrafirmagreg-team/game/hooks/use-entry-context
 import { cn } from '@terrafirmagreg-team/ui/lib/utils/cn';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import type { RecipePageData } from '@terrafirmagreg-team/recipe/types';
+import type { DatasetSnapshot } from '@terrafirmagreg-team/sites/location';
+import { useVersionedDataset } from '@terrafirmagreg-team/kit/hooks/use-versioned-dataset';
+import { SnapshotBoundary } from '@terrafirmagreg-team/kit/components/dump-status/snapshot-boundary';
 
 export function RecipeBrowserFallback() {
   return (
@@ -54,20 +57,32 @@ export function RecipeBrowserFallback() {
   );
 }
 
-export function RecipeBrowser({
-  dataset: id,
-  datasetTitle,
-  lang,
-  versions,
-}: {
+type RecipeBrowserProps = {
   dataset: string;
   datasetTitle: string;
   lang: Lang;
   versions?: readonly string[];
-}) {
+};
+
+export function RecipeBrowser(props: RecipeBrowserProps) {
+  const selection = useVersionedDataset(props.dataset, { versions: props.versions }) ??
+    { id: props.dataset };
+  return (
+    <SnapshotBoundary selection={selection} fallback={<RecipeBrowserFallback />}>
+      {(dataset) => <RecipeBrowserContent {...props} dataset={dataset} />}
+    </SnapshotBoundary>
+  );
+}
+
+function RecipeBrowserContent({
+  dataset: pinnedDataset,
+  datasetTitle,
+  lang,
+  versions,
+}: Omit<RecipeBrowserProps, 'dataset'> & { dataset: DatasetSnapshot }) {
   const page: RecipePageData = {
     title: datasetTitle,
-    dataset: { id },
+    dataset: pinnedDataset,
     lang,
     versions: versions as string[] | undefined,
   };
@@ -149,4 +164,3 @@ export function RecipeBrowser({
     </EntryProvider>
   );
 }
-

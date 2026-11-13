@@ -3,10 +3,20 @@ import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 
 import { Fragment, useState, type ReactElement, type ReactNode } from 'react';
 import type { ReferenceKind } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
+import {
+  isTagKind,
+  tagKindOf,
+} from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 import { useModifierKeys } from '@terrafirmagreg-team/ui/hooks/use-modifier-keys';
+import { useAsyncResult } from '@terrafirmagreg-team/ui/hooks/use-async-value';
 import { LazyTooltip } from '@terrafirmagreg-team/ui/components/blocks/tooltip/lazy';
 import { stackTooltip } from '@terrafirmagreg-team/game/lib/entry/tooltip';
+import {
+  fetchTagMembers,
+  peekTagMembers,
+} from '@terrafirmagreg-team/game/lib/entry/icon-load';
 import { formulaRuns } from '@terrafirmagreg-team/game/lib/entry/formula';
+import { EntryIcon } from '@terrafirmagreg-team/game/components/entry/icon';
 import { McText } from '@terrafirmagreg-team/game/components/entry/mc-text';
 import { readableColor } from '@terrafirmagreg-team/ui/lib/color';
 import { stripMcFormat } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names';
@@ -38,6 +48,47 @@ function TooltipLine({ text }: { text: string }) {
         ),
       )}
     </>
+  );
+}
+
+function TagMemberIcons({
+  dataset,
+  id,
+  kind,
+}: {
+  dataset: DatasetRef;
+  id: string;
+  kind: ReferenceKind;
+}) {
+  const memberKind = tagKindOf(kind);
+  const tagId = id.startsWith('#') ? id.slice(1) : id;
+  const peeked =
+    dataset && memberKind
+      ? peekTagMembers(dataset, tagId, memberKind)
+      : undefined;
+  const res = useAsyncResult(
+    dataset && memberKind && peeked === undefined
+      ? async () => ({
+          members: await fetchTagMembers(dataset, tagId, memberKind),
+        })
+      : false,
+    [dataset, tagId, memberKind, peeked],
+  );
+  const members = peeked ?? res.value?.members;
+  if (!members?.length) return null;
+  return (
+    <div className="mt-1 flex max-w-48 flex-wrap gap-0.5">
+      {members.map((member) => (
+        <EntryIcon
+          key={member}
+          id={member}
+          kind={memberKind}
+          dataset={dataset}
+          size={16}
+          missing="hide"
+        />
+      ))}
+    </div>
   );
 }
 
@@ -97,8 +148,14 @@ export function EntryTooltip({
     else if (held.shift) extra = base;
     else extra = modLine ? [modLine] : [];
 
+    const plainName = stripMcFormat(name).trim();
     const lines = extra.length
-      ? [name, ...extra.filter((line) => line !== name)]
+      ? [
+          name,
+          ...extra.filter(
+            (line) => stripMcFormat(line).trim() !== plainName,
+          ),
+        ]
       : [name];
     const lastIsMod =
       lines.length > 1 && !lines[lines.length - 1].includes('§');
@@ -124,6 +181,9 @@ export function EntryTooltip({
               <TooltipLine text={line} />
             </p>
             {index === 0 ? subheader : null}
+            {index === 0 && kind && isTagKind(kind) ? (
+              <TagMemberIcons dataset={dataset} id={id} kind={kind} />
+            ) : null}
           </Fragment>
         ))}
         {footer}

@@ -1,4 +1,5 @@
 import 'server-only';
+import { resolveDatasetSnapshot } from '@terrafirmagreg-team/dump/lib/dump/snapshot';
 import { createElement } from 'react';
 import type * as PageTree from 'fumadocs-core/page-tree';
 import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
@@ -16,6 +17,7 @@ import { keyTreeNode } from '@terrafirmagreg-team/translate/server';
 import { loadLocaleRegistry } from '@terrafirmagreg-team/translate/server';
 import { encodeQueryValue } from '@terrafirmagreg-team/translate/lib/url';
 import {
+  datasetCacheKey,
   type DatasetRef,
   sectionUrl,
   versionSuffix,
@@ -71,7 +73,7 @@ function chapterLeaf(
     ),
     url: `${sectionUrl('quest', dataset.id)}?category=${encodeQueryValue(chapter.filename)}${versionSuffix(dataset)}`,
     icon: chapterIcon(dataset, chapter),
-    $id: `${dataset.id}/${dataset.version ?? ''}/category/${chapter.filename}`,
+    $id: datasetCacheKey(dataset, 'category', chapter.filename),
   }) as PageTree.Item;
 }
 
@@ -91,7 +93,7 @@ async function buildQuestTrees(lang: Lang): Promise<SectionTrees> {
   const trees: SectionTrees = {};
   for (const { id, title: datasetTitle, languages } of datasets) {
     if (!(languages ?? [defaultLanguage]).includes(lang)) continue;
-    const ref = { id };
+    const ref = await resolveDatasetSnapshot({ id });
     const map = await clientDumpLangQuest(ref, lang);
     const summary = await loadDumpQuestSummary(ref);
     const index =
@@ -112,11 +114,11 @@ async function buildQuestTrees(lang: Lang): Promise<SectionTrees> {
                 defaultOpen: true,
                 $id: `${id}/group/${groupFolderId(group.id)}`,
                 children: group.chapters.map((chapter) =>
-                  chapterLeaf({ id }, chapter, map),
+                  chapterLeaf(ref, chapter, map),
                 ),
               },
             ]
-          : group.chapters.map((chapter) => chapterLeaf({ id }, chapter, map)),
+          : group.chapters.map((chapter) => chapterLeaf(ref, chapter, map)),
     );
     (trees[lang] ??= {})[id] = {
       name: datasetTitle ?? id,
@@ -126,4 +128,3 @@ async function buildQuestTrees(lang: Lang): Promise<SectionTrees> {
   }
   return trees;
 }
-

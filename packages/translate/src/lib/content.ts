@@ -15,8 +15,15 @@ export function langContent<P>(
   slug: string[] | undefined,
   resolve: Resolve<P>,
   render: (page: P, lang: Lang) => ReactNode,
+  preferred?: Lang,
 ): LangContent | null {
   const { messages, defaultLanguage } = loadLocaleRegistry();
+  if (preferred && preferred !== defaultLanguage) {
+    const wanted = resolve(slug, preferred);
+    if (wanted && !wanted.isFallback) {
+      return { lang: preferred, node: render(wanted.page, preferred) };
+    }
+  }
   const primary = resolve(slug, defaultLanguage);
   if (primary && !primary.isFallback) {
     return {

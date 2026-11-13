@@ -46,12 +46,14 @@ export function QuestView({
   index,
   chapterJump,
   actionsRight,
+  version,
 }: {
   quest: Quest;
   dataset: DatasetRef;
   lang: Lang;
   langMap: Record<string, string>;
   index?: QuestCompactIndex | null;
+  version?: string;
   chapterJump?: { filename: string; title?: string };
   actionsRight?: ReactNode;
 }) {
@@ -94,6 +96,7 @@ export function QuestView({
             dataset,
             lang,
             index: compact,
+            version,
           })}
           titleClassName="text-base"
           trailing={actionsRight}
@@ -105,6 +108,7 @@ export function QuestView({
                       dataset,
                       lang,
                       index: compact,
+                      version,
                     })
                   : null}
                 {quest.optional ? (
@@ -119,6 +123,7 @@ export function QuestView({
           dataset={dataset}
           lang={lang}
           index={compact}
+          version={version}
         />
         {guide ? (
           <p>
@@ -129,6 +134,9 @@ export function QuestView({
                 lang,
                 `${guide.modId}:${guide.bookPath}`,
                 guide.entry,
+                undefined,
+                undefined,
+                version,
               )}
               className="text-sm"
             >
@@ -143,6 +151,7 @@ export function QuestView({
               href={questHref(dataset, lang, {
                 category: chapterJump.filename,
                 id: quest.id,
+                version,
               })}
               className="text-sm"
             >
@@ -212,6 +221,7 @@ export function QuestView({
                 lang={lang}
                 langMap={langMap}
                 empty={t('None', { note: 'quest.none' })}
+                version={version}
               />
             )}
           </FieldContent>
@@ -225,6 +235,7 @@ export function QuestView({
               lang={lang}
               langMap={langMap}
               empty={t('None', { note: 'quest.none' })}
+              version={version}
             />
           </FieldContent>
         </Field>

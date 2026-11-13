@@ -1,6 +1,7 @@
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import { encodeQuery, withLang } from '@terrafirmagreg-team/translate/lib/url';
 import {
+  datasetUrlVersion,
   type DatasetRef,
   sectionUrl,
 } from '@terrafirmagreg-team/sites/location';
@@ -8,9 +9,10 @@ import {
 export function questHref(
   dataset: DatasetRef,
   lang: Lang | undefined,
-  opts?: { category?: string; id?: string; item?: string },
+  opts?: { category?: string; id?: string; item?: string; version?: string },
 ): string {
-  const { id, version } = dataset;
+  const { id } = dataset;
+  const version = opts?.version ?? datasetUrlVersion(dataset);
   const base = lang
     ? withLang(sectionUrl('quest', id), lang)
     : sectionUrl('quest', id);

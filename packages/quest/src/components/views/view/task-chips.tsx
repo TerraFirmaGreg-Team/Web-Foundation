@@ -27,11 +27,19 @@ export function TaskChips({
   const title = taskDisplayTitle(task, langMap);
   const filterRefs = task.filter ? parseFilterRefs(task.filter) : [];
   const tagRefs = filterRefs.filter((ref) => isTagKind(ref.kind));
-  const stackRefs = filterRefs.filter((ref) => !isTagKind(ref.kind));
+  const stackIds = new Set(
+    filterRefs.filter((ref) => !isTagKind(ref.kind)).map(stackIdFromRef),
+  );
+  const cycleIds = [
+    ...new Set([...stackIds, ...(task.filterItems ?? [])]),
+  ];
   const tagSet = new Set(tagRefs.map((ref) => tagHashId(ref.id)));
-  const stackIds = new Set(stackRefs.map(stackIdFromRef));
   const itemChips = [...new Set(task.items)].filter(
-    (id) => !stackIds.has(id) && isItemChipId(id, tagSet),
+    (id) =>
+      !id.startsWith('ftbfiltersystem:') &&
+      !stackIds.has(id) &&
+      !cycleIds.includes(id) &&
+      isItemChipId(id, tagSet),
   );
   const inlineTags = task.items.filter(
     (id) => id.startsWith('#') && !tagSet.has(id),
@@ -41,12 +49,16 @@ export function TaskChips({
   const coveredIds = new Set<string>([
     ...itemChips,
     ...inlineTags,
-    ...stackRefs.map(stackIdFromRef),
+    ...cycleIds,
     ...tagRefs.map((ref) => tagHashId(ref.id)),
   ]);
   const iconId = chipIcon ? stackIdFromRef(chipIcon) : undefined;
   const showTypeIcon =
-    chipIcon != null && iconId != null && !coveredIds.has(iconId);
+    chipIcon != null &&
+    iconId != null &&
+    !coveredIds.has(iconId) &&
+    (!iconId.startsWith('ftbfiltersystem:') ||
+      (!cycleIds.length && !tagRefs.length));
   return (
     <>
       {showTypeIcon && chipIcon ? (
@@ -73,15 +85,18 @@ export function TaskChips({
           missing="item"
         />
       ))}
-      {stackRefs.map((ref) => (
+      {cycleIds.length ? (
         <Entry
-          key={`${ref.kind}:${stackIdFromRef(ref)}`}
-          reference={ref}
+          key={`filter:${task.id}`}
+          id={cycleIds[0]}
+          kind="item"
+          name={title}
+          members={cycleIds}
           size="lg"
           variant="chip"
           missing="item"
         />
-      ))}
+      ) : null}
       {itemChips.map((id) => (
         <Entry
           key={id}
@@ -95,4 +110,3 @@ export function TaskChips({
     </>
   );
 }
-

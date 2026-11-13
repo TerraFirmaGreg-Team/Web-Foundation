@@ -15,7 +15,7 @@ export type { RegistryFluids, FluidEntry } from './registry/fluids';
 export type { RegistryGroups, StackGroupValue } from './registry/groups';
 export type { RegistryItems, ItemEntry } from './registry/items';
 export type { RegistryRecipeCategories, RecipeCategory, RecipeCategoryLayout, RecipeLayoutSlot } from './registry/recipe_categories';
-export type { RegistryRecipes } from './registry/recipes';
+export type { RegistryRecipes, PreparedRecipeRow } from './registry/recipes';
+export type { DataIndexRecipes as RecipeRowsDocument } from './data/index/recipes';
 export type { RegistryTabs, TabEntry } from './registry/tabs';
 export type { RegistryTags, TagEntry } from './registry/tags';
-

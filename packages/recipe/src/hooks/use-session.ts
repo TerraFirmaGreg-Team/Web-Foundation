@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo } from 'react';
 import { useVersionedDataset } from '@terrafirmagreg-team/kit/hooks/use-versioned-dataset';
+import { useActiveDatasetSnapshot } from '@terrafirmagreg-team/kit/hooks/use-dataset-snapshot';
 import { useRecipeIndex } from '@terrafirmagreg-team/recipe/hooks/use-index';
 import { useRecipeQuery } from '@terrafirmagreg-team/recipe/hooks/use-query';
 import { useAsyncValue } from '@terrafirmagreg-team/ui/hooks/use-async-value';
@@ -52,9 +53,14 @@ function mergeLangMap(
 
 export function useRecipeSession(page: RecipePageData): RecipeSession {
   const { dataset: id, lang } = page;
-  const dataset =
-    useVersionedDataset(id.id, { versions: page.versions }) ?? id;
-  const query = useRecipeQuery(dataset);
+  const selection = useVersionedDataset(id.id, { versions: page.versions });
+  const active = useActiveDatasetSnapshot(selection);
+  const snapshot = id.revision ? id : active ?? selection ?? id;
+  const dataset = useMemo(
+    () => ({ ...snapshot, pin: selection?.version }),
+    [snapshot, selection?.version],
+  );
+  const query = useRecipeQuery(dataset, selection?.version);
   const { index, indexLoading } = useRecipeIndex(dataset, lang);
   const placeOpts = recipePlaceOpts(query.place);
 
@@ -88,6 +94,7 @@ export function useRecipeSession(page: RecipePageData): RecipeSession {
       relation: query.relation,
       search: query.query || undefined,
       rpage: query.rpage + 1,
+      version: selection?.version,
     }),
     [
       navType,
@@ -99,6 +106,7 @@ export function useRecipeSession(page: RecipePageData): RecipeSession {
       query.relation,
       query.query,
       query.rpage,
+      selection?.version,
     ],
   );
 
@@ -137,4 +145,3 @@ export function useRecipeSession(page: RecipePageData): RecipeSession {
     used,
   };
 }
-

@@ -30,22 +30,30 @@ export function dumpSectionKeys(): readonly SectionKey[] {
   return [...dumpSections];
 }
 
-export type DatasetRef = { id: string; version?: string };
+export interface DatasetSelection {
+  id: string;
+  version?: string;
+}
+
+export interface DatasetRef extends DatasetSelection {
+  revision?: string;
+
+  pin?: string;
+}
+
+export type DatasetSnapshot = DatasetRef & { version: string; revision: string };
+
+export function datasetCacheKey(ref: DatasetRef, ...parts: unknown[]): string {
+  return JSON.stringify([ref.id, ref.version ?? '', ref.revision ?? '', ...parts]);
+}
 
 export type DatasetVersionInfo = {
   versions?: readonly string[];
-  latest?: string;
+  latest?: string | null;
 };
 
 export function datasetRef(id: string, version?: string): DatasetRef {
   return version ? { id, version } : { id };
-}
-
-export function parseDatasetRef(ref: string): { id: string; version?: string } {
-  const at = ref.lastIndexOf('@');
-  return at > 0
-    ? { id: ref.slice(0, at), version: ref.slice(at + 1) }
-    : { id: ref };
 }
 
 export function resolveDatasetRef(
@@ -63,8 +71,13 @@ export function resolveDatasetRef(
   return { id, pinned, ref: { id, version: pinned } };
 }
 
-export function versionSuffix({ version }: DatasetRef): string {
-  return version ? `&version=${encodeURIComponent(version)}` : '';
+export function datasetUrlVersion(ref: DatasetRef): string | undefined {
+  return ref.pin ?? (ref.revision ? undefined : ref.version);
+}
+
+export function versionSuffix(ref: DatasetRef): string {
+  const pinned = datasetUrlVersion(ref);
+  return pinned ? `&version=${encodeURIComponent(pinned)}` : '';
 }
 
 export function parseSectionLocation(

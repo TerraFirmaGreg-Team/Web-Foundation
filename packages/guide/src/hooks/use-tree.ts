@@ -1,5 +1,5 @@
 'use client';
-import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
+import { datasetCacheKey, type DatasetRef } from '@terrafirmagreg-team/sites/location';
 
 import type * as PageTree from 'fumadocs-core/page-tree';
 import { useAsyncResult } from '@terrafirmagreg-team/ui/hooks/use-async-value';
@@ -27,7 +27,7 @@ export function useGuideTree(
           return {
             name: 'guide',
             children: index ? guideTreeChildren(dataset, index) : [],
-            $id: `guide/${dataset.id}/${dataset.version ?? ''}/${resolvedId ?? 'none'}/${lang}`,
+            $id: datasetCacheKey(dataset, 'guide', resolvedId ?? 'none', lang),
           } satisfies PageTree.Root;
         }
       : undefined,

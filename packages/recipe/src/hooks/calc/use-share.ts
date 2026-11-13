@@ -16,19 +16,21 @@ export function useCalcShare({
   storageKey,
   dataset,
   incoming,
+  version,
 }: {
   storageKey: string;
   dataset: DatasetRef;
   incoming: string;
+  version?: string;
 }): boolean {
   const isShareId = incoming.startsWith('s');
   const [sharedTree, setSharedTree] = useState<string | null>(null);
   useEffect(() => {
     if (!isShareId) return;
     let cancelled = false;
-    const { id: datasetId, version } = dataset;
+    const { id: datasetId, version: resolvedVersion } = dataset;
     void fetch(
-      `/api/share/recipe/${encodeURIComponent(datasetId)}/${encodeURIComponent(incoming.slice(1))}${version ? `?version=${encodeURIComponent(version)}` : ''}`,
+      `/api/share/recipe/${encodeURIComponent(datasetId)}/${encodeURIComponent(incoming.slice(1))}${resolvedVersion ? `?version=${encodeURIComponent(resolvedVersion)}` : ''}`,
     )
       .then((res) => (res.ok ? res.json() : null))
       .then((body: { tree?: unknown } | null) => {
@@ -56,8 +58,8 @@ export function useCalcShare({
         entry.id,
       );
     }
-    if (incoming) replaceUrlState(recipeCalcHref(dataset, resolved));
-  }, [transport, storageKey, dataset, resolved, incoming]);
+    if (incoming) replaceUrlState(recipeCalcHref(dataset, resolved, undefined, version));
+  }, [transport, storageKey, dataset, resolved, incoming, version]);
 
   return isShareId && sharedTree === null;
 }

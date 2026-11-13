@@ -54,6 +54,7 @@ export function ItemTagGroups({
                     id: tagPseudoId(id, tagKind),
                     search: query || undefined,
                     tab: nav.tab,
+                    version: nav.version,
                   })}
                   variant="chip"
                   size="sm"
@@ -70,6 +71,7 @@ export function ItemTagGroups({
                       recipeHref(dataset, resolved, {
                         type: 'emi:tag',
                         search,
+                        version: nav.version,
                       }),
                     );
                   }}

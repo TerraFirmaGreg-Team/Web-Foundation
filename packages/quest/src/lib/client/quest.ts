@@ -1,4 +1,4 @@
-import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
+import { datasetCacheKey, type DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { clientDumpJson, clientDumpLangQuest } from '@terrafirmagreg-team/dump/lib/dump/client/dump';
 import { createDatasetCache } from '@terrafirmagreg-team/dump/lib/dump/reader';
 import { langString } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names';
@@ -96,7 +96,7 @@ const chapterCache = createDatasetCache<
     }
     return chapter;
   },
-  (dataset, _file, filename) => `${dataset.id}/${dataset.version ?? ''}${filename}`,
+  (dataset, _file, filename) => datasetCacheKey(dataset, filename),
 );
 
 export function loadQuestChapter(
@@ -119,4 +119,3 @@ export function loadQuestLangMap(
 ): Promise<Record<string, string>> {
   return clientDumpLangQuest(dataset, lang);
 }
-

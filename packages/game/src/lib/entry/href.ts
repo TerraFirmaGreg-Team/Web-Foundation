@@ -1,4 +1,5 @@
 import {
+  datasetUrlVersion,
   type DatasetRef,
   sectionUrl,
 } from '@terrafirmagreg-team/sites/location';
@@ -13,6 +14,10 @@ export type { EntryHrefOpts } from '@terrafirmagreg-team/game/types/entry';
 
 const query = encodeQuery;
 
+function hrefVersion(dataset: DatasetRef): string | undefined {
+  return datasetUrlVersion(dataset);
+}
+
 function recipeHref(
   dataset: DatasetRef,
   lang: Lang | undefined,
@@ -24,6 +29,7 @@ function recipeHref(
     tab?: string;
     search?: string;
     rpage?: number;
+    version?: string;
   },
 ): string {
   const q = query([
@@ -34,7 +40,7 @@ function recipeHref(
     ['tab', opts?.tab],
     ['search', opts?.search],
     ['rpage', opts?.rpage && opts.rpage > 1 ? Math.floor(opts.rpage) : undefined],
-    ['version', dataset.version],
+    ['version', opts?.version ?? hrefVersion(dataset)],
   ]);
   const base = sectionUrl('recipe', dataset.id);
   const href = q ? `${base}?${q}` : base;
@@ -45,12 +51,12 @@ function recipeStackHref(
   dataset: DatasetRef,
   lang: Lang | undefined,
   id: string,
-  opts?: Pick<EntryHrefOpts, 'tab' | 'search'> & {
+  opts?: Pick<EntryHrefOpts, 'tab' | 'search' | 'version'> & {
     kind?: 'item' | 'fluid' | 'tag';
     tagKind?: string;
   },
 ): string {
-  const kept = { tab: opts?.tab, search: opts?.search };
+  const kept = { tab: opts?.tab, search: opts?.search, version: opts?.version };
   if (opts?.kind === 'tag' || id.startsWith('#')) {
     const bare = id.startsWith('#') ? id.slice(1) : id;
     return recipeHref(dataset, lang, {
@@ -67,13 +73,13 @@ function recipeStackHref(
 function questHref(
   dataset: DatasetRef,
   lang: Lang | undefined,
-  opts?: { category?: string; id?: string; item?: string },
+  opts?: { category?: string; id?: string; item?: string; version?: string },
 ): string {
   const q = query([
     ['category', opts?.category],
     ['id', opts?.id],
     ['item', opts?.item],
-    ['version', dataset.version],
+    ['version', opts?.version ?? hrefVersion(dataset)],
   ]);
   const base = sectionUrl('quest', dataset.id);
   const href = q ? `${base}?${q}` : base;
@@ -87,13 +93,14 @@ export function guideHref(
   entryId?: string,
   hash?: string,
   categoryId?: string,
+  version?: string,
 ): string {
-  const { id, version } = dataset;
+  const { id } = dataset;
   const q = query([
     ['book', bookId],
     ['entry', entryId],
     ['cat', entryId ? undefined : categoryId],
-    ['version', version],
+    ['version', version ?? hrefVersion(dataset)],
   ]);
   const base = `${sectionUrl('guide', id)}${q ? `?${q}` : ''}`;
   const href = hash ? `${base}#${hash}` : base;
@@ -106,7 +113,7 @@ export function entryHref(
   reference: TaggedReference,
   opts?: EntryHrefOpts,
 ): string {
-  const kept = { tab: opts?.tab, search: opts?.search };
+  const kept = { tab: opts?.tab, search: opts?.search, version: opts?.version };
   switch (reference.kind) {
     case 'item':
     case 'block':
@@ -137,6 +144,7 @@ export function entryHref(
       return questHref(dataset, lang, {
         category: opts?.filename,
         id: reference.id,
+        version: opts?.version,
       });
     case 'guide':
     case 'chapter':
@@ -146,6 +154,8 @@ export function entryHref(
         opts?.modId && opts?.bookPath ? `${opts.modId}:${opts.bookPath}` : undefined,
         opts?.entry ?? reference.id,
         opts?.hash,
+        undefined,
+        opts?.version,
       );
     default: {
       const _exhaustive: never = reference.kind;

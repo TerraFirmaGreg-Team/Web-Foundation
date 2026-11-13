@@ -11,7 +11,7 @@ import {
 import { texturePublicUrl } from '@terrafirmagreg-team/dump/lib/dump/assets/urls';
 import { useDumpLocation } from '@terrafirmagreg-team/game/hooks/use-dump-location';
 import { dumpReader } from '@terrafirmagreg-team/dump/lib/dump/reader';
-import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
+import { datasetCacheKey, type DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { lookupSpriteInBundle } from '@terrafirmagreg-team/dump/lib/dump/assets/atlas/lookup';
 import type { AtlasLookup } from '@terrafirmagreg-team/dump/lib/dump/assets/atlas/dto';
 import {
@@ -64,6 +64,7 @@ export function useIconSource({
   missing,
   preferVariant,
   entityView = 'auto',
+  members,
 }: {
   dataset?: DatasetRef;
   reference?: TaggedReference;
@@ -73,6 +74,7 @@ export function useIconSource({
   missing: 'placeholder' | 'item' | 'hide';
   preferVariant?: boolean;
   entityView?: 'auto' | 'texture' | 'egg';
+  members?: string[];
 }): IconSource {
   const ref = reference ?? (id ? classifyRefId(id, kind) : undefined);
   const refKind = ref?.kind;
@@ -81,7 +83,7 @@ export function useIconSource({
   const tagMemberKind = tagKindOf(refKind);
   const tagKey =
     dataset && rawId && isTagKind(refKind)
-      ? `${dataset.id}/${dataset.version ?? ''}/${tagMemberKind ?? 'item'}/${rawId}`
+      ? datasetCacheKey(dataset, tagMemberKind ?? 'item', rawId)
       : null;
   const tagMembersPeek = tagKey
     ? peekTagMembers(dataset!, rawId, tagMemberKind ?? 'item')
@@ -109,12 +111,17 @@ export function useIconSource({
           ? (tagHit.value.members ?? null)
           : null;
   const cycleRefs =
-    tagMembers && tagMembers.length > 1
-      ? tagMembers.map((member) => ({
+    members && members.length > 1
+      ? members.map((member) => ({
           kind: (tagMemberKind ?? 'item') as ReferenceKind,
           id: member,
         }))
-      : null;
+      : tagMembers && tagMembers.length > 1
+        ? tagMembers.map((member) => ({
+            kind: (tagMemberKind ?? 'item') as ReferenceKind,
+            id: member,
+          }))
+        : null;
   const [cycleIndex] = useCycleIndex(cycleRefs?.length ?? 0, {
     enabled: cycleRefs !== null,
     intervalMs: ENTRY_CYCLE_MS,
@@ -134,7 +141,7 @@ export function useIconSource({
       : refKind;
   const blockKey =
     dataset && memberKind === 'block' && itemId && !itemId.startsWith('#')
-      ? `${dataset.id}/${dataset.version ?? ''}/${itemId}`
+      ? datasetCacheKey(dataset, itemId)
       : null;
   const blockPeek = blockKey ? peekBlockItem(dataset!, itemId!) : undefined;
   const blockHit = useAsyncResult(
@@ -189,7 +196,7 @@ export function useIconSource({
     [atlasNeedsLoad, atlasPeek, dataset, modId],
   );
   const atlasValue = atlasPeek === undefined ? atlases.value : atlasBundle;
-  const sourceKey = `${dataset?.id}/${dataset?.version ?? ''}:${displayKind}:${resolvedId}`;
+  const sourceKey = dataset ? datasetCacheKey(dataset, displayKind, resolvedId) : '';
   const dumpLoc = useDumpLocation(dataset);
   const wantEntityTexture = isEntity && entityView !== 'egg';
   const texturePeek =
@@ -313,4 +320,3 @@ export function useIconSource({
     isEntity,
   };
 }
-

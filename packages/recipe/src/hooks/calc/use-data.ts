@@ -28,6 +28,7 @@ export function useCalcData(session: RecipeSession) {
     storageKey,
     dataset,
     incoming: session.tree ?? '',
+    version: session.nav.version,
   });
   const {
     calcState,

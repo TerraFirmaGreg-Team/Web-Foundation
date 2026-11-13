@@ -1,4 +1,4 @@
-import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
+import { datasetCacheKey, type DatasetRef } from '@terrafirmagreg-team/sites/location';
 import type { RecipeChrome, RecipeCompactIndex } from '@terrafirmagreg-team/recipe/types';
 import { loadDatasetRecipeCategories } from '@terrafirmagreg-team/recipe/lib/data/category/load';
 import { stackDisplayName } from '@terrafirmagreg-team/game/lib/entry/display';
@@ -44,7 +44,7 @@ const indexCache = createDatasetCache(
     return loadRecipeStructureFromDump(dataset, chrome);
   },
   (dataset, chrome) =>
-    `${dataset.id}/${dataset.version ?? ''} ${chrome ? (Object.keys(chrome.names)[0] ?? '') : ''}`,
+    datasetCacheKey(dataset, chrome ? (Object.keys(chrome.names)[0] ?? '') : ''),
 );
 
 const skeletonCache = createDatasetCache(
@@ -88,4 +88,3 @@ export function recipeItemName(
 ): string {
   return stackDisplayName(names[lang] ?? names.en_us, id);
 }
-
