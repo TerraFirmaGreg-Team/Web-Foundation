@@ -1,6 +1,6 @@
 {
   "name": "@terrafirmagreg-team/github",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "type": "module",
   "description": "GitHub platform features: git page history, repo contributors",
   "license": "LGPL-3.0-only",
