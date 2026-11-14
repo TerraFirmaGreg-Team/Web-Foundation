@@ -216,8 +216,8 @@ export const CalcNodeCardFull = memo(function CalcNodeCardFull({
                 </button>
                 <input
                   key={node.crafts}
-                  type="number"
-                  min={1}
+                  type="text"
+                  inputMode="numeric"
                   defaultValue={node.crafts}
                   title={t('Crafts', { note: 'recipe.calc.crafts.title' })}
                   aria-label={t('Crafts', { note: 'recipe.calc.crafts.title' })}
