@@ -51,6 +51,11 @@ import { Layout } from '@terrafirmagreg-team/kit/components/layouts/layout';
 import { sectionTabs } from '@terrafirmagreg-team/sites';
 import { sectionUrl } from '@terrafirmagreg-team/sites/location';
 import { resolveLang } from '@terrafirmagreg-team/translate/lib/code';
+import {
+  LANG_COOKIE,
+  LANG_HEADER,
+  requestLang,
+} from '@terrafirmagreg-team/translate/lib/lang-cookie';
 import { withLang } from '@terrafirmagreg-team/translate/lib/url';
 import { langContent, loadLocaleRegistry } from '@terrafirmagreg-team/translate/server';
 import type {
@@ -401,8 +406,10 @@ export async function SectionLayout({ children }: { children?: ReactNode }) {
   const { slots } = baseOptions();
   const { languages, defaultLanguage } = loadLocaleRegistry();
   const lang = resolveLang(
-    (await cookies()).get('wiki_lang')?.value ??
-      (await headers()).get('x-wiki-lang'),
+    requestLang(
+      (await cookies()).get(LANG_COOKIE)?.value,
+      (await headers()).get(LANG_HEADER),
+    ),
     languages,
     defaultLanguage,
   );
