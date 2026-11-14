@@ -84,7 +84,6 @@ export function Calculator({ session }: { session: RecipeSession }) {
     nodes: deferredNodes,
     tagMembers,
     ensureMaterial,
-    fluids: session.index?.fluids,
   });
 
   const iconItems = useMemo(

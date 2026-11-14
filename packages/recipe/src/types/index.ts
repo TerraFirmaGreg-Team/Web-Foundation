@@ -53,6 +53,7 @@ export type ItemPanelCell =
       label: string;
       members: string[];
       expanded: boolean;
+      ref?: 'item' | 'fluid';
     }
   | { kind: 'recipe'; fav: RecipeFavorite };
 

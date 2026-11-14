@@ -5,12 +5,16 @@ import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
 import { panelTabRows } from '@terrafirmagreg-team/recipe/lib/browser/panel';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
-import type { RecipeCompactIndex } from '@terrafirmagreg-team/recipe/types';
+import type {
+  RecipeCompactIndex,
+  UsedItems,
+} from '@terrafirmagreg-team/recipe/types';
 
 export function usePanelTabs(
   index: RecipeCompactIndex | null,
   names: Record<string, Record<string, string>>,
   lang: Lang,
+  used?: UsedItems,
 ) {
   const t = useTranslations();
   return useMemo(
@@ -25,7 +29,7 @@ export function usePanelTabs(
         }),
         help: t('All items', { note: 'recipe.all_items' }),
       },
-      ...panelTabRows(index, names, lang).map((row) => ({
+      ...panelTabRows(index, names, lang, used).map((row) => ({
         id: row.id,
         icon: createElement(Entry, {
             ...(row.iconRef
@@ -35,9 +39,10 @@ export function usePanelTabs(
             href: false,
           }),
         help: row.help,
+        helpKey: row.helpKey,
       })),
     ],
-    [index, lang, names, t],
+    [index, lang, names, t, used],
   );
 }
 

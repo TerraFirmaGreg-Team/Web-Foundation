@@ -66,7 +66,6 @@ export const PanelCell = memo(function PanelCell({
   names,
   nav,
   favIds,
-  expandLabel,
   draggableStacks,
   onPress,
   onHover,
@@ -78,7 +77,6 @@ export const PanelCell = memo(function PanelCell({
   names: Record<string, Record<string, string>>;
   nav: RecipeHrefOpts;
   favIds?: ReadonlySet<string>;
-  expandLabel: string;
   draggableStacks?: boolean;
   onPress: (id: string, ref?: 'item' | 'fluid') => void;
   onHover?: (target: FavoriteHoverTarget | undefined) => void;
@@ -117,7 +115,7 @@ export const PanelCell = memo(function PanelCell({
           fav={cell.fav}
         />
       ) : cell.kind === 'group' ? (
-        <Hint label={cell.expanded ? undefined : expandLabel}>
+        <Hint label={cell.label}>
           <button
             type="button"
             aria-label={cell.label}
@@ -126,7 +124,11 @@ export const PanelCell = memo(function PanelCell({
             className="block rounded-sm"
           >
             <span className="relative flex size-9 items-center justify-center">
-              <EntryGroup members={cell.members} size="lg" />
+              <EntryGroup
+                members={cell.members}
+                kind={cell.ref === 'fluid' ? 'fluid' : 'item'}
+                size="lg"
+              />
               <Badge className="absolute -right-0.5 -bottom-0.5 z-10 h-auto rounded-sm px-0.5 py-0 leading-tight">
                 {cell.expanded ? (
                   <Minus className="size-3" />

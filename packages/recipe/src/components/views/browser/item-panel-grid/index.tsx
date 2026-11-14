@@ -2,7 +2,6 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 
 import { memo } from 'react';
-import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
 import { PanelCell } from '@terrafirmagreg-team/recipe/components/views/browser/item-panel-grid/cell';
 import { useMountLimit } from '@terrafirmagreg-team/recipe/hooks/use-mount-limit';
 import { useGroupOutlines } from '@terrafirmagreg-team/recipe/hooks/use-group-outlines';
@@ -47,8 +46,6 @@ export const ItemPanelGrid = memo(function ItemPanelGrid({
   eager?: boolean;
   frozen?: boolean;
 }) {
-  const t = useTranslations();
-  const expandLabel = t('Expand', { note: 'recipe.expand' });
   const limit = useMountLimit(cells.length, resetKey, eager);
   const shown = frozen
     ? []
@@ -81,7 +78,6 @@ export const ItemPanelGrid = memo(function ItemPanelGrid({
           names={names}
           nav={nav}
           favIds={favIds}
-          expandLabel={expandLabel}
           draggableStacks={draggableStacks}
           onPress={onPress}
           onHover={onHover}

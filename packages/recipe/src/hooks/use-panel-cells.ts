@@ -121,6 +121,14 @@ export function usePanelCells({
     );
   }, [deferredFiltered, dIndex, mode, expandedGroups, favorites.entries]);
 
-  return { cells, filtered: deferredFiltered, favoriteIds, dIndex, dNames, dLang };
+  return {
+    cells,
+    filtered: deferredFiltered,
+    favoriteIds,
+    dIndex,
+    dNames,
+    dLang,
+    used,
+  };
 }
 

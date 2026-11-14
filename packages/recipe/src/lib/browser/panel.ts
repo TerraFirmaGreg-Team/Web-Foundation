@@ -5,11 +5,16 @@ import {
 import { registryId } from '@terrafirmagreg-team/dump/lib/dump/paths';
 import { creativeTabName } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names';
 import { recipeItemName } from '@terrafirmagreg-team/recipe/lib/client-index';
+import {
+  filterUsedIds,
+  hasRecipeUsage,
+} from '@terrafirmagreg-team/recipe/lib/browser/used-items';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import type {
   ItemPanelCell,
   RecipeCompactIndex,
   RecipeStackGroup,
+  UsedItems,
 } from '@terrafirmagreg-team/recipe/types';
 
 function catalogPool(index: RecipeCompactIndex, tab?: string): string[] {
@@ -24,6 +29,7 @@ type ItemPanelTabRow = {
   icon: string;
   iconRef?: TaggedReference;
   help: string;
+  helpKey?: string;
 };
 
 export function panelPool(
@@ -74,12 +80,16 @@ export function buildPanelCells(
       continue;
     }
     const expanded = expandedGroups.has(group.id);
+    const fluid = members.every((member) =>
+      fluidIds?.has(registryId(member)),
+    );
     out.push({
       kind: 'group',
       id: group.id,
       label: group.name ?? group.id,
       members,
       expanded,
+      ...(fluid ? { ref: 'fluid' as const } : {}),
     });
     if (expanded)
       for (const member of members)
@@ -97,9 +107,17 @@ export function panelTabRows(
   index: RecipeCompactIndex | null,
   names: Record<string, Record<string, string>>,
   lang: Lang,
+  used?: UsedItems,
 ): ItemPanelTabRow[] {
+  const hideEmpty = used !== undefined && hasRecipeUsage(used);
   const rows: ItemPanelTabRow[] = [];
   for (const row of index?.tabs ?? []) {
+    if (
+      hideEmpty &&
+      filterUsedIds(index?.tabItems?.[row.id] ?? [], used).length === 0
+    ) {
+      continue;
+    }
     const icon =
       (row.icon ? stackIdFromRef(row.icon) : undefined) ??
       index?.tabItems?.[row.id]?.[0];
@@ -111,6 +129,7 @@ export function panelTabRows(
       help: row.display?.name
         ? creativeTabName(names[lang] ?? names.en_us ?? {}, row.display.name)
         : recipeItemName(names, lang, row.id),
+      helpKey: row.display?.name ?? row.id,
     });
   }
   return rows;

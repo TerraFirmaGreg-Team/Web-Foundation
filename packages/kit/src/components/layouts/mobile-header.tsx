@@ -26,30 +26,32 @@ export function MobileHeader({
       className="sticky top-(--banner-height,0px) z-30 [grid-area:header] flex items-center h-(--header-height) ps-4 pe-2 bg-card md:hidden"
     >
       <Title className="inline-flex items-center gap-2.5 me-3 font-semibold" />
-      <LeftSidebarSearch variant="icon" />
-      <SidebarTrigger
-        aria-label={t('Menu', { note: 'ui.menu_toggle' })}
-        className={cn(buttonVariants({ variant: 'outline', size: 'icon-lg' }), 'ms-1')}
-      >
-        <Menu />
-      </SidebarTrigger>
-      <nav className="flex min-w-0 items-center justify-end gap-0.5 overflow-x-auto ms-auto">
-        {sections.map((option) => (
-          <Link
-            key={option.value}
-            href={option.url ?? '/'}
-            aria-label={typeof option.title === 'string' ? option.title : option.value}
-            aria-current={option.value === current ? 'page' : undefined}
-            className={cn(
-              buttonVariants({ variant: 'ghost', size: 'icon' }),
-              'shrink-0',
-              option.value === current ? 'bg-accent' : 'text-muted-foreground',
-            )}
-          >
-            {option.icon}
-          </Link>
-        ))}
-      </nav>
+      <div className="ms-auto flex min-w-0 items-center gap-1">
+        <SidebarTrigger
+          aria-label={t('Menu', { note: 'ui.menu_toggle' })}
+          className={cn(buttonVariants({ variant: 'outline', size: 'icon-lg' }))}
+        >
+          <Menu />
+        </SidebarTrigger>
+        <LeftSidebarSearch variant="icon" />
+        <nav className="flex min-w-0 items-center gap-0.5 overflow-x-auto">
+          {sections.map((option) => (
+            <Link
+              key={option.value}
+              href={option.url ?? '/'}
+              aria-label={typeof option.title === 'string' ? option.title : option.value}
+              aria-current={option.value === current ? 'page' : undefined}
+              className={cn(
+                buttonVariants({ variant: 'ghost', size: 'icon' }),
+                'shrink-0',
+                option.value === current ? 'bg-accent' : 'text-muted-foreground',
+              )}
+            >
+              {option.icon}
+            </Link>
+          ))}
+        </nav>
+      </div>
     </header>
   );
 }

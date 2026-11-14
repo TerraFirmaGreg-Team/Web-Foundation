@@ -2,7 +2,7 @@ import { boolCodec, createStoredValue } from '@terrafirmagreg-team/ui/lib/utils/
 
 const useStoredHideUnused = createStoredValue(
   'wiki.recipe.hideUnused',
-  boolCodec(false),
+  boolCodec(true),
 );
 
 export function useHideUnused() {

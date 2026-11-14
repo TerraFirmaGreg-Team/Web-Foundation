@@ -50,7 +50,6 @@ export function useCalcActions({
   nodes,
   tagMembers,
   ensureMaterial,
-  fluids,
 }: {
   dataset: DatasetRef;
   lang: Lang;
@@ -68,9 +67,7 @@ export function useCalcActions({
   nodes: CalcNode[];
   tagMembers?: (tagId: string) => TagResolution | undefined;
   ensureMaterial?: (materialId: string) => void;
-  fluids?: readonly string[];
 }) {
-  const fluidIds = useMemo(() => new Set(fluids ?? []), [fluids]);
   const { checked: shared, onClick: onShare } = useCopyButton(async () => {
     const tree = encodeShare();
     const { id: datasetId, version } = dataset;
@@ -133,13 +130,6 @@ export function useCalcActions({
 
   const onAddCard = useCallback(
     (materialId: string, kind: CalcKind, pos?: { x: number; y: number }) => {
-      if (kind === 'item' && materialId.endsWith('_bucket')) {
-        const fluidId = materialId.slice(0, -'_bucket'.length);
-        if (fluidIds.has(fluidId)) {
-          materialId = fluidId;
-          kind = 'fluid';
-        }
-      }
       const id = newCardId();
       persist({
         cards: [
@@ -152,7 +142,7 @@ export function useCalcActions({
       setFocusNodeId(id);
       return id;
     },
-    [flushAmounts, persist, wires, tagSelections, setFocusNodeId, fluidIds],
+    [flushAmounts, persist, wires, tagSelections, setFocusNodeId],
   );
 
   const onSupplyInput = useCallback(

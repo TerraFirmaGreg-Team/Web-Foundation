@@ -96,7 +96,7 @@ export const ItemPanel = memo(function ItemPanel({
   const [expandedGroups, setExpandedGroups] = useState<ReadonlySet<string>>(
     new Set(),
   );
-  const { cells, favoriteIds, dIndex, dNames, dLang } =
+  const { cells, favoriteIds, dIndex, dNames, dLang, used } =
     usePanelCells({
       dataset,
       index,
@@ -254,7 +254,7 @@ export const ItemPanel = memo(function ItemPanel({
     );
   };
 
-  const tabOptions = usePanelTabs(dIndex, dNames, dLang);
+  const tabOptions = usePanelTabs(dIndex, dNames, dLang, used);
 
   const failed = isDatasetFailed(useFailedDatasets(), dataset);
 

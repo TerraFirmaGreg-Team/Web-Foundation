@@ -79,6 +79,7 @@ export function RecipeFrame({
       {list ? (
         onPageChange ? (
           <Pager
+            layout="center"
             page={list.page}
             pages={list.pages}
             to={list.to}

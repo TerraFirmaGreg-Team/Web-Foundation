@@ -105,7 +105,7 @@ export function Layout({
   const datasetFailed =
     baseId !== undefined &&
     isDatasetFailed(failedDatasets, { id: baseId, version: current?.version });
-  useDatasetAccent(meta?.accent);
+  useDatasetAccent(sectionConfig().sectionAccent?.[section] ?? meta?.accent);
   const nav = useNavOptions({ section, catalog });
   const deps = layoutDeps();
   deps.trackView?.(pathname);

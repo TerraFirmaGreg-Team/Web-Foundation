@@ -79,6 +79,7 @@ export function Pager({
   label,
   leading,
   loop,
+  layout = 'spread',
   className,
 }: {
   page: number;
@@ -89,36 +90,78 @@ export function Pager({
   label: string;
   leading?: ReactNode;
   loop?: boolean;
+  layout?: 'spread' | 'center';
   className?: string;
 }) {
+  const prev = (
+    <PagerArrow
+      dir={-1}
+      disabled={loop ? pages <= 1 : page <= 0}
+      onClick={(event) => onPage(event.shiftKey ? 0 : page - 1)}
+    />
+  );
+  const next = (
+    <PagerArrow
+      dir={1}
+      disabled={loop ? pages <= 1 : page + 1 >= pages}
+      onClick={(event) => onPage(event.shiftKey ? pages - 1 : page + 1)}
+    />
+  );
+  const progress = (
+    <Progress
+      value={to}
+      max={Math.max(total, 1)}
+      className={cn('w-14 shrink-0 gap-0 sm:w-20', layout === 'spread' ? undefined : 'mx-1')}
+    />
+  );
+  const counter = (
+    <span
+      className={cn(
+        'shrink-0 tabular-nums',
+        layout === 'center' ? 'text-center' : undefined,
+      )}
+      style={
+        layout === 'center'
+          ? { minWidth: `${String(pages).length * 2 + 1}ch` }
+          : undefined
+      }
+    >
+      {label
+        .replaceAll('{page}', String(page + 1))
+        .replaceAll('{pages}', String(pages))}
+    </span>
+  );
+
+  if (layout === 'center') {
+    return (
+      <Pagination className={cn('mx-0 w-full', className)}>
+        <PaginationContent className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-2">
+          <PaginationItem className="flex items-center gap-1 justify-self-start">
+            {leading}
+          </PaginationItem>
+          <PaginationItem className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
+            {prev}
+            {progress}
+            {counter}
+            {next}
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+    );
+  }
+
   return (
     <Pagination className={cn('mx-0 w-full', className)}>
-      <PaginationContent className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-2">
-        <PaginationItem className="flex items-center gap-1 justify-self-start">
+      <PaginationContent className="w-full justify-between gap-2">
+        <PaginationItem className="flex items-center gap-1">
+          {prev}
           {leading}
         </PaginationItem>
-        <PaginationItem className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
-          <PagerArrow
-            dir={-1}
-            disabled={loop ? pages <= 1 : page <= 0}
-            onClick={(event) => onPage(event.shiftKey ? 0 : page - 1)}
-          />
-          <Progress
-            value={to}
-            max={Math.max(total, 1)}
-            className="mx-1 w-14 shrink-0 gap-0 sm:w-20"
-          />
-          <span className="me-1 shrink-0 tabular-nums">
-            {label
-              .replaceAll('{page}', String(page + 1))
-              .replaceAll('{pages}', String(pages))}
-          </span>
-          <PagerArrow
-            dir={1}
-            disabled={loop ? pages <= 1 : page + 1 >= pages}
-            onClick={(event) => onPage(event.shiftKey ? pages - 1 : page + 1)}
-          />
+        <PaginationItem className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
+          {progress}
+          {counter}
         </PaginationItem>
+        <PaginationItem>{next}</PaginationItem>
       </PaginationContent>
     </Pagination>
   );
@@ -128,6 +171,7 @@ type IconPagerOption<T extends string> = {
   id: T;
   icon: ReactNode;
   help?: string;
+  helpKey?: string;
 };
 
 const PAGER_CELL = 40;
@@ -208,7 +252,14 @@ export function IconPager<T extends string>({
               {option.icon}
             </TooltipTrigger>
             {option.help ? (
-              <TooltipContent>{option.help}</TooltipContent>
+              <TooltipContent>
+                {option.help}
+                {option.helpKey ? (
+                  <span className="block text-muted-foreground">
+                    {option.helpKey}
+                  </span>
+                ) : null}
+              </TooltipContent>
             ) : null}
           </Tooltip>
         ))}
