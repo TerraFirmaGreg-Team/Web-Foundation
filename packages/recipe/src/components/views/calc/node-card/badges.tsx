@@ -42,14 +42,23 @@ export function NodeBadges({
     );
   }
   if (node.remaining < 0) {
+    const fmtAmount =
+      node.kind === 'fluid'
+        ? formatFluidAmount
+        : (n: number) => formatCount(n, 1_000);
+    const overTip = t('Shortage: {wired} wired, only {produced} produced', {
+      note: 'recipe.calc.overdrawn',
+    })
+      .replaceAll('{wired}', fmtAmount(node.allocated))
+      .replaceAll('{produced}', fmtAmount(node.produced));
     chips.push(
-      <Hint key="over" label={t('Overdrawn: more is wired out than produced', { note: 'recipe.calc.overdrawn' })} side="top">
+      <Hint key="over" label={overTip} side="top">
         <span
           className={cn(CORNER_CHIP, 'border-red-500/40 text-red-500')}
         >
           {node.kind === 'fluid'
             ? formatFluidAmount(node.remaining)
-            : formatCount(node.remaining)}
+            : formatCount(node.remaining, 1_000)}
         </span>
       </Hint>,
     );

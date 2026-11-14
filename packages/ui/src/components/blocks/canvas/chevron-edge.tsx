@@ -23,6 +23,7 @@ import {
   chevronHighlightClass,
   chevronTicksAlongPath,
   nearestPointOnPolyline,
+  trimPolylineEnds,
 } from '@terrafirmagreg-team/ui/lib/canvas/edge';
 import type {
   ChevronEdgeHighlight,
@@ -161,6 +162,14 @@ export function createChevronEdge({
       .slice(1)
       .map((p) => `L${p.x} ${p.y}`)
       .join('')}`;
+    const interactPts = trimPolylineEnds(points, 26);
+    const interact =
+      interactPts.length >= 2
+        ? `M${interactPts[0]!.x} ${interactPts[0]!.y}${interactPts
+            .slice(1)
+            .map((p) => `L${p.x} ${p.y}`)
+            .join('')}`
+        : base;
     const move = useCallback(
       (e: ReactMouseEvent<Element>) => {
         if (!points || tz === 0) return;
@@ -190,14 +199,14 @@ export function createChevronEdge({
           className,
           chevronHighlightClass(highlight),
         )}
-        {...hoverTrack}
       >
         <path
           className="chevron-edge__interaction"
-          d={base}
+          d={interact}
           fill="none"
           stroke="transparent"
           strokeWidth={props.interactionWidth ?? 20}
+          {...hoverTrack}
         />
         <path
           className="chevron-edge__stroke chevron-edge__base"

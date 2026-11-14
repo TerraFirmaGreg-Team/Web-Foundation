@@ -21,7 +21,7 @@ import type {
 } from '@terrafirmagreg-team/recipe/types/calc';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import { PortContextMenu } from './menu';
-import { formatPortCount, PortCount } from './ports';
+import { PortCount, portAmountLine } from './ports';
 
 interface CellProps {
   index: number;
@@ -49,7 +49,6 @@ export function OutputCell({
 }) {
   const name = recipeItemName(names, lang, out.id);
   const count = out.remaining;
-  const qty = formatPortCount(count, out.kind);
   return (
     <ContextMenu>
       <ContextMenuTrigger
@@ -83,12 +82,13 @@ export function OutputCell({
                 dataset={dataset}
                 lang={lang}
                 langMap={langMap}
-                name={`${name} ×${qty}`}
+                name={name}
+                subheader={portAmountLine(count, out.kind)}
                 size="sm"
                 href={false}
                 tooltip="adaptive"
               />
-              <PortCount value={count} kind={out.kind} />
+              <PortCount value={count} kind={out.kind} name={name} />
             </span>
           </Handle>
         }
@@ -123,7 +123,6 @@ export function InputCell({
   const id = inp.id;
   const name = id ? recipeItemName(names, lang, id) : (inp.tagId ?? '?');
   const uncovered = Math.max(0, inp.amount - inp.covered);
-  const qty = formatPortCount(uncovered, inp.kind);
   const state = inp.wired
     ? uncovered <= 0
       ? 'full'
@@ -160,7 +159,8 @@ export function InputCell({
                   dataset={dataset}
                   lang={lang}
                   langMap={langMap}
-                  name={`${name} ×${qty}`}
+                  name={name}
+                  subheader={portAmountLine(uncovered, inp.kind)}
                   size="sm"
                   href={false}
                   tooltip="adaptive"
@@ -172,7 +172,8 @@ export function InputCell({
                   dataset={dataset}
                   lang={lang}
                   langMap={langMap}
-                  name={`${name} ×${qty}`}
+                  name={name}
+                  subheader={portAmountLine(uncovered, inp.kind)}
                   size="sm"
                   href={false}
                   tooltip="adaptive"
@@ -180,7 +181,11 @@ export function InputCell({
               ) : (
                 <span className="text-[9px]">?</span>
               )}
-              <PortCount value={uncovered} kind={inp.kind} />
+              <PortCount
+                value={uncovered}
+                kind={inp.kind}
+                name={id || inp.tagId ? name : undefined}
+              />
             </span>
           </Handle>
         }

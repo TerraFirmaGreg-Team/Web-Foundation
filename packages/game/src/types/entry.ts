@@ -48,6 +48,7 @@ export type EntryProps = {
   missing?: 'placeholder' | 'item' | 'hide';
 
   tooltip?: boolean | 'compact' | 'extended' | 'full' | 'adaptive';
+  subheader?: ReactNode;
   children?: ReactNode;
 
   icon?: TaggedReference;

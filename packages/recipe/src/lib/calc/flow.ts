@@ -71,6 +71,7 @@ export type CalcFlowData = {
     cardId: string,
     crafts: number | ((current: number) => number),
   ) => void;
+  pendingCrafts?: Map<string, number> | null;
   onWire: (from: string, to: string, input: number, out?: number) => void;
   onUnwire: (
     from: string,
@@ -240,6 +241,7 @@ function sameFlowData(a: CalcFlowData, b: CalcFlowData): boolean {
     a.onRemoveCard === b.onRemoveCard &&
     a.onMoveCard === b.onMoveCard &&
     a.onCrafts === b.onCrafts &&
+    a.pendingCrafts === b.pendingCrafts &&
     a.onWire === b.onWire &&
     a.onUnwire === b.onUnwire &&
     a.onRewire === b.onRewire &&

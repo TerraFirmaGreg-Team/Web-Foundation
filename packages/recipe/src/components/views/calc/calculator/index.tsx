@@ -56,14 +56,17 @@ export function Calculator({ session }: { session: RecipeSession }) {
   const { focusNodeRef, onFocusNode, focusNodeId, setFocusNodeId } =
     useCalcFocus(cards);
   const { resetGen } = useCalcReset(activeTabId);
-  const { displayCards, flushAmounts, onCrafts } = useCalcAmounts({
-    cards,
-    wires,
-    tagSelections,
-    persist,
-  });
+  const { displayCards, pendingCrafts, flushAmounts, onCrafts } =
+    useCalcAmounts({
+      cards,
+      wires,
+      tagSelections,
+      resolved: deferredNodes,
+      persist,
+    });
   const {
     shared,
+    sharing,
     shareError,
     onShare,
     flowData,
@@ -101,8 +104,14 @@ export function Calculator({ session }: { session: RecipeSession }) {
   );
 
   const data = useMemo(
-    () => ({ ...flowData, onCrafts, getRecipesForItem, ensureMaterial }),
-    [flowData, onCrafts, getRecipesForItem, ensureMaterial],
+    () => ({
+      ...flowData,
+      onCrafts,
+      pendingCrafts,
+      getRecipesForItem,
+      ensureMaterial,
+    }),
+    [flowData, onCrafts, pendingCrafts, getRecipesForItem, ensureMaterial],
   );
 
   return (
@@ -150,6 +159,7 @@ export function Calculator({ session }: { session: RecipeSession }) {
           <CalcActions
             session={session}
             shared={shared}
+            sharing={sharing}
             shareError={shareError}
             shareFailed={shareFailed}
             onShare={onShare}

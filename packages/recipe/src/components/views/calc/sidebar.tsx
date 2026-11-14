@@ -11,7 +11,10 @@ import {
   LeftSidebarTree,
 } from '@terrafirmagreg-team/ui/components/layouts/left-sidebar';
 import { recipeStackHref } from '@terrafirmagreg-team/recipe/lib/links';
-import { formatCount } from '@terrafirmagreg-team/ui/lib/utils/format';
+import {
+  formatCount,
+  formatFluidAmount,
+} from '@terrafirmagreg-team/ui/lib/utils/format';
 import { CalcTrees } from '@terrafirmagreg-team/recipe/components/views/calc/trees';
 import type { CalcMaterial } from '@terrafirmagreg-team/recipe/types/calc';
 import type { CalcTreeEntry } from '@terrafirmagreg-team/recipe/lib/calc/storage';
@@ -109,7 +112,10 @@ export function CalcSidebar({
                   className="ms-auto shrink-0 tabular-nums text-xs text-muted-foreground"
                   title={row.amount.toLocaleString()}
                 >
-                  ×{formatCount(row.amount)}
+                  ×
+                  {row.kind === 'fluid'
+                    ? formatFluidAmount(row.amount)
+                    : formatCount(row.amount, 1_000)}
                 </span>
               </>
             ),

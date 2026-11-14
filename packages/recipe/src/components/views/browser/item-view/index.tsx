@@ -138,19 +138,22 @@ export function ItemView({ session }: { session: RecipeSession }) {
       }
       header={
         <div className="flex flex-col gap-1.5">
-          <ItemViewHeader
-            item={item}
-            kind={kind}
-            name={name}
-            parsed={parsed}
-            favorite={favorites.isFavorite(item)}
-            onToggleFavorite={() => favorites.toggleItem(item)}
-            onAddToCalc={() => addToCalc(item, kind)}
-          />
+          <div className="mx-auto w-full max-w-90">
+            <ItemViewHeader
+              item={item}
+              kind={kind}
+              name={name}
+              parsed={parsed}
+              favorite={favorites.isFavorite(item)}
+              onToggleFavorite={() => favorites.toggleItem(item)}
+              onAddToCalc={() => addToCalc(item, kind)}
+            />
+          </div>
           <PaneTabs
             value={pane.pane}
             options={pane.options}
             onChange={pane.select}
+            className="mx-auto w-fit"
           />
         </div>
       }

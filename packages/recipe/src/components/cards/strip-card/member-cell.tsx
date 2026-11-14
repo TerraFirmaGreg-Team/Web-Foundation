@@ -109,8 +109,10 @@ export function StripCardMember({
       )}
       {badges.length > 0 && (
         <span
-          className="font-mc pointer-events-none absolute right-0 bottom-0 leading-none text-black"
-          style={{ fontSize: (pitch / 16) * (kind === 'fluid' ? 4 : 7) }}
+          className="font-mc mc-count pointer-events-none absolute right-0 bottom-0 leading-none"
+          style={{
+            fontSize: (pitch / 16) * (kind === 'fluid' ? 4 : 7),
+          }}
         >
           {badges.join(' ')}
         </span>

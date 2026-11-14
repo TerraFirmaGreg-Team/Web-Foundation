@@ -45,15 +45,16 @@ export function CardText({
               ...(wrap ? { width: widget.w * scale } : {}),
             }),
         fontSize: size ?? 8 * scale,
+        fontWeight: 700,
         color: `#${rgb.toString(16).padStart(6, '0')}`,
         ...(widget.shadow === true
           ? {
-              textShadow: `${scale}px ${scale}px 0 #${shadowRgb.toString(16).padStart(6, '0')}`,
+              textShadow: `${scale / 2}px ${scale / 2}px 0 #${shadowRgb.toString(16).padStart(6, '0')}`,
             }
           : {}),
       }}
     >
-      <McText text={content} surface="light" />
+      <McText text={content} surface="normal" />
     </span>
   );
 }

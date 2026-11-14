@@ -30,6 +30,37 @@ export function chevronTicksAlongPath(points: readonly FlowPoint[]): {
   return { offsets, total };
 }
 
+export function trimPolylineEnds(
+  points: readonly FlowPoint[],
+  px: number,
+): FlowPoint[] {
+  if (points.length < 2 || px <= 0) return [...points];
+  const cum: number[] = [0];
+  for (let i = 1; i < points.length; i += 1) {
+    const a = points[i - 1]!;
+    const b = points[i]!;
+    cum.push(cum[i - 1]! + Math.hypot(b.x - a.x, b.y - a.y));
+  }
+  const total = cum[cum.length - 1]!;
+  if (total <= px * 2) return [];
+  const at = (dist: number): FlowPoint => {
+    for (let i = 1; i < points.length; i += 1) {
+      if (cum[i]! >= dist) {
+        const seg = cum[i]! - cum[i - 1]!;
+        const t = seg > 0 ? (dist - cum[i - 1]!) / seg : 0;
+        const a = points[i - 1]!;
+        const b = points[i]!;
+        return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+      }
+    }
+    return points[points.length - 1]!;
+  };
+  const kept = points.filter(
+    (_, i) => cum[i]! > px && cum[i]! < total - px,
+  );
+  return [at(px), ...kept, at(total - px)];
+}
+
 export function svgPathToPoints(d: string, samples = 12): FlowPoint[] {
   const out: FlowPoint[] = [];
   const re = /([MLCQ])([^MLCQ]*)/g;

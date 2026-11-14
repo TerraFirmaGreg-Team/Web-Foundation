@@ -14,8 +14,8 @@ export function StackCount({
       count={count}
       limit={limit}
       format={format}
-      className="font-mc pointer-events-none leading-none text-white"
-      style={{ fontSize: 9, textShadow: '1px 1px 0 var(--color-mc-arrow)' }}
+      className="font-mc mc-count pointer-events-none leading-none"
+      style={{ fontSize: 9 }}
     />
   );
 }

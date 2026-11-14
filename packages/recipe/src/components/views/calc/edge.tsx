@@ -73,7 +73,9 @@ function EdgeAmountLabel({ ctx }: { ctx: ChevronEdgePathContext }) {
       ? recipeItemName(session.names, session.lang, matId)
       : matId;
   const fmt =
-    matKind === 'fluid' ? formatFluidAmount : (n: number) => formatCount(n);
+    matKind === 'fluid'
+      ? formatFluidAmount
+      : (n: number) => formatCount(n, 1_000);
   return (
     <button
       type="button"

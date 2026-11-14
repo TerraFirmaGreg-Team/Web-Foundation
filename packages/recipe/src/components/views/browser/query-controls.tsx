@@ -82,7 +82,7 @@ export function QueryPager({
   const resolved = useResolvedLang();
   return (
     <Pager
-      layout="center"
+      layout="spread"
       page={list.page}
       pages={list.pages}
       to={list.to}

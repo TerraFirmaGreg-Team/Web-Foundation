@@ -18,6 +18,7 @@ import {
   type CalcTreeEntry,
 } from '@terrafirmagreg-team/recipe/lib/calc/storage';
 import type { CalculatorState } from '@terrafirmagreg-team/recipe/types/calc';
+import { stripMcFormat } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names';
 
 const EMPTY_TABS: CalcTreeEntry[] = [];
 const EMPTY_CALC: CalculatorState = {
@@ -97,7 +98,7 @@ export function useCalcStorage(storageKey: string) {
     (id: string, name: string) => {
       updateCalcTab(storageKey, id, (tab) => ({
         ...tab,
-        name: name.trim() || undefined,
+        name: stripMcFormat(name).trim() || undefined,
       }));
     },
     [storageKey],

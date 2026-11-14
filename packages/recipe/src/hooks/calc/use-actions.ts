@@ -86,6 +86,7 @@ export function useCalcActions({
 }) {
   const {
     checked: shared,
+    isLoading: sharing,
     error: shareError,
     onClick: onShare,
   } = useCopyButton(async () => {
@@ -513,6 +514,7 @@ export function useCalcActions({
 
   return {
     shared,
+    sharing,
     shareError,
     onShare,
     flowData,

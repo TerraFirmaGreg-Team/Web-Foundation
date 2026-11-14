@@ -1,6 +1,13 @@
 'use client';
 
-import { useId, useMemo, useRef, useState, type ComponentProps } from 'react';
+import {
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentProps,
+  type CSSProperties,
+} from 'react';
 import { RecipeCard } from '@terrafirmagreg-team/recipe/components/cards/card';
 import { StripCardMember } from '@terrafirmagreg-team/recipe/components/cards/strip-card/member-cell';
 import { CardScrollbar } from '@terrafirmagreg-team/recipe/components/cards/controls/card-scrollbar';
@@ -315,6 +322,7 @@ export function ScrollCard(props: Props) {
 
   const renderText = (el: ScrollElement, index: number, moving: boolean) => {
     const rgb = (el.color ?? 0xffffff) & 0xffffff;
+    const shadowRgb = ((rgb & 0xfcfcfc) >> 2) & 0xffffff;
     const x = (el.x - viewport.x) * scale;
     const y = (el.y - viewport.y) * scale;
     const shifted = (horizontal ? x : y) - (moving ? offset * scale : 0);
@@ -326,7 +334,9 @@ export function ScrollCard(props: Props) {
           left: horizontal ? shifted : x,
           top: horizontal ? y : shifted,
           fontSize: 8 * scale,
+          fontWeight: 700,
           color: `#${rgb.toString(16).padStart(6, '0')}`,
+          textShadow: `${scale / 2}px ${scale / 2}px 0 #${shadowRgb.toString(16).padStart(6, '0')}`,
         }}
       >
         <McText text={el.text ?? ''} surface="dark" />
@@ -412,8 +422,11 @@ export function ScrollCard(props: Props) {
         ) : null}
         {el.label ? (
           <span
-            className="font-mc pointer-events-none absolute right-0 bottom-0 leading-none text-black"
-            style={{ fontSize: (el.w / 16) * 7 * scale }}
+            className="font-mc mc-count pointer-events-none absolute right-0 bottom-0 leading-none"
+            style={{
+              fontSize: (el.w / 16) * 7 * scale,
+              '--mc-count-shift': `${scale}px`,
+            } as CSSProperties}
           >
             {el.label}
           </span>

@@ -27,9 +27,9 @@ export function ItemTagGroups({
     return <EmptyState variant="empty">{t('No tags for this item.', { note: 'recipe.empty_tags' })}</EmptyState>;
   }
   return (
-    <div className="flex flex-col gap-3 pt-1">
+    <div className="flex flex-col items-center gap-3 pt-1">
       {groups.map(([tagKind, ids]) => (
-        <div key={tagKind} className="flex flex-col gap-1.5">
+        <div key={tagKind} className="flex flex-col items-center gap-1.5">
           {groups.length > 1 && (
             <p className="text-xs font-medium text-muted-foreground">
               {tagKind === 'block'
@@ -37,7 +37,7 @@ export function ItemTagGroups({
                 : t('Items', { note: 'recipe.tags_item' })}
             </p>
           )}
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap justify-center gap-1">
             {ids.map((id) => {
               const bare = id.replace(/^#+/, '');
               return (

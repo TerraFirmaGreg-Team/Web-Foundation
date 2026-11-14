@@ -43,6 +43,17 @@ import { NodeActions } from './actions';
 import { PortRailIn, PortRailOut } from './port-rails';
 import { NodeContextMenu, NodeHoverContent } from './menu';
 
+const CRAFTS_SUFFIX: Record<string, number> = { k: 1e3, m: 1e6, b: 1e9 };
+
+function parseCraftsInput(raw: string): number | null {
+  const match = /^(\d+(?:\.\d+)?)\s*([kmb])?$/i.exec(raw.trim());
+  if (!match) return null;
+  const value = Math.round(
+    Number(match[1]) * (CRAFTS_SUFFIX[match[2]?.toLowerCase() ?? ''] ?? 1),
+  );
+  return Number.isFinite(value) ? Math.max(1, value) : null;
+}
+
 export const CalcNodeCardFull = memo(function CalcNodeCardFull({
   data,
   id,
@@ -117,9 +128,12 @@ export const CalcNodeCardFull = memo(function CalcNodeCardFull({
     [id],
   );
 
+  const crafts = data.pendingCrafts?.get(id) ?? node.crafts;
   const fmtAmount =
-    node.kind === 'fluid' ? formatFluidAmount : (n: number) => formatCount(n);
-  const producedTip = t('Produced {produced} → wired {allocated} → surplus {remaining}', {
+    node.kind === 'fluid'
+      ? formatFluidAmount
+      : (n: number) => formatCount(n, 1_000);
+  const producedTip = t('Surplus: {produced} produced, {allocated} wired, {remaining} left', {
     note: 'recipe.calc.hint.produced',
   })
     .replaceAll('{produced}', fmtAmount(node.produced))
@@ -232,6 +246,24 @@ export const CalcNodeCardFull = memo(function CalcNodeCardFull({
           <div className="mx-1 flex min-w-0 items-center gap-1">
             {interactive ? (
               <span className="nodrag ml-auto flex shrink-0 items-center gap-0.5">
+                {[2, 4].map((div) => (
+                  <button
+                    key={div}
+                    type="button"
+                    aria-label={
+                      div === 2
+                        ? t('Halve crafts', { note: 'recipe.calc.crafts.d2' })
+                        : t('Quarter crafts', { note: 'recipe.calc.crafts.d4' })
+                    }
+                    className="grid h-4 min-w-4 place-items-center rounded border border-border bg-background px-px text-[8px] font-medium leading-none text-muted-foreground hover:text-foreground"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onCrafts(id, (crafts) => Math.max(1, Math.round(crafts / div)));
+                    }}
+                  >
+                    ÷{div}
+                  </button>
+                ))}
                 <button
                   type="button"
                   aria-label={t('Fewer crafts', { note: 'recipe.calc.crafts.down' })}
@@ -244,22 +276,25 @@ export const CalcNodeCardFull = memo(function CalcNodeCardFull({
                   <Minus className="size-2.5" />
                 </button>
                 <input
-                  key={node.crafts}
+                  key={crafts}
                   type="text"
                   inputMode="numeric"
-                  defaultValue={node.crafts}
-                  title={t('Crafts', { note: 'recipe.calc.crafts.title' })}
+                  defaultValue={crafts}
+                  size={Math.min(9, Math.max(3, String(crafts).length))}
+                  title={`${t('Crafts', { note: 'recipe.calc.crafts.title' })}: ${String(crafts)}`}
                   aria-label={t('Crafts', { note: 'recipe.calc.crafts.title' })}
-                  className="w-9 rounded border border-transparent bg-transparent text-center tabular-nums hover:border-border focus:border-border focus:outline-none"
+                  className="w-auto min-w-9 rounded border border-border bg-transparent text-center tabular-nums focus:outline-none"
                   onClick={(e) => e.stopPropagation()}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') e.currentTarget.blur();
                   }}
                   onBlur={(e) => {
-                    onCrafts(
-                      id,
-                      Math.max(1, Math.round(Number(e.target.value) || 1)),
-                    );
+                    const value = parseCraftsInput(e.target.value);
+                    if (value == null) {
+                      e.target.value = String(crafts);
+                      return;
+                    }
+                    onCrafts(id, value);
                   }}
                 />
                 <button
@@ -273,6 +308,24 @@ export const CalcNodeCardFull = memo(function CalcNodeCardFull({
                 >
                   <Plus className="size-2.5" />
                 </button>
+                {[2, 4].map((mult) => (
+                  <button
+                    key={mult}
+                    type="button"
+                    aria-label={
+                      mult === 2
+                        ? t('Double crafts', { note: 'recipe.calc.crafts.x2' })
+                        : t('Quadruple crafts', { note: 'recipe.calc.crafts.x4' })
+                    }
+                    className="grid h-4 min-w-4 place-items-center rounded border border-border bg-background px-px text-[8px] font-medium leading-none text-muted-foreground hover:text-foreground"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onCrafts(id, (crafts) => crafts * mult);
+                    }}
+                  >
+                    ×{mult}
+                  </button>
+                ))}
               </span>
             ) : null}
           </div>

@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from '@terrafirmagreg-team/ui/components/ui/dialog';
 import { Button } from '@terrafirmagreg-team/ui/components/ui/button';
+import { PagerArrow } from '@terrafirmagreg-team/ui/components/blocks/page/pager';
 import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
 import { RecipeFrame } from '@terrafirmagreg-team/recipe/components/views/browser/frame';
 import {
@@ -101,6 +102,14 @@ export function PickerBody({
     setPinned(false);
     setPage(next);
   };
+  const goCategory = (dir: -1 | 1) => {
+    const cur = categories.indexOf(active ?? '');
+    const next =
+      categories[(cur + dir + categories.length) % categories.length];
+    if (!next || next === active) return;
+    setTab(next);
+    goPage(0);
+  };
   const custom =
     !!node.recipe &&
     node.recipe.recipeId !== (defaultRecipeId ?? recipes[0]?.recipeId);
@@ -163,7 +172,31 @@ export function PickerBody({
             }}
           />
         }
-        header={<PlaceHeader session={frameSession} />}
+        navPrev={
+          <PagerArrow
+            dir={-1}
+            label={t('Previous category', { note: 'recipe.axis.prev' })}
+            disabled={categories.length < 2}
+            onClick={() => goCategory(-1)}
+          />
+        }
+        navNext={
+          <PagerArrow
+            dir={1}
+            label={t('Next category', { note: 'recipe.axis.next' })}
+            disabled={categories.length < 2}
+            onClick={() => goCategory(1)}
+          />
+        }
+        onNavWheel={goCategory}
+        header={
+          <div className="flex min-w-0 justify-center">
+            <PlaceHeader
+              session={frameSession}
+              overline={t('Categories', { note: 'recipe.axis_type' })}
+            />
+          </div>
+        }
         rail={
           <WorkstationRail
             session={session}

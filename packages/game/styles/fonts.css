@@ -27,3 +27,10 @@
 .font-mc {
   font-family: 'Unifont', 'Minecraft', 'Courier New', monospace;
 }
+
+.mc-count {
+  color: #fff;
+  text-shadow:
+    var(--mc-count-shift, 1px) var(--mc-count-shift, 1px) 0
+    var(--color-mc-arrow);
+}

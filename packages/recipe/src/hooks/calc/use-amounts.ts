@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   CalcCard,
+  CalcNode,
   CalcWire,
   CalculatorState,
 } from '@terrafirmagreg-team/recipe/types/calc';
@@ -11,11 +12,13 @@ export function useCalcAmounts({
   cards,
   wires,
   tagSelections,
+  resolved,
   persist,
 }: {
   cards: CalcCard[];
   wires: CalcWire[];
   tagSelections: Record<string, string>;
+  resolved: CalcNode[];
   persist: (next: CalculatorState) => void;
 }) {
   const [pending, setPending] = useState<CalcCard[] | null>(null);
@@ -28,13 +31,21 @@ export function useCalcAmounts({
     [],
   );
 
+  if (pending) {
+    const settled = pending.every(
+      (card) =>
+        (resolved.find((node) => node.id === card.id)?.crafts ??
+          card.crafts) === card.crafts,
+    );
+    if (settled) setPending(null);
+  }
+
   const flushAmounts = useCallback((): CalcCard[] => {
     if (amountTimer.current) {
       clearTimeout(amountTimer.current);
       amountTimer.current = undefined;
     }
     if (!pending) return cards;
-    setPending(null);
     return pending;
   }, [pending, cards]);
 
@@ -56,15 +67,23 @@ export function useCalcAmounts({
       if (amountTimer.current) clearTimeout(amountTimer.current);
       amountTimer.current = setTimeout(() => {
         amountTimer.current = undefined;
-        setPending(null);
         persist({ cards: next, wires, tagSelections });
       }, 300);
     },
     [pending, cards, persist, wires, tagSelections],
   );
 
+  const pendingCrafts = useMemo(
+    () =>
+      pending
+        ? new Map(pending.map((card) => [card.id, card.crafts]))
+        : null,
+    [pending],
+  );
+
   return {
     displayCards: pending ?? cards,
+    pendingCrafts,
     flushAmounts,
     onCrafts,
   };

@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, CircleAlert, Share2, Trash2 } from 'lucide-react';
+import { Check, CircleAlert, LoaderCircle, Share2, Trash2 } from 'lucide-react';
 import { IconButton } from '@terrafirmagreg-team/ui/components/blocks/button/icon-button';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
 import { RecipeToolbar } from '@terrafirmagreg-team/recipe/components/views/browser/toolbar';
@@ -11,6 +11,7 @@ import { useFeatureFlags } from '@terrafirmagreg-team/kit/hooks/use-features';
 export function CalcActions({
   session,
   shared,
+  sharing,
   shareError,
   shareFailed,
   onShare,
@@ -19,6 +20,7 @@ export function CalcActions({
 }: {
   session: RecipeSession;
   shared: boolean;
+  sharing?: boolean;
   shareError?: boolean;
   shareFailed?: boolean;
   onShare: () => void;
@@ -41,7 +43,7 @@ export function CalcActions({
       ) : null}
       <IconButton
         overlay
-        disabled={flags?.share === false}
+        disabled={flags?.share === false || sharing}
         className={shareError ? 'text-red-500' : undefined}
         label={
           shared
@@ -52,7 +54,9 @@ export function CalcActions({
         }
         onClick={onShare}
       >
-        {shared ? (
+        {sharing ? (
+          <LoaderCircle className="size-3.5 animate-spin" />
+        ) : shared ? (
           <Check className="size-3.5" />
         ) : shareError ? (
           <CircleAlert className="size-3.5" />

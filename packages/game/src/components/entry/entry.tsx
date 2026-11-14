@@ -68,6 +68,7 @@ export function Entry({
   className,
   missing,
   tooltip,
+  subheader,
   children,
   entityView,
   icon: iconProp,
@@ -233,6 +234,7 @@ export function Entry({
         lang={lang}
         langMap={langMap}
         level={tooltipLevel}
+        subheader={subheader}
       >
         {face}
       </EntryTooltip>
