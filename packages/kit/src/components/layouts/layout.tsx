@@ -17,6 +17,7 @@ import {
   LeftSidebarSeparator,
 } from '@terrafirmagreg-team/ui/components/layouts/left-sidebar';
 import { Switcher } from '@terrafirmagreg-team/ui/components/blocks/nav/switcher';
+import { MobileHeader } from '@terrafirmagreg-team/kit/components/layouts/mobile-header';
 import {
   SiteMenu,
   type SiteMenuItem,
@@ -185,6 +186,12 @@ export function Layout({
     <UiLayout
       tree={pinnedTree}
       navTitle={navTitle}
+      header={
+        <MobileHeader
+          sections={nav.section.options}
+          current={section}
+        />
+      }
       defaultOpenLevel={options?.defaultOpenLevel}
       sidebar={
         <LeftSidebar

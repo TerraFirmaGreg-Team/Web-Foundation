@@ -8,6 +8,7 @@ import {
   type RefObject,
 } from 'react';
 import { useLocationSearchParams } from '@terrafirmagreg-team/ui/hooks/page/use-location-search';
+import { useMediaQuery } from '@terrafirmagreg-team/ui/hooks/use-media-query';
 import { replaceUrlState } from '@terrafirmagreg-team/ui/lib/utils/history';
 import { X } from 'lucide-react';
 import { questConfig } from '@terrafirmagreg-team/quest/lib/config';
@@ -255,9 +256,10 @@ function QuestBrowserContent({
   );
 
   const autoOpenedRef = useRef<string | null>(null);
+  const wideViewport = useMediaQuery('(min-width: 1024px)');
   useEffect(() => {
     const current = chapter.value;
-    if (!current) return;
+    if (!current || !wideViewport) return;
     const filename = current.filename;
     if (!canonicalization.current.claimChapter(selection, category)) return;
     autoOpenedRef.current = null;
@@ -274,7 +276,7 @@ function QuestBrowserContent({
       }),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps -- params change per render
-  }, [chapter.value, selectedId, category, dataset, resolved, selection, canonicalization]);
+  }, [chapter.value, selectedId, category, dataset, resolved, selection, canonicalization, wideViewport]);
 
   const chapterTitle = chapter.value
     ? plainQuestText(chapter.value.title ?? chapter.value.filename, langMap)

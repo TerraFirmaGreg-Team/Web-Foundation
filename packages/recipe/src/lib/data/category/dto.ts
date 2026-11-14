@@ -10,6 +10,7 @@ export type DumpLayoutSlot = RecipeLayoutSlot;
 
 export type DumpRecipeLayout = Omit<RecipeCategoryLayout, 'slots'> & {
   slots: DumpLayoutSlot[];
+  workstations?: TaggedReference[];
 };
 
 export type DumpRecipeCategory = Omit<

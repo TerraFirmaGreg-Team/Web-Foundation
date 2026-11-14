@@ -9,6 +9,7 @@ import {
   sectionUrl,
 } from '@terrafirmagreg-team/sites/location';
 import { useCurrentDataset } from '@terrafirmagreg-team/kit/hooks/use-current-dataset';
+import { sectionConfig } from '@terrafirmagreg-team/kit/lib/config';
 import { useSectionNames } from '@terrafirmagreg-team/kit/hooks/use-section-names';
 import { useVersionPreference } from '@terrafirmagreg-team/kit/hooks/use-version-pref';
 import type { LeftSidebarScope } from '@terrafirmagreg-team/kit/types';
@@ -55,7 +56,11 @@ export function useNavOptions({ section, catalog }: LeftSidebarScope): {
           value: key,
           title: sectionNames[key]?.title ?? key,
           description: sectionNames[key]?.desc,
-          icon: Icon ? createElement(Icon) : undefined,
+          icon: Icon
+            ? createElement(Icon, {
+                color: sectionConfig().sectionAccent?.[key],
+              })
+            : undefined,
           url: meta ? `${sectionUrl(key, baseId)}${suffix}` : sectionUrl(key),
         };
       }),

@@ -5,25 +5,19 @@ import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-transl
 import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { EmptyState } from '@terrafirmagreg-team/ui/components/blocks/page/empty-state';
 import { LinkPreview } from '@terrafirmagreg-team/ui/components/blocks/link/link-preview';
-import { recipeItemName } from '@terrafirmagreg-team/recipe/lib/client-index';
 import { tagPseudoId } from '@terrafirmagreg-team/dump/lib/dump/paths';
 import { recipeHref } from '@terrafirmagreg-team/recipe/lib/links';
 import { replaceUrlState } from '@terrafirmagreg-team/ui/lib/utils/history';
-import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import type { RecipeHrefOpts } from '@terrafirmagreg-team/recipe/types';
 
 export function ItemTagGroups({
   groups,
   dataset,
-  lang,
-  names,
   query,
   nav,
 }: {
   groups: [string, string[]][];
   dataset: DatasetRef;
-  lang: Lang;
-  names: Record<string, Record<string, string>>;
   query: string;
   nav: RecipeHrefOpts;
 }) {
@@ -76,7 +70,7 @@ export function ItemTagGroups({
                     );
                   }}
                 >
-                  {recipeItemName(names, lang, id)}
+                  {`#${bare}`}
                 </LinkPreview>
               );
             })}

@@ -48,6 +48,7 @@ function recipeIo(
 function positionedWidgets(
   recipe: Pick<Recipe, 'slots'>,
   covered: Set<string>,
+  workstationIds: Set<string>,
 ): RecipeWidget[] {
   const out: RecipeWidget[] = [];
   for (const [slotId, fill] of Object.entries(recipe.slots)) {
@@ -71,6 +72,9 @@ function positionedWidgets(
       ...(fill.alternatives?.length
         ? { alternatives: fill.alternatives.map(stackIdFromRef) }
         : {}),
+      ...(fill.type === 'catalyst' && workstationIds.has(fill.id)
+        ? { iconless: true }
+        : {}),
     });
   }
   return out;
@@ -79,6 +83,7 @@ function positionedWidgets(
 function widgetsFromLayout(
   recipe: Pick<Recipe, 'slots'>,
   layout: DumpRecipeLayout,
+  workstationIds: Set<string>,
 ): RecipeWidget[] {
   const out: RecipeWidget[] = [];
   for (const slot of layout.slots) {
@@ -103,6 +108,9 @@ function widgetsFromLayout(
       ...(fill.alternatives?.length
         ? { alternatives: fill.alternatives.map(stackIdFromRef) }
         : {}),
+      ...(fill.type === 'catalyst' && workstationIds.has(fill.id)
+        ? { iconless: true }
+        : {}),
     });
   }
   return out;
@@ -110,16 +118,20 @@ function widgetsFromLayout(
 
 export function hydrateRecipe(recipe: Recipe, layout?: DumpRecipeLayout): Recipe {
   const io = recipeIo(recipe, layout);
+  const workstationIds = new Set(
+    (layout?.workstations ?? []).map((ref) => ref.id),
+  );
   return {
     ...recipe,
     type: recipe.category,
     inputs: io.inputs,
     outputs: io.outputs,
     widgets: [
-      ...(layout ? widgetsFromLayout(recipe, layout) : []),
+      ...(layout ? widgetsFromLayout(recipe, layout, workstationIds) : []),
       ...positionedWidgets(
         recipe,
         new Set((layout?.slots ?? []).map((slot) => slot.id)),
+        workstationIds,
       ),
       ...(recipe.widgets as RecipeWidget[]).filter(
         (widget) => widget.type !== 'slot',

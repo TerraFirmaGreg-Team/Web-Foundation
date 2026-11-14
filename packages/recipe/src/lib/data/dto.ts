@@ -53,6 +53,8 @@ export type RecipeSlotWidget = {
   chance?: number;
 
   alternatives?: string[];
+
+  iconless?: boolean;
 };
 
 export type RecipeTextWidget = {

@@ -164,8 +164,6 @@ export function ItemView({ session }: { session: RecipeSession }) {
         <ItemTagGroups
           groups={tags.groups}
           dataset={dataset}
-          lang={lang}
-          names={names}
           query={session.query}
           nav={nav}
         />

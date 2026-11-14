@@ -19,7 +19,7 @@ const WIDTH_DEBOUNCE_MS = 1000;
 const ANIM_DURATION_MS = 5000;
 
 export const defaults: ReadabilityState = {
-  layout: 'original',
+  layout: 'full',
   pageWidth: 100,
   contentWidth: 80,
   spotlight: false,

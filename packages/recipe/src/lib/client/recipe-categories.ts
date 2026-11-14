@@ -6,9 +6,11 @@ export function clientRecipeLayout(
   dataset: DatasetRef,
   categoryId: string,
 ): Promise<DumpRecipeLayout | undefined> {
-  return loadDatasetRecipeCategories(dataset).then(
-    (categories) =>
-      categories.find((cat) => cat.id === categoryId)?.layout,
-  );
+  return loadDatasetRecipeCategories(dataset).then((categories) => {
+    const cat = categories.find((item) => item.id === categoryId);
+    return cat?.layout
+      ? { ...cat.layout, workstations: cat.workstations }
+      : undefined;
+  });
 }
 

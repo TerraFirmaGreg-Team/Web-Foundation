@@ -123,7 +123,7 @@ export function SlotHitbox({
         ? widget.tagKind
         : undefined
     : widgetRefKind(widget);
-  const icon = (
+  const icon = widget.iconless ? null : (
     <span className="pointer-events-none flex size-full items-center justify-center">
       {alternatives && alternatives.length > 1 ? (
         <span

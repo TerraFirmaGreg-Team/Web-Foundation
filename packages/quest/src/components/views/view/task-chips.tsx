@@ -30,10 +30,10 @@ export function TaskChips({
   const stackIds = new Set(
     filterRefs.filter((ref) => !isTagKind(ref.kind)).map(stackIdFromRef),
   );
+  const tagSet = new Set(tagRefs.map((ref) => tagHashId(ref.id)));
   const cycleIds = [
     ...new Set([...stackIds, ...(task.filterItems ?? [])]),
-  ];
-  const tagSet = new Set(tagRefs.map((ref) => tagHashId(ref.id)));
+  ].filter((id) => isItemChipId(id, tagSet));
   const itemChips = [...new Set(task.items)].filter(
     (id) =>
       !id.startsWith('ftbfiltersystem:') &&
@@ -80,6 +80,20 @@ export function TaskChips({
         <Entry
           key={tagHashId(ref.id)}
           reference={ref}
+          name={`#${ref.id}`}
+          badge={
+            <span
+              aria-hidden
+              className="font-mc leading-none text-amber-300"
+              style={{
+                fontSize: 12,
+                textShadow: '1.5px 1.5px 0 var(--color-mc-arrow)',
+              }}
+            >
+              #
+            </span>
+          }
+          badgeClassName="top-0 left-0 right-auto bottom-auto"
           size="lg"
           variant="chip"
           missing="item"
