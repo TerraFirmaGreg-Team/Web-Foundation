@@ -27,13 +27,6 @@ export function MobileHeader({
     >
       <Title className="inline-flex items-center gap-2.5 me-3 font-semibold" />
       <div className="ms-auto flex min-w-0 items-center gap-1">
-        <SidebarTrigger
-          aria-label={t('Menu', { note: 'ui.menu_toggle' })}
-          className={cn(buttonVariants({ variant: 'outline', size: 'icon-lg' }))}
-        >
-          <Menu />
-        </SidebarTrigger>
-        <LeftSidebarSearch variant="icon" />
         <nav className="flex min-w-0 items-center gap-0.5 overflow-x-auto">
           {sections.map((option) => (
             <Link
@@ -51,6 +44,13 @@ export function MobileHeader({
             </Link>
           ))}
         </nav>
+        <LeftSidebarSearch variant="icon" />
+        <SidebarTrigger
+          aria-label={t('Menu', { note: 'ui.menu_toggle' })}
+          className={cn(buttonVariants({ variant: 'outline', size: 'icon-lg' }))}
+        >
+          <Menu />
+        </SidebarTrigger>
       </div>
     </header>
   );

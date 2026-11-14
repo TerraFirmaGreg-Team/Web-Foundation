@@ -61,7 +61,8 @@ export function RecipeTypeTabs({
         help: category?.display?.name
           ? creativeTabName(langMap ?? {}, category.display.name)
           : recipeItemName(names, lang, id),
-        helpKey: category?.display?.name ?? id,
+        helpMod:
+          index?.mods?.[id.split(':', 2)[0] ?? ''] ?? id.split(':', 2)[0],
       };
     });
   }, [index, ids, lang, names, dataset, langMap]);

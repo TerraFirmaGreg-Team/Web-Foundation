@@ -3,7 +3,12 @@ import {
   type TaggedReference,
 } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 import { registryId } from '@terrafirmagreg-team/dump/lib/dump/paths';
-import { creativeTabName } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names';
+import {
+  creativeTabName,
+  humanizeKey,
+  langString,
+  stripMcFormat,
+} from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names';
 import { recipeItemName } from '@terrafirmagreg-team/recipe/lib/client-index';
 import {
   filterUsedIds,
@@ -29,8 +34,21 @@ type ItemPanelTabRow = {
   icon: string;
   iconRef?: TaggedReference;
   help: string;
-  helpKey?: string;
+  helpMod?: string;
 };
+
+function stackGroupLabel(
+  map: Record<string, string>,
+  id: string,
+): string {
+  const [ns, path] = id.split(':', 2);
+  const flat = path?.replaceAll('/', '.') ?? id;
+  for (const candidate of [ns, 'c', 'forge']) {
+    const value = langString(map, `tag.item.${candidate}.${flat}`);
+    if (value !== undefined) return stripMcFormat(value);
+  }
+  return humanizeKey(id);
+}
 
 export function panelPool(
   mode: ItemPanelMode,
@@ -47,6 +65,7 @@ export function buildPanelCells(
   groups: RecipeStackGroup[] | undefined,
   expandedGroups: ReadonlySet<string>,
   fluidIds?: ReadonlySet<string>,
+  langMap?: Record<string, string>,
 ): ItemPanelCell[] {
   const cell = (id: string): ItemPanelCell =>
     fluidIds?.has(registryId(id))
@@ -86,7 +105,10 @@ export function buildPanelCells(
     out.push({
       kind: 'group',
       id: group.id,
-      label: group.name ?? group.id,
+      label:
+        group.name && group.name !== group.id
+          ? group.name
+          : stackGroupLabel(langMap ?? {}, group.id),
       members,
       expanded,
       ...(fluid ? { ref: 'fluid' as const } : {}),
@@ -129,7 +151,9 @@ export function panelTabRows(
       help: row.display?.name
         ? creativeTabName(names[lang] ?? names.en_us ?? {}, row.display.name)
         : recipeItemName(names, lang, row.id),
-      helpKey: row.display?.name ?? row.id,
+      helpMod:
+        index?.mods?.[row.id.split(':', 2)[0] ?? ''] ??
+        row.id.split(':', 2)[0],
     });
   }
   return rows;

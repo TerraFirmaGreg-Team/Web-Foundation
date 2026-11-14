@@ -118,8 +118,9 @@ export function usePanelCells({
       dIndex?.groups,
       expandedGroups,
       fluidIds,
+      dNames[dLang] ?? dNames.en_us,
     );
-  }, [deferredFiltered, dIndex, mode, expandedGroups, favorites.entries]);
+  }, [deferredFiltered, dIndex, mode, expandedGroups, favorites.entries, dNames, dLang]);
 
   return {
     cells,

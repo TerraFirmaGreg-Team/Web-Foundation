@@ -27,7 +27,7 @@ export function CardText({
   if (!content) return null;
   const wrap = widget.type === 'paragraph';
   const rgb = (widget.color ?? 0xffffff) & 0xffffff;
-  const ink = rgb === 0xffffff ? 0x000000 : rgb;
+  const shadowRgb = ((rgb & 0xfcfcfc) >> 2) & 0xffffff;
   return (
     <span
       className={`font-mc pointer-events-none absolute leading-none ${wrap ? 'whitespace-pre-wrap' : 'whitespace-pre'}`}
@@ -45,7 +45,12 @@ export function CardText({
               ...(wrap ? { width: widget.w * scale } : {}),
             }),
         fontSize: size ?? 8 * scale,
-        color: `#${ink.toString(16).padStart(6, '0')}`,
+        color: `#${rgb.toString(16).padStart(6, '0')}`,
+        ...(widget.shadow === true
+          ? {
+              textShadow: `${scale}px ${scale}px 0 #${shadowRgb.toString(16).padStart(6, '0')}`,
+            }
+          : {}),
       }}
     >
       <McText text={content} surface="light" />

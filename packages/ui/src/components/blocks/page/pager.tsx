@@ -171,7 +171,7 @@ type IconPagerOption<T extends string> = {
   id: T;
   icon: ReactNode;
   help?: string;
-  helpKey?: string;
+  helpMod?: string;
 };
 
 const PAGER_CELL = 40;
@@ -253,12 +253,17 @@ export function IconPager<T extends string>({
             </TooltipTrigger>
             {option.help ? (
               <TooltipContent>
-                {option.help}
-                {option.helpKey ? (
-                  <span className="block text-muted-foreground">
-                    {option.helpKey}
-                  </span>
-                ) : null}
+                <span className="block">
+                  <span className="block">{option.help}</span>
+                  {option.helpMod ? (
+                    <span
+                      className="block italic"
+                      style={{ color: 'var(--color-mc-enchant)' }}
+                    >
+                      {option.helpMod}
+                    </span>
+                  ) : null}
+                </span>
               </TooltipContent>
             ) : null}
           </Tooltip>
