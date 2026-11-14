@@ -48,6 +48,7 @@ export function Calculator({ session }: { session: RecipeSession }) {
     encodeShare,
     recipeBody,
     settled,
+    shareFailed,
   } = useCalcData(session);
   const deferredNodes = useDeferredValue(nodes);
   const deferredFlows = useDeferredValue(flows);
@@ -63,6 +64,7 @@ export function Calculator({ session }: { session: RecipeSession }) {
   });
   const {
     shared,
+    shareError,
     onShare,
     flowData,
     onMoveCards,
@@ -148,6 +150,8 @@ export function Calculator({ session }: { session: RecipeSession }) {
           <CalcActions
             session={session}
             shared={shared}
+            shareError={shareError}
+            shareFailed={shareFailed}
             onShare={onShare}
             hasTargets={displayCards.length > 0}
             onClear={onClear}

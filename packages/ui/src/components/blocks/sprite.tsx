@@ -189,18 +189,20 @@ export function SpriteCluster({
 export function SpriteCount({
   count,
   limit,
+  format,
   className,
   style,
 }: {
   count: number;
   limit?: number;
+  format?: (count: number) => string;
   className?: string;
   style?: CSSProperties;
 }) {
   if (count < 1) return null;
   return (
     <span aria-hidden className={className} style={style}>
-      {formatCount(count, limit)}
+      {format ? format(count) : formatCount(count, limit)}
     </span>
   );
 }

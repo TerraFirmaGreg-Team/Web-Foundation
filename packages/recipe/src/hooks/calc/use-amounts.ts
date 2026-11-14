@@ -39,10 +39,18 @@ export function useCalcAmounts({
   }, [pending, cards]);
 
   const onCrafts = useCallback(
-    (cardId: string, crafts: number) => {
+    (cardId: string, crafts: number | ((current: number) => number)) => {
       const base = pending ?? cards;
       const next = base.map((card) =>
-        card.id === cardId ? { ...card, crafts: Math.max(1, crafts) } : card,
+        card.id === cardId
+          ? {
+              ...card,
+              crafts: Math.max(
+                1,
+                typeof crafts === 'function' ? crafts(card.crafts) : crafts,
+              ),
+            }
+          : card,
       );
       setPending(next);
       if (amountTimer.current) clearTimeout(amountTimer.current);

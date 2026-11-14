@@ -19,6 +19,11 @@ import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
 import { StackCount } from '@terrafirmagreg-team/game/components/entry/stack-count';
 import { PagedCard } from '@terrafirmagreg-team/recipe/components/cards/paged-card';
 import { Skeleton } from '@terrafirmagreg-team/ui/components/ui/skeleton';
+import { Hint } from '@terrafirmagreg-team/ui/components/blocks/tooltip/hint';
+import {
+  formatCount,
+  formatFluidAmount,
+} from '@terrafirmagreg-team/ui/lib/utils/format';
 import { useCalcSession } from '@terrafirmagreg-team/recipe/hooks/calc/use-calc-session';
 import { useCalcFar } from '@terrafirmagreg-team/recipe/hooks/calc/use-far-mode';
 import { useCalcTier } from '@terrafirmagreg-team/recipe/hooks/calc/use-tier';
@@ -112,6 +117,22 @@ export const CalcNodeCardFull = memo(function CalcNodeCardFull({
     [id],
   );
 
+  const fmtAmount =
+    node.kind === 'fluid' ? formatFluidAmount : (n: number) => formatCount(n);
+  const producedTip = t('Produced {produced} → wired {allocated} → surplus {remaining}', {
+    note: 'recipe.calc.hint.produced',
+  })
+    .replaceAll('{produced}', fmtAmount(node.produced))
+    .replaceAll('{allocated}', fmtAmount(node.allocated))
+    .replaceAll('{remaining}', fmtAmount(Math.max(0, node.remaining)));
+  const producedBadge = (
+    <Hint label={producedTip} side="top">
+      <span className="pointer-events-auto">
+        <StackCount count={node.produced} format={fmtAmount} />
+      </span>
+    </Hint>
+  );
+
   const skeleton =
     mode === 'detailed' && node.recipe != null && !cardOn;
   const stateCls = cn(
@@ -143,18 +164,22 @@ export const CalcNodeCardFull = memo(function CalcNodeCardFull({
     >
       {mode === 'mini' ? (
         <div className="mx-3 flex w-auto flex-col items-center gap-0.5">
-          <Entry
-            id={node.materialId}
-            kind={node.kind}
-            dataset={dataset}
-            lang={lang}
-            langMap={langMap}
-            name={name}
-            size="lg"
-            href={false}
-            tooltip="adaptive"
-            badge={<StackCount count={node.produced} />}
-          />
+          <span className="relative inline-flex">
+            <Entry
+              id={node.materialId}
+              kind={node.kind}
+              dataset={dataset}
+              lang={lang}
+              langMap={langMap}
+              name={name}
+              size="lg"
+              href={false}
+              tooltip="adaptive"
+            />
+            <span className="pointer-events-none absolute -bottom-0.5 left-[34px] z-10 -translate-x-full">
+              {producedBadge}
+            </span>
+          </span>
           <span className="w-full truncate px-0.5 text-center text-[9px] leading-tight text-muted-foreground">
             {name}
           </span>
@@ -174,19 +199,23 @@ export const CalcNodeCardFull = memo(function CalcNodeCardFull({
       ) : (
         <>
           <div className="mx-1 flex min-w-0 items-center gap-1.5">
-            <Entry
-              id={node.materialId}
-              kind={node.kind}
-              dataset={dataset}
-              lang={lang}
-              langMap={langMap}
-              size="lg"
-              labeled
-              href={false}
-              tooltip="adaptive"
-              badge={<StackCount count={node.produced} />}
-              className="min-w-0 flex-1 justify-start truncate"
-            />
+            <span className="relative min-w-0 flex-1">
+              <Entry
+                id={node.materialId}
+                kind={node.kind}
+                dataset={dataset}
+                lang={lang}
+                langMap={langMap}
+                size="lg"
+                labeled
+                href={false}
+                tooltip="adaptive"
+                className="min-w-0 flex-1 justify-start truncate"
+              />
+              <span className="pointer-events-none absolute -bottom-0.5 left-[34px] z-10 -translate-x-full">
+                {producedBadge}
+              </span>
+            </span>
             <NodeChips
               node={node}
               mini={false}
@@ -209,7 +238,7 @@ export const CalcNodeCardFull = memo(function CalcNodeCardFull({
                   className="grid size-4 place-items-center rounded border border-border bg-background text-muted-foreground hover:text-foreground"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onCrafts(id, Math.max(1, node.crafts - 1));
+                    onCrafts(id, (crafts) => Math.max(1, crafts - 1));
                   }}
                 >
                   <Minus className="size-2.5" />
@@ -227,12 +256,10 @@ export const CalcNodeCardFull = memo(function CalcNodeCardFull({
                     if (e.key === 'Enter') e.currentTarget.blur();
                   }}
                   onBlur={(e) => {
-                    const next = Math.max(
-                      1,
-                      Math.round(Number(e.target.value) || 1),
+                    onCrafts(
+                      id,
+                      Math.max(1, Math.round(Number(e.target.value) || 1)),
                     );
-                    if (next !== node.crafts) onCrafts(id, next);
-                    else e.target.value = String(node.crafts);
                   }}
                 />
                 <button
@@ -241,7 +268,7 @@ export const CalcNodeCardFull = memo(function CalcNodeCardFull({
                   className="grid size-4 place-items-center rounded border border-border bg-background text-muted-foreground hover:text-foreground"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onCrafts(id, node.crafts + 1);
+                    onCrafts(id, (crafts) => crafts + 1);
                   }}
                 >
                   <Plus className="size-2.5" />

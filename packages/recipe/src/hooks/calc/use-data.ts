@@ -24,7 +24,7 @@ export function useCalcData(session: RecipeSession) {
   const { dataset } = session;
   const catalog = session.index;
   const storageKey = calcStorageKey('recipe', dataset);
-  const sharePending = useCalcShare({
+  const { pending: sharePending, failed: shareFailed } = useCalcShare({
     storageKey,
     dataset,
     incoming: session.tree ?? '',
@@ -196,6 +196,7 @@ export function useCalcData(session: RecipeSession) {
     encodeShare,
     recipeBody,
     settled,
+    shareFailed,
     bodiesLoaded: maps.bodyMap.size,
     workerSettled: worker.settled,
   };

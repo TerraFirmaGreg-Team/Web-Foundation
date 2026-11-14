@@ -5,7 +5,10 @@ import { Mountain, Repeat } from 'lucide-react';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
 import { Hint } from '@terrafirmagreg-team/ui/components/blocks/tooltip/hint';
 import { cn } from '@terrafirmagreg-team/ui/lib/utils/cn';
-import { formatCount } from '@terrafirmagreg-team/ui/lib/utils/format';
+import {
+  formatCount,
+  formatFluidAmount,
+} from '@terrafirmagreg-team/ui/lib/utils/format';
 import type { CalcFlowNode } from '@terrafirmagreg-team/recipe/lib/calc/flow';
 
 const CORNER_CHIP =
@@ -44,7 +47,9 @@ export function NodeBadges({
         <span
           className={cn(CORNER_CHIP, 'border-red-500/40 text-red-500')}
         >
-          {formatCount(node.remaining)}
+          {node.kind === 'fluid'
+            ? formatFluidAmount(node.remaining)
+            : formatCount(node.remaining)}
         </span>
       </Hint>,
     );

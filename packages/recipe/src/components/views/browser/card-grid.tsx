@@ -155,7 +155,8 @@ function RecipeGridCard({
         }}
         aria-current={focused || undefined}
         className={cn(
-          'relative w-fit flex-none rounded-md',
+          'relative w-fit flex-none cursor-pointer rounded-md transition-shadow',
+          'hover:ring-1 hover:ring-foreground/50',
           focused && 'ring-2 ring-primary ring-offset-1',
         )}
         style={fit < 1 ? { zoom: fit } : undefined}

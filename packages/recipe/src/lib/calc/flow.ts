@@ -67,7 +67,10 @@ export type CalcFlowData = {
   ) => void;
   onRemoveCard: (cardId: string) => void;
   onMoveCard: (cardId: string, pos: { x: number; y: number }) => void;
-  onCrafts: (cardId: string, crafts: number) => void;
+  onCrafts: (
+    cardId: string,
+    crafts: number | ((current: number) => number),
+  ) => void;
   onWire: (from: string, to: string, input: number, out?: number) => void;
   onUnwire: (
     from: string,

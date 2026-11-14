@@ -14,7 +14,10 @@ import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { useCalcSession } from '@terrafirmagreg-team/recipe/hooks/calc/use-calc-session';
 import { recipeItemName } from '@terrafirmagreg-team/recipe/lib/client-index';
-import { formatCount } from '@terrafirmagreg-team/ui/lib/utils/format';
+import {
+  formatCount,
+  formatFluidAmount,
+} from '@terrafirmagreg-team/ui/lib/utils/format';
 import type { FlowPoint } from '@terrafirmagreg-team/ui/types/canvas';
 import type { CalcWire } from '@terrafirmagreg-team/recipe/types/calc';
 
@@ -69,11 +72,13 @@ function EdgeAmountLabel({ ctx }: { ctx: ChevronEdgePathContext }) {
     matId && session?.names
       ? recipeItemName(session.names, session.lang, matId)
       : matId;
+  const fmt =
+    matKind === 'fluid' ? formatFluidAmount : (n: number) => formatCount(n);
   return (
     <button
       type="button"
       className="calc-edge-label"
-      title={`${matName ?? ''} ${flow}${cap != null ? ` / ${cap}` : ''}`}
+      title={`${matName ?? ''} ${fmt(flow)}${cap != null ? ` / ${fmt(cap)}` : ''}`}
       onClick={(e) => {
         e.stopPropagation();
         if (e.shiftKey) {
@@ -97,8 +102,8 @@ function EdgeAmountLabel({ ctx }: { ctx: ChevronEdgePathContext }) {
         <span className="calc-edge-label__name">{matName}</span>
       ) : null}
       <span className="calc-edge-label__amount">
-        ×{formatCount(flow, 1_000)}
-        {cap != null ? `/${formatCount(cap, 1_000)}` : ''}
+        ×{fmt(flow)}
+        {cap != null ? `/${fmt(cap)}` : ''}
       </span>
       <span className="calc-edge-label__cut" aria-hidden>
         ×

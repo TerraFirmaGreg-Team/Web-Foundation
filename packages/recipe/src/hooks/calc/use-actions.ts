@@ -33,6 +33,22 @@ let cardSeq = 0;
 const newCardId = () =>
   `c${Date.now().toString(36)}${(cardSeq += 1).toString(36)}`;
 
+async function copyText(text: string) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return;
+  } catch {
+    const area = document.createElement('textarea');
+    area.value = text;
+    area.style.position = 'fixed';
+    area.style.opacity = '0';
+    document.body.appendChild(area);
+    area.select();
+    document.execCommand('copy');
+    area.remove();
+  }
+}
+
 export function useCalcActions({
   dataset,
   lang,
@@ -68,7 +84,11 @@ export function useCalcActions({
   tagMembers?: (tagId: string) => TagResolution | undefined;
   ensureMaterial?: (materialId: string) => void;
 }) {
-  const { checked: shared, onClick: onShare } = useCopyButton(async () => {
+  const {
+    checked: shared,
+    error: shareError,
+    onClick: onShare,
+  } = useCopyButton(async () => {
     const tree = encodeShare();
     const { id: datasetId, version } = dataset;
     try {
@@ -84,14 +104,14 @@ export function useCalcActions({
         dataset?: DatasetRef;
       } | null;
       if (res?.id) {
-        await navigator.clipboard.writeText(
+        await copyText(
           `${window.location.origin}${recipeCalcHref(res.dataset ?? dataset, undefined, `s${res.id}`, linkVersion)}`,
         );
         return;
       }
     } catch {
     }
-    await navigator.clipboard.writeText(
+    await copyText(
       `${window.location.origin}${recipeCalcHref(dataset, undefined, tree, linkVersion)}`,
     );
   });
@@ -493,6 +513,7 @@ export function useCalcActions({
 
   return {
     shared,
+    shareError,
     onShare,
     flowData,
     onAddCard,

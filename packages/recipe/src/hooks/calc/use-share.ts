@@ -22,9 +22,10 @@ export function useCalcShare({
   dataset: DatasetRef;
   incoming: string;
   version?: string;
-}): boolean {
+}): { pending: boolean; failed: boolean } {
   const isShareId = incoming.startsWith('s');
   const [sharedTree, setSharedTree] = useState<string | null>(null);
+  const [fetchFailed, setFetchFailed] = useState(false);
   useEffect(() => {
     if (!isShareId) return;
     let cancelled = false;
@@ -34,11 +35,12 @@ export function useCalcShare({
     )
       .then((res) => (res.ok ? res.json() : null))
       .then((body: { tree?: unknown } | null) => {
-        if (!cancelled)
-          setSharedTree(typeof body?.tree === 'string' ? body.tree : '');
+        if (cancelled) return;
+        if (typeof body?.tree === 'string') setSharedTree(body.tree);
+        else setFetchFailed(true);
       })
       .catch(() => {
-        if (!cancelled) setSharedTree('');
+        if (!cancelled) setFetchFailed(true);
       });
     return () => {
       cancelled = true;
@@ -58,9 +60,14 @@ export function useCalcShare({
         entry.id,
       );
     }
-    if (incoming) replaceUrlState(recipeCalcHref(dataset, resolved, undefined, version));
-  }, [transport, storageKey, dataset, resolved, incoming, version]);
+    if (incoming && (decoded || !isShareId))
+      replaceUrlState(recipeCalcHref(dataset, resolved, undefined, version));
+  }, [transport, storageKey, dataset, resolved, incoming, version, isShareId]);
 
-  return isShareId && sharedTree === null;
+  return {
+    pending: isShareId && sharedTree === null && !fetchFailed,
+    failed:
+      fetchFailed ||
+      (transport !== null && !decodeCalcState(transport)),
+  };
 }
-
