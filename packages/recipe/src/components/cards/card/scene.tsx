@@ -9,11 +9,9 @@ import type {
   RecipeSceneEntity,
   RecipeSceneRect,
 } from '@terrafirmagreg-team/recipe/lib/data/scene';
-import type { RecipeDecorWidget } from '@terrafirmagreg-team/recipe/lib/data/dto';
-
 export function sceneEntityHit(
   entities: RecipeSceneEntity[],
-  widget: RecipeDecorWidget,
+  widget: { x: number; y: number; w: number; h: number },
 ): boolean {
   return entities.some((entity) => {
     const region: RecipeSceneRect = entity.clip ?? entity;

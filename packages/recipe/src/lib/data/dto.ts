@@ -56,7 +56,7 @@ export type RecipeSlotWidget = {
 };
 
 export type RecipeTextWidget = {
-  type: 'text';
+  type: 'text' | 'paragraph';
   x: number;
   y: number;
   w: number;
@@ -69,6 +69,7 @@ export type RecipeTextWidget = {
 
   shadow?: boolean;
   tooltip?: string[];
+  tooltipComponents?: DumpText[];
 };
 
 export type RecipeGrid = {
@@ -108,6 +109,7 @@ export type RecipeTextureWidget = {
   textureW?: number;
   textureH?: number;
   tooltip?: string[];
+  tooltipComponents?: DumpText[];
 };
 
 export type RecipeDecorWidget = {
@@ -117,6 +119,7 @@ export type RecipeDecorWidget = {
   w: number;
   h: number;
   tooltip?: string[];
+  tooltipComponents?: DumpText[];
 };
 
 export type RecipeWidget =

@@ -84,7 +84,8 @@ export function RecipeCard({
     : slots;
   const entities = recipeSceneEntities(recipe.properties);
   const textWidgets = recipe.widgets.filter(
-    (widget): widget is RecipeTextWidget => widget.type === 'text',
+    (widget): widget is RecipeTextWidget =>
+      widget.type === 'text' || widget.type === 'paragraph',
   );
   const stripTexts = textWidgets.filter(
     (widget) => textInStrip(widget, strip) && !countCoveredText(widget, strip.slots),
@@ -172,6 +173,7 @@ export function RecipeCard({
           entities={entities}
           margin={margin}
           scale={scale}
+          langMap={langMap}
         />
       ) : null}
       {inView && strip.overflow && !frameOnly ? (

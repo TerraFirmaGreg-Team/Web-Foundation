@@ -62,6 +62,7 @@ export interface RecipeWidget {
   textureW?: number | null;
   time?: number | null;
   tooltip?: string[] | null;
+  tooltipComponents?: DumpText[] | null;
   type: string;
   u?: number | null;
   v?: number | null;

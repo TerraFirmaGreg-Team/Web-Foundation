@@ -64,8 +64,8 @@ export function dumpTextString(
   keybinds?: Record<string, string>,
 ): string {
   const parts: string[] = [];
-  if (text.translate) {
-    const template = langString(map, text.translate) ?? text.translate;
+  const template = text.translate ? langString(map, text.translate) : undefined;
+  if (template !== undefined) {
     const args = Array.isArray(text.with)
       ? text.with.map((item) =>
           item && typeof item === 'object'

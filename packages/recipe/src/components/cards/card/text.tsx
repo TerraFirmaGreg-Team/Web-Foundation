@@ -25,12 +25,13 @@ export function CardText({
     ? dumpTextString(langMap ?? {}, widget.component) || widget.text
     : widget.text;
   if (!content) return null;
+  const wrap = widget.type === 'paragraph';
   const rgb = widget.color === undefined ? 0xffffff : widget.color & 0xffffff;
   const shadowRgb = ((rgb & 0xfcfcfc) >> 2) & 0xffffff;
   const shadowed = widget.shadow === true;
   return (
     <span
-      className="font-mc pointer-events-none absolute leading-none whitespace-pre"
+      className={`font-mc pointer-events-none absolute leading-none ${wrap ? 'whitespace-pre-wrap' : 'whitespace-pre'}`}
       style={{
         ...(anchor
           ? {
@@ -42,6 +43,7 @@ export function CardText({
           : {
               left: (widget.x + offX) * scale,
               top: (widget.y + offY) * scale,
+              ...(wrap ? { width: widget.w * scale } : {}),
             }),
         fontSize: size ?? 8 * scale,
         color: `#${rgb.toString(16).padStart(6, '0')}`,

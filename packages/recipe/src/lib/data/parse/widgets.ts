@@ -1,5 +1,8 @@
 import { asNumber, asRecord, asString } from '@terrafirmagreg-team/dump/lib/dump/contract/read';
-import { asDumpText } from '@terrafirmagreg-team/dump/lib/dump/contract/text';
+import {
+  asDumpText,
+  asDumpTextList,
+} from '@terrafirmagreg-team/dump/lib/dump/contract/text';
 import type { RecipeWidget } from '@terrafirmagreg-team/recipe/lib/data/dto';
 
 function parseDecorWidget(value: unknown): RecipeWidget | undefined {
@@ -17,9 +20,13 @@ function parseDecorWidget(value: unknown): RecipeWidget | undefined {
         return text ? [text] : [];
       })
     : undefined;
+  const tooltipComponents = asDumpTextList(row.tooltipComponents);
   const box = { x, y, w: w ?? 0, h: h ?? 0 };
-  const tip = tooltip?.length ? { tooltip } : {};
-  if (type === 'text') {
+  const tip = {
+    ...(tooltip?.length ? { tooltip } : {}),
+    ...(tooltipComponents?.length ? { tooltipComponents } : {}),
+  };
+  if (type === 'text' || type === 'paragraph') {
     const component = asDumpText(row.component);
     const text = asString(row.text) ?? (component ? '' : undefined);
     if (text === undefined) return undefined;
