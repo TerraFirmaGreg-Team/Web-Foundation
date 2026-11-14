@@ -13,7 +13,6 @@ import {
 import { useRecipeSession } from '@terrafirmagreg-team/recipe/hooks/use-session';
 import { recipeConfig } from '@terrafirmagreg-team/recipe/lib/config';
 import { recipeItemName } from '@terrafirmagreg-team/recipe/lib/client-index';
-import { RecipeGlareFilter } from '@terrafirmagreg-team/recipe/components/cards/glare-filter';
 import { TypeView } from '@terrafirmagreg-team/recipe/components/views/browser/type-view';
 import { ItemView } from '@terrafirmagreg-team/recipe/components/views/browser/item-view';
 import { Calculator } from '@terrafirmagreg-team/recipe/components/views/calc/calculator';
@@ -138,7 +137,6 @@ function RecipeBrowserContent({
 
   return (
     <EntryProvider dataset={dataset} lang={lang} langMap={session.langMap}>
-      <RecipeGlareFilter />
       <div
         className={cn(
           'viewport-shell recipe-viewport not-prose flex w-full flex-col gap-3',

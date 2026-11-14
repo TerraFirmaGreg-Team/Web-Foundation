@@ -14,12 +14,29 @@ function publishSearch(href: string) {
   );
 }
 
-export function replaceUrlState(href: string) {
-  window.history.replaceState(null, '', href);
+function sameUrl(href: string): boolean {
+  return new URL(href, window.location.href).href === window.location.href;
+}
+
+function tryWrite(write: () => void): boolean {
+  try {
+    write();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function writeUrlState(href: string, write: (href: string) => void) {
+  if (sameUrl(href)) return;
+  tryWrite(() => write(href));
   publishSearch(href);
 }
 
+export function replaceUrlState(href: string) {
+  writeUrlState(href, (next) => window.history.replaceState(null, '', next));
+}
+
 export function pushUrlState(href: string) {
-  window.history.pushState(null, '', href);
-  publishSearch(href);
+  writeUrlState(href, (next) => window.history.pushState(null, '', next));
 }

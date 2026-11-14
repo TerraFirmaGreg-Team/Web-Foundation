@@ -2,7 +2,6 @@
 
 import { useMemo, useRef } from 'react';
 import { SlotHitbox } from '@terrafirmagreg-team/recipe/components/cards/slot-hitbox';
-import { recipeGlareFilter } from '@terrafirmagreg-team/recipe/components/cards/glare-filter';
 import {
   cardStripGeo,
   countCoveredText,
@@ -120,7 +119,6 @@ export function RecipeCard({
             decoding="async"
             draggable={false}
             onError={onFail}
-            style={recipeGlareFilter}
           />
         </>
       ) : null}
@@ -167,7 +165,7 @@ export function RecipeCard({
             />
           ))
         : null}
-      {inView && interactive ? (
+      {inView ? (
         <CardWidgetTips
           widgets={recipe.widgets}
           entities={entities}

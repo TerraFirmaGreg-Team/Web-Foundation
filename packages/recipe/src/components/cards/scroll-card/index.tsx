@@ -16,11 +16,16 @@ import {
   type ScrollElement,
   type ScrollFrame,
 } from '@terrafirmagreg-team/recipe/lib/data/scroll';
+import { widgetTextColor } from '@terrafirmagreg-team/recipe/lib/cards/model';
 import { texturePublicUrl } from '@terrafirmagreg-team/dump/lib/dump/assets/urls';
 import { dumpRelPublicUrl } from '@terrafirmagreg-team/dump/lib/dump/paths';
 import { useInView } from '@terrafirmagreg-team/ui/hooks/use-in-view';
 import { useSwipe } from '@terrafirmagreg-team/ui/hooks/use-swipe';
 import { McText } from '@terrafirmagreg-team/game/components/entry/mc-text';
+import {
+  dumpTextLines,
+  dumpTextString,
+} from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names';
 import { stackIdFromRef } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 
 const FALLBACK_PITCH = 18;
@@ -321,7 +326,7 @@ export function ScrollCard(props: Props) {
       : undefined;
 
   const renderText = (el: ScrollElement, index: number, moving: boolean) => {
-    const rgb = (el.color ?? 0xffffff) & 0xffffff;
+    const rgb = widgetTextColor(el.color, true);
     const shadowRgb = ((rgb & 0xfcfcfc) >> 2) & 0xffffff;
     const x = (el.x - viewport.x) * scale;
     const y = (el.y - viewport.y) * scale;
@@ -339,7 +344,16 @@ export function ScrollCard(props: Props) {
           textShadow: `${scale / 2}px ${scale / 2}px 0 #${shadowRgb.toString(16).padStart(6, '0')}`,
         }}
       >
-        <McText text={el.text ?? ''} surface="dark" />
+        <McText
+          text={
+            (el.component
+              ? dumpTextString(props.langMap ?? {}, el.component)
+              : undefined) ||
+            el.text ||
+            ''
+          }
+          surface="dark"
+        />
       </span>
     );
   };
@@ -414,7 +428,11 @@ export function ScrollCard(props: Props) {
               x={0}
               y={0}
               pitch={el.w * scale}
-              tooltipLines={el.tooltip}
+              tooltipLines={
+                el.tooltipComponents?.length
+                  ? dumpTextLines(props.langMap ?? {}, el.tooltipComponents)
+                  : el.tooltip
+              }
               interactive={interactive}
               tooltipLevel={slotTooltip}
             />
@@ -471,7 +489,11 @@ export function ScrollCard(props: Props) {
               y={0}
               pitch={cell}
               hideIcon
-              tooltipLines={el.tooltip}
+              tooltipLines={
+                el.tooltipComponents?.length
+                  ? dumpTextLines(props.langMap ?? {}, el.tooltipComponents)
+                  : el.tooltip
+              }
               interactive={interactive}
               tooltipLevel={slotTooltip}
             />

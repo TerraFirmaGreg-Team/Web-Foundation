@@ -3,6 +3,13 @@ import type {
   RecipeTextWidget,
 } from '@terrafirmagreg-team/recipe/lib/data/dto';
 
+export function widgetTextColor(
+  color: number | undefined,
+  shadow: boolean,
+): number {
+  return (color ?? (shadow ? 0xffffff : 0)) & 0xffffff;
+}
+
 export type CardStripGeo = {
   slots: RecipeSlotWidget[];
   top: number;

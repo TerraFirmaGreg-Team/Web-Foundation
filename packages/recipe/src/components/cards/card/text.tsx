@@ -2,6 +2,7 @@
 
 import { McText } from '@terrafirmagreg-team/game/components/entry/mc-text';
 import { dumpTextString } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names';
+import { widgetTextColor } from '@terrafirmagreg-team/recipe/lib/cards/model';
 import type { RecipeTextWidget } from '@terrafirmagreg-team/recipe/lib/data/dto';
 
 export function CardText({
@@ -26,7 +27,7 @@ export function CardText({
     : widget.text;
   if (!content) return null;
   const wrap = widget.type === 'paragraph';
-  const rgb = (widget.color ?? 0xffffff) & 0xffffff;
+  const rgb = widgetTextColor(widget.color, widget.shadow === true);
   const shadowRgb = ((rgb & 0xfcfcfc) >> 2) & 0xffffff;
   return (
     <span

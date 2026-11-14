@@ -210,7 +210,6 @@ html > body[data-scroll-locked] {
 }
 
 [data-slot='tooltip-content'] {
-  max-width: max(16rem, 50vw);
   background-color: var(--color-popover);
   color: var(--color-popover-foreground);
   border-radius: 0.5rem;

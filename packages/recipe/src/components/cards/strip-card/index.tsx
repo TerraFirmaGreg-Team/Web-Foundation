@@ -3,7 +3,6 @@ import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 
 import { Fragment, useRef, useState } from 'react';
 import { SlotHitbox } from '@terrafirmagreg-team/recipe/components/cards/slot-hitbox';
-import { recipeGlareFilter } from '@terrafirmagreg-team/recipe/components/cards/glare-filter';
 import { StripCardSprite } from '@terrafirmagreg-team/recipe/components/cards/strip-card/sprite';
 import {
   StripCardTagCopy,
@@ -101,7 +100,7 @@ export function StripCard({
           setMeasured({ src, h: event.currentTarget.naturalHeight })
         }
       />
-      <div className="absolute inset-0" style={recipeGlareFilter}>
+      <div className="absolute inset-0">
         <Hint label={title}>
           <StripCardSprite
             src={src}

@@ -8,6 +8,11 @@ import {
   asTaggedReference,
   type TaggedReference,
 } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
+import {
+  asDumpText,
+  asDumpTextList,
+  type DumpText,
+} from '@terrafirmagreg-team/dump/lib/dump/contract/text';
 
 export type ScrollRect = { x: number; y: number; w: number; h: number };
 
@@ -42,8 +47,10 @@ export type ScrollElement = {
   base?: TaggedReference;
   mark?: boolean;
   tooltip?: string[];
+  tooltipComponents?: DumpText[];
   label?: string;
   text?: string;
+  component?: DumpText;
   color?: number;
   pin?: boolean;
   u?: number;
@@ -140,8 +147,10 @@ function scrollElement(value: unknown): ScrollElement | undefined {
           .map(asString)
           .filter((line): line is string => line !== undefined && line.length > 0)
       : undefined,
+    tooltipComponents: asDumpTextList(raw.tooltipComponents),
     label: asString(raw.label),
     text: asString(raw.text),
+    component: asDumpText(raw.component),
     color: asNumber(raw.color),
     pin: asBool(raw.pin) === true || undefined,
     u: asNumber(raw.u),

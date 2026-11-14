@@ -156,20 +156,6 @@ export function createChevronEdge({
       () => (points ? pathMidpoint(points) : null),
       [points],
     );
-    if (data?.hidden === true) return null;
-    if (!points || points.length < 2 || !mid) return null;
-    const base = `M${points[0]!.x} ${points[0]!.y}${points
-      .slice(1)
-      .map((p) => `L${p.x} ${p.y}`)
-      .join('')}`;
-    const interactPts = trimPolylineEnds(points, 26);
-    const interact =
-      interactPts.length >= 2
-        ? `M${interactPts[0]!.x} ${interactPts[0]!.y}${interactPts
-            .slice(1)
-            .map((p) => `L${p.x} ${p.y}`)
-            .join('')}`
-        : base;
     const move = useCallback(
       (e: ReactMouseEvent<Element>) => {
         if (!points || tz === 0) return;
@@ -184,6 +170,20 @@ export function createChevronEdge({
       },
       [points, tx, ty, tz],
     );
+    if (data?.hidden === true) return null;
+    if (!points || points.length < 2 || !mid) return null;
+    const base = `M${points[0]!.x} ${points[0]!.y}${points
+      .slice(1)
+      .map((p) => `L${p.x} ${p.y}`)
+      .join('')}`;
+    const interactPts = trimPolylineEnds(points, 26);
+    const interact =
+      interactPts.length >= 2
+        ? `M${interactPts[0]!.x} ${interactPts[0]!.y}${interactPts
+            .slice(1)
+            .map((p) => `L${p.x} ${p.y}`)
+            .join('')}`
+        : base;
     const hoverTrack =
       labelVisibility === 'hover'
         ? { onMouseEnter: enter, onMouseLeave: leave, onMouseMove: move }

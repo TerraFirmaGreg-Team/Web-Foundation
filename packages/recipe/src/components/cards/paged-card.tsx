@@ -5,7 +5,6 @@ import { RecipeCard } from './card';
 import { SlotHitbox } from './slot-hitbox';
 import { StripCard } from './strip-card';
 import { ScrollCard } from './scroll-card';
-import { recipeGlareFilter } from './glare-filter';
 import { recipeGrid } from '@terrafirmagreg-team/recipe/lib/data/grid';
 import { recipeScroll } from '@terrafirmagreg-team/recipe/lib/data/scroll';
 import { recipeSlots } from '@terrafirmagreg-team/recipe/lib/browser/recipe-slots';
@@ -134,7 +133,6 @@ export function PagedCard({
             loading="lazy"
             decoding="async"
             onError={onFail}
-            style={recipeGlareFilter}
           />
           {inView && !props.frameOnly
             ? slots
@@ -174,7 +172,6 @@ export function PagedCard({
           height={natural}
           style={{
             transform: `translateY(${-(natural - capH)}px)`,
-            ...recipeGlareFilter,
           }}
           loading="lazy"
           decoding="async"
