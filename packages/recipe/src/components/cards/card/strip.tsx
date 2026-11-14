@@ -111,6 +111,7 @@ export function CardStrip({
                     top: widget.y * scale,
                     width: widget.w * scale,
                     height: widget.h * scale,
+                    backgroundColor: 'var(--color-mc-inset)',
                     backgroundImage: `url(${widgetsUrl})`,
                     backgroundSize: `${256 * scale}px ${256 * scale}px`,
                     backgroundPosition: '0px 0px',

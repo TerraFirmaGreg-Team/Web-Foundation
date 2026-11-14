@@ -26,7 +26,7 @@ export function CardText({
     : widget.text;
   if (!content) return null;
   const wrap = widget.type === 'paragraph';
-  const rgb = widget.color === undefined ? 0xffffff : widget.color & 0xffffff;
+  const rgb = 0x000000;
   return (
     <span
       className={`font-mc pointer-events-none absolute leading-none ${wrap ? 'whitespace-pre-wrap' : 'whitespace-pre'}`}
@@ -47,7 +47,7 @@ export function CardText({
         color: `#${rgb.toString(16).padStart(6, '0')}`,
       }}
     >
-      <McText text={content} surface="dark" />
+      <McText text={content} surface="light" />
     </span>
   );
 }

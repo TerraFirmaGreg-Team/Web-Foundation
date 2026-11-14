@@ -139,19 +139,24 @@ export function SidebarContent({
   });
 }
 
-export function SidebarDrawerOverlay(props: ComponentProps<'div'>) {
+export function SidebarDrawerOverlay({
+  className,
+  ...props
+}: ComponentProps<'div'>) {
   const { open, setOpen, mode } = useSidebar();
   const [hidden, setHidden] = useState(!open);
 
   if (open && hidden) setHidden(false);
-  if (mode !== 'drawer' || hidden) return null;
+  if (mode !== 'drawer') return null;
 
   return (
     <div
       data-state={open ? 'open' : 'closed'}
       onClick={() => setOpen(false)}
-      onAnimationEnd={() => {
-        if (!open) ReactDOM.flushSync(() => setHidden(true));
+      className={cn(hidden && 'invisible', className)}
+      onAnimationEnd={(event) => {
+        if (event.target === event.currentTarget && !open)
+          ReactDOM.flushSync(() => setHidden(true));
       }}
       {...props}
     />
@@ -174,8 +179,9 @@ export function SidebarDrawerContent({
       id="sidebar-mobile"
       data-state={open ? 'open' : 'closed'}
       className={cn(hidden && 'invisible', className)}
-      onAnimationEnd={() => {
-        if (!open) ReactDOM.flushSync(() => setHidden(true));
+      onAnimationEnd={(event) => {
+        if (event.target === event.currentTarget && !open)
+          ReactDOM.flushSync(() => setHidden(true));
       }}
       {...props}
     >

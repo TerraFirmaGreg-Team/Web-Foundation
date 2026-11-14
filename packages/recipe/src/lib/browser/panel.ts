@@ -3,6 +3,7 @@ import {
   type TaggedReference,
 } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 import { registryId } from '@terrafirmagreg-team/dump/lib/dump/paths';
+import { creativeTabName } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names';
 import { recipeItemName } from '@terrafirmagreg-team/recipe/lib/client-index';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import type {
@@ -12,7 +13,7 @@ import type {
 } from '@terrafirmagreg-team/recipe/types';
 
 function catalogPool(index: RecipeCompactIndex, tab?: string): string[] {
-  if (!tab) return index.items;
+  if (!tab) return [...index.items, ...(index.fluids ?? [])];
   return index.tabItems?.[tab] ?? [];
 }
 
@@ -39,8 +40,13 @@ export function buildPanelCells(
   ids: readonly string[],
   groups: RecipeStackGroup[] | undefined,
   expandedGroups: ReadonlySet<string>,
+  fluidIds?: ReadonlySet<string>,
 ): ItemPanelCell[] {
-  if (!groups?.length) return ids.map((id) => ({ kind: 'stack', id }));
+  const cell = (id: string): ItemPanelCell =>
+    fluidIds?.has(registryId(id))
+      ? { kind: 'stack', id, ref: 'fluid' }
+      : { kind: 'stack', id };
+  if (!groups?.length) return ids.map(cell);
   const byMember = new Map<string, RecipeStackGroup>();
   for (const group of groups)
     for (const member of group.members) {
@@ -56,7 +62,7 @@ export function buildPanelCells(
     seen.add(base);
     const group = byMember.get(base);
     if (!group) {
-      out.push({ kind: 'stack', id });
+      out.push(cell(id));
       continue;
     }
     const members = group.members.filter((member) =>
@@ -64,7 +70,7 @@ export function buildPanelCells(
     );
     for (const member of members) seen.add(registryId(member));
     if (members.length <= 1) {
-      out.push({ kind: 'stack', id: members[0] ?? id });
+      out.push(cell(members[0] ?? id));
       continue;
     }
     const expanded = expandedGroups.has(group.id);
@@ -77,7 +83,12 @@ export function buildPanelCells(
     });
     if (expanded)
       for (const member of members)
-        out.push({ kind: 'stack', id: member, groupId: group.id });
+        out.push({
+          kind: 'stack',
+          id: member,
+          groupId: group.id,
+          ...(fluidIds?.has(registryId(member)) ? { ref: 'fluid' as const } : {}),
+        });
   }
   return out;
 }
@@ -97,7 +108,9 @@ export function panelTabRows(
       id: row.id,
       icon,
       iconRef: row.icon,
-      help: recipeItemName(names, lang, row.display.name ?? row.id),
+      help: row.display?.name
+        ? creativeTabName(names[lang] ?? names.en_us ?? {}, row.display.name)
+        : recipeItemName(names, lang, row.id),
     });
   }
   return rows;

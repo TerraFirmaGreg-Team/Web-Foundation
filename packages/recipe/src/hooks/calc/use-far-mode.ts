@@ -15,10 +15,10 @@ import type { CalcFarMode } from '@terrafirmagreg-team/recipe/lib/calc/flow';
 const FAR_MODES: CalcFarMode[] = ['full', 'preview', 'hidden'];
 const useStoredMode = createStoredValue(
   'calc:far',
-  literalCodec(FAR_MODES, 'preview'),
+  literalCodec(FAR_MODES, 'full'),
 );
 
-const CalcFarContext = createContext<CalcFarMode>('preview');
+const CalcFarContext = createContext<CalcFarMode>('full');
 
 export const CalcFarProvider = CalcFarContext.Provider;
 

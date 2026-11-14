@@ -142,7 +142,7 @@ export function SlotHitbox({
       {widget.kind === 'tag' ? (
         <span
           aria-hidden
-          className="font-mc pointer-events-none absolute top-0 left-0 leading-none text-amber-300"
+          className="font-mc pointer-events-none absolute top-0 left-0 leading-none text-black"
           style={{
             paddingLeft: scale / 2,
             fontSize: (Math.min(widget.w, widget.h) / 16) * 7 * scale,
@@ -163,7 +163,7 @@ export function SlotHitbox({
     widget.count !== undefined && widget.count > 1 ? (
       <span
         aria-hidden
-        className="font-mc pointer-events-none absolute right-0 bottom-0 leading-none text-white"
+        className="font-mc pointer-events-none absolute right-0 bottom-0 leading-none text-black"
         style={{
           paddingRight: scale,
           paddingBottom: scale,

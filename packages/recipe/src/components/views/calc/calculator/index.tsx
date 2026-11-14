@@ -158,8 +158,8 @@ export function Calculator({ session }: { session: RecipeSession }) {
         focusNodeId={focusNodeId}
         onFocusedNode={() => setFocusNodeId(null)}
         empty={
-          <div className="absolute inset-0 z-10 grid place-items-center overflow-auto p-4">
-            <div className="flex flex-col items-center gap-4">
+          <div className="pointer-events-none absolute inset-0 z-10 grid place-items-center overflow-auto p-4">
+            <div className="pointer-events-auto flex flex-col items-center gap-4">
               <EmptyState variant="empty">
                 {t('Click an item in the catalog to add a card.', { note: 'recipe.calc.empty' })}
               </EmptyState>

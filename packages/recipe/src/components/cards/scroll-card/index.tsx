@@ -363,6 +363,7 @@ export function ScrollCard(props: Props) {
             aria-hidden
             className="absolute inset-0 block"
             style={{
+              backgroundColor: 'var(--color-mc-inset)',
               backgroundImage: `url(${slotTexUrl})`,
               backgroundSize: `${ATLAS * scale}px ${ATLAS * scale}px`,
               backgroundPosition: `-${(el.u ?? 0) * scale}px -${(el.v ?? 0) * scale}px`,
@@ -411,7 +412,7 @@ export function ScrollCard(props: Props) {
         ) : null}
         {el.label ? (
           <span
-            className="font-mc pointer-events-none absolute right-0 bottom-0 leading-none text-white"
+            className="font-mc pointer-events-none absolute right-0 bottom-0 leading-none text-black"
             style={{ fontSize: (el.w / 16) * 7 * scale }}
           >
             {el.label}
