@@ -25,7 +25,7 @@ export function PageToc({
         {popover && (
           <>
             {popover}
-            <div className="absolute inset-x-2 top-full h-[calc(var(--layout-height)_-_var(--header-height)_-_100%)] rounded-t-2xl border-x border-t outline-8 outline-card [clip-path:inset(0_-8px_-8px)] bg-origin-border bg-linear-to-b from-background to-transparent to-[16px] pointer-events-none" />
+            <div className="absolute inset-x-2 top-full h-[calc(100vh_-_var(--banner-height,0px)_-_var(--header-height)_-_100%)] rounded-t-2xl border-x border-t outline-8 outline-card [clip-path:inset(0_-8px_-8px)] bg-origin-border bg-linear-to-b from-background to-transparent to-[16px] pointer-events-none" />
           </>
         )}
       </div>

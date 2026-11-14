@@ -27,17 +27,17 @@ export function Breadcrumb({
         {items.map((item, index) => (
           <Fragment key={`${item.name}:${index}`}>
             {index > 0 && <BreadcrumbSeparator />}
-            <BreadcrumbItem>
+            <BreadcrumbItem className="min-w-0 max-w-full">
               {item.url ? (
                 <LinkPreview
                   href={item.url}
                   preview={item.url ? previews?.[item.url] : undefined}
-                  className="truncate transition-opacity hover:opacity-80"
+                  className="min-w-0 truncate transition-opacity hover:opacity-80"
                 >
                   {item.name}
                 </LinkPreview>
               ) : (
-                <BreadcrumbPage className="truncate font-medium">
+                <BreadcrumbPage className="min-w-0 truncate font-medium">
                   {item.name}
                 </BreadcrumbPage>
               )}

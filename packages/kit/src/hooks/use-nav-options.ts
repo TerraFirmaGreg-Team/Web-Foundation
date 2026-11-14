@@ -1,6 +1,7 @@
 'use client';
 import { type ReactNode, createElement, useMemo } from 'react';
-import { DynamicIcon, type IconName } from 'lucide-react/dynamic';
+import type { IconName } from 'lucide-react/dynamic';
+import { lucideIcon } from '@terrafirmagreg-team/ui/lib/utils/icons';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
 import { sectionTabs } from '@terrafirmagreg-team/sites/sections';
 import {
@@ -21,11 +22,9 @@ import type {
 const EMPTY_DATASETS: never[] = [];
 
 function datasetIcon(dataset: { icon?: IconName }): ReactNode {
-  if (!dataset.icon) return undefined;
-  return createElement(DynamicIcon, {
-    name: dataset.icon,
-    className: 'size-4 shrink-0',
-  });
+  const Icon = dataset.icon ? lucideIcon(dataset.icon) : undefined;
+  if (!Icon) return undefined;
+  return createElement(Icon, { className: 'size-4 shrink-0' });
 }
 
 export function useNavOptions({ section, catalog }: LeftSidebarScope): {

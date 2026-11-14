@@ -12,7 +12,10 @@ import { recipeCalcHref, recipeStackHref } from '@terrafirmagreg-team/recipe/lib
 import type { Recipe } from '@terrafirmagreg-team/recipe/lib/data/dto';
 import { loadClientRecipe } from '@terrafirmagreg-team/recipe/lib/client/recipe';
 import { resolveClientTag } from '@terrafirmagreg-team/dump/lib/dump/client/tags';
-import { toCalcRecipe } from '@terrafirmagreg-team/recipe/lib/calc/tree';
+import {
+  recipeDivisor,
+  toCalcRecipe,
+} from '@terrafirmagreg-team/recipe/lib/calc/tree';
 import { CALC_NODE_W } from '@terrafirmagreg-team/recipe/lib/calc/flow';
 import type { Lang } from '@terrafirmagreg-team/translate/types/locale';
 import type {
@@ -47,6 +50,7 @@ export function useCalcActions({
   nodes,
   tagMembers,
   ensureMaterial,
+  fluids,
 }: {
   dataset: DatasetRef;
   lang: Lang;
@@ -64,7 +68,9 @@ export function useCalcActions({
   nodes: CalcNode[];
   tagMembers?: (tagId: string) => TagResolution | undefined;
   ensureMaterial?: (materialId: string) => void;
+  fluids?: readonly string[];
 }) {
+  const fluidIds = useMemo(() => new Set(fluids ?? []), [fluids]);
   const { checked: shared, onClick: onShare } = useCopyButton(async () => {
     const tree = encodeShare();
     const { id: datasetId, version } = dataset;
@@ -127,6 +133,13 @@ export function useCalcActions({
 
   const onAddCard = useCallback(
     (materialId: string, kind: CalcKind, pos?: { x: number; y: number }) => {
+      if (kind === 'item' && materialId.endsWith('_bucket')) {
+        const fluidId = materialId.slice(0, -'_bucket'.length);
+        if (fluidIds.has(fluidId)) {
+          materialId = fluidId;
+          kind = 'fluid';
+        }
+      }
       const id = newCardId();
       persist({
         cards: [
@@ -139,7 +152,7 @@ export function useCalcActions({
       setFocusNodeId(id);
       return id;
     },
-    [flushAmounts, persist, wires, tagSelections, setFocusNodeId],
+    [flushAmounts, persist, wires, tagSelections, setFocusNodeId, fluidIds],
   );
 
   const onSupplyInput = useCallback(
@@ -149,8 +162,13 @@ export function useCalcActions({
       const input = consumerNode?.inputs[inputIndex];
       if (!consumerNode || !consumerCard || !input?.id) return null;
       const need = Math.max(1, input.amount - input.covered);
-      const crafts = recipeId && outputAmount
-        ? Math.max(1, Math.ceil(need / outputAmount))
+      const per = outputAmount ?? (() => {
+        const body = recipeId ? recipeBody(recipeId) : undefined;
+        const calc = body ? toCalcRecipe(body) : undefined;
+        return calc ? recipeDivisor(calc, input.id!, input.kind) : 0;
+      })();
+      const crafts = recipeId && per > 0
+        ? Math.max(1, Math.ceil(need / per))
         : need;
       const base = consumerCard.pos;
       const id = newCardId();
@@ -179,7 +197,7 @@ export function useCalcActions({
       });
       return id;
     },
-    [nodes, cards, wires, flushAmounts, persist, tagSelections],
+    [nodes, cards, wires, flushAmounts, persist, tagSelections, recipeBody],
   );
 
   const onDemandOutput = useCallback(

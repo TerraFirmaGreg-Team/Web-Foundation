@@ -27,8 +27,6 @@ export function CardText({
   if (!content) return null;
   const wrap = widget.type === 'paragraph';
   const rgb = widget.color === undefined ? 0xffffff : widget.color & 0xffffff;
-  const shadowRgb = ((rgb & 0xfcfcfc) >> 2) & 0xffffff;
-  const shadowed = widget.shadow === true;
   return (
     <span
       className={`font-mc pointer-events-none absolute leading-none ${wrap ? 'whitespace-pre-wrap' : 'whitespace-pre'}`}
@@ -47,11 +45,6 @@ export function CardText({
             }),
         fontSize: size ?? 8 * scale,
         color: `#${rgb.toString(16).padStart(6, '0')}`,
-        ...(shadowed
-          ? {
-              textShadow: `${scale}px ${scale}px 0 #${shadowRgb.toString(16).padStart(6, '0')}`,
-            }
-          : {}),
       }}
     >
       <McText text={content} surface="dark" />

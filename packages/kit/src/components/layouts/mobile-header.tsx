@@ -45,7 +45,7 @@ export function MobileHeader({
       </nav>
       <LeftSidebarSearch variant="icon" />
       <SidebarTrigger
-        aria-label={t('Menu', { note: 'ui.menu' })}
+        aria-label={t('Menu', { note: 'ui.menu_toggle' })}
         className={cn(buttonVariants({ variant: 'outline', size: 'icon-lg' }), 'ms-1')}
       >
         <Menu />

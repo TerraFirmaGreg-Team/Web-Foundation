@@ -112,7 +112,10 @@ export async function usesForInput(
     ? [...new Set([...refs, ...ioRefs])]
     : refs;
   return uniqueRows([
-    ...(await resolveRecipeRows(dataset, index, [...allRefs, ...tagRefs], opts)),
+    ...(await resolveRecipeRows(dataset, index, [...allRefs, ...tagRefs], {
+      includeTagRows: false,
+      ...opts,
+    })),
     ...stationRows.flat(),
   ]);
 }

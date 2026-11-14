@@ -4,6 +4,7 @@ import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import { useMemo } from 'react';
 import { Shapes } from 'lucide-react';
 import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
+import { creativeTabName } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names';
 import { recipeItemName } from '@terrafirmagreg-team/recipe/lib/client-index';
 import { IconPager } from '@terrafirmagreg-team/ui/components/blocks/page/pager';
 import type { RecipeCategory, RecipeSession } from '@terrafirmagreg-team/recipe/types';
@@ -37,13 +38,16 @@ export function RecipeTypeTabs({
   onChange,
   className,
 }: {
-  session: Pick<RecipeSession, 'lang' | 'names' | 'index' | 'dataset'>;
+  session: Pick<
+    RecipeSession,
+    'lang' | 'names' | 'index' | 'dataset' | 'langMap'
+  >;
   ids: string[];
   value?: string;
   onChange?: (id: string) => void;
   className?: string;
 }) {
-  const { lang, names, index, dataset } = session;
+  const { lang, names, index, dataset, langMap } = session;
 
   const options = useMemo(() => {
     const byId = new Map(
@@ -54,10 +58,12 @@ export function RecipeTypeTabs({
       return {
         id,
         icon: <CategoryGlyph category={category} dataset={dataset} />,
-        help: recipeItemName(names, lang, id),
+        help: category?.display?.name
+          ? creativeTabName(langMap ?? {}, category.display.name)
+          : recipeItemName(names, lang, id),
       };
     });
-  }, [index, ids, lang, names, dataset]);
+  }, [index, ids, lang, names, dataset, langMap]);
 
   return (
     <IconPager

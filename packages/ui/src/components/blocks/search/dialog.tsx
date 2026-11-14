@@ -349,7 +349,7 @@ export function SearchDialogList({
   defaultItems = null,
   Empty = () => (
     <div role="status" className="py-12 text-center text-sm text-muted-foreground">
-      <T text="ui.search_empty" />
+      <T text="No results found" note="ui.search_empty" />
     </div>
   ),
   Item = (props) => <SearchDialogListItem {...props} />,
@@ -440,13 +440,14 @@ export function SearchDialogList({
             <CircleAlert className="inline size-5 me-2 align-top text-error" />
             {data ? (
               <T
-                text="ui.search_failed_results"
+                text="Search failed, showing results for {query}"
+                note="ui.search_failed_results"
                 variables={{
                   query: <span className="font-medium">{data.query}</span>,
                 }}
               />
             ) : (
-              <T text="ui.search_failed" />
+              <T text="Search failed" note="ui.search_failed" />
             )}
           </>
         )}

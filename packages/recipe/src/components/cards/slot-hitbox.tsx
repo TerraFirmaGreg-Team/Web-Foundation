@@ -146,7 +146,6 @@ export function SlotHitbox({
           style={{
             paddingLeft: scale / 2,
             fontSize: (Math.min(widget.w, widget.h) / 16) * 7 * scale,
-            textShadow: `${scale}px ${scale}px 0 var(--color-mc-arrow)`,
           }}
         >
           #
@@ -172,7 +171,6 @@ export function SlotHitbox({
             (Math.min(widget.w, widget.h) / 16) *
             (widget.kind === 'fluid' ? 4 : 7) *
             scale,
-          textShadow: `${scale}px ${scale}px 0 var(--color-mc-arrow)`,
         }}
       >
         {widget.kind === 'fluid'

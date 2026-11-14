@@ -95,26 +95,24 @@ export function Pager({
     <Pagination className={cn('mx-0 w-full', className)}>
       <PaginationContent className="w-full justify-between gap-2">
         <PaginationItem className="flex items-center gap-1">
+          {leading}
+        </PaginationItem>
+        <PaginationItem className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
           <PagerArrow
             dir={-1}
             disabled={loop ? pages <= 1 : page <= 0}
             onClick={(event) => onPage(event.shiftKey ? 0 : page - 1)}
           />
-          {leading}
-        </PaginationItem>
-        <PaginationItem className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
           <Progress
             value={to}
             max={Math.max(total, 1)}
-            className="w-14 shrink-0 gap-0 sm:w-20"
+            className="mx-1 w-14 shrink-0 gap-0 sm:w-20"
           />
-          <span className="shrink-0 tabular-nums">
+          <span className="me-1 shrink-0 tabular-nums">
             {label
               .replaceAll('{page}', String(page + 1))
               .replaceAll('{pages}', String(pages))}
           </span>
-        </PaginationItem>
-        <PaginationItem>
           <PagerArrow
             dir={1}
             disabled={loop ? pages <= 1 : page + 1 >= pages}

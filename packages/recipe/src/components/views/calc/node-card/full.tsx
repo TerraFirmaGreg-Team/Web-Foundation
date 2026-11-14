@@ -214,12 +214,27 @@ export const CalcNodeCardFull = memo(function CalcNodeCardFull({
                 >
                   <Minus className="size-2.5" />
                 </button>
-                <span
-                  className="min-w-6 text-center tabular-nums"
+                <input
+                  key={node.crafts}
+                  type="number"
+                  min={1}
+                  defaultValue={node.crafts}
                   title={t('Crafts', { note: 'recipe.calc.crafts.title' })}
-                >
-                  {node.crafts}
-                </span>
+                  aria-label={t('Crafts', { note: 'recipe.calc.crafts.title' })}
+                  className="w-9 rounded border border-transparent bg-transparent text-center tabular-nums hover:border-border focus:border-border focus:outline-none"
+                  onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') e.currentTarget.blur();
+                  }}
+                  onBlur={(e) => {
+                    const next = Math.max(
+                      1,
+                      Math.round(Number(e.target.value) || 1),
+                    );
+                    if (next !== node.crafts) onCrafts(id, next);
+                    else e.target.value = String(node.crafts);
+                  }}
+                />
                 <button
                   type="button"
                   aria-label={t('More crafts', { note: 'recipe.calc.crafts.up' })}

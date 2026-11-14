@@ -315,7 +315,6 @@ export function ScrollCard(props: Props) {
 
   const renderText = (el: ScrollElement, index: number, moving: boolean) => {
     const rgb = (el.color ?? 0xffffff) & 0xffffff;
-    const shadowRgb = ((rgb & 0xfcfcfc) >> 2) & 0xffffff;
     const x = (el.x - viewport.x) * scale;
     const y = (el.y - viewport.y) * scale;
     const shifted = (horizontal ? x : y) - (moving ? offset * scale : 0);
@@ -328,11 +327,6 @@ export function ScrollCard(props: Props) {
           top: horizontal ? y : shifted,
           fontSize: 8 * scale,
           color: `#${rgb.toString(16).padStart(6, '0')}`,
-          ...(shadowRgb !== rgb
-            ? {
-                textShadow: `${scale}px ${scale}px 0 #${shadowRgb.toString(16).padStart(6, '0')}`,
-              }
-            : {}),
         }}
       >
         <McText text={el.text ?? ''} surface="dark" />
@@ -417,7 +411,7 @@ export function ScrollCard(props: Props) {
         ) : null}
         {el.label ? (
           <span
-            className="font-mc pointer-events-none absolute right-0 bottom-0 leading-none text-white [text-shadow:1px_1px_0_var(--color-mc-arrow)]"
+            className="font-mc pointer-events-none absolute right-0 bottom-0 leading-none text-white"
             style={{ fontSize: (el.w / 16) * 7 * scale }}
           >
             {el.label}

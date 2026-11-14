@@ -178,12 +178,6 @@
   line-height: 1;
   padding-bottom: 0.5px;
   color: var(--color-foreground);
-  text-shadow:
-    0 0 2px var(--color-card),
-    0 1px 1px var(--color-card),
-    1px 0 1px var(--color-card),
-    -1px 0 1px var(--color-card),
-    0 -1px 1px var(--color-card);
 }
 
 .calc-port-count[data-len='l'] {

@@ -1,6 +1,7 @@
 'use client';
 
-import { DynamicIcon, type IconName } from 'lucide-react/dynamic';
+import { createElement } from 'react';
+import { lucideIcon } from '@terrafirmagreg-team/ui/lib/utils/icons';
 import { EntryIcon } from '@terrafirmagreg-team/game/components/entry/icon';
 import type { ReferenceKind } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 import type { PreviewIcon } from '@terrafirmagreg-team/ui/types/preview';
@@ -16,11 +17,8 @@ export function PagePreviewIcon({ icon }: { icon: PreviewIcon }) {
       />
     );
   }
-  return (
-    <DynamicIcon
-      name={icon.name as IconName}
-      className="size-4 shrink-0"
-    />
-  );
+  const Icon = lucideIcon(icon.name);
+  if (!Icon) return null;
+  return createElement(Icon, { className: 'size-4 shrink-0' });
 }
 
