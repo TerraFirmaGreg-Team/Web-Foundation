@@ -93,8 +93,8 @@ export function Pager({
 }) {
   return (
     <Pagination className={cn('mx-0 w-full', className)}>
-      <PaginationContent className="w-full justify-between gap-2">
-        <PaginationItem className="flex items-center gap-1">
+      <PaginationContent className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-2">
+        <PaginationItem className="flex items-center gap-1 justify-self-start">
           {leading}
         </PaginationItem>
         <PaginationItem className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">

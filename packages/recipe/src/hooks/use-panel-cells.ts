@@ -112,10 +112,12 @@ export function usePanelCells({
             : [],
       );
     }
+    const fluidIds = new Set(dIndex?.fluids ?? []);
     return buildPanelCells(
       deferredFiltered,
       dIndex?.groups,
       expandedGroups,
+      fluidIds,
     );
   }, [deferredFiltered, dIndex, mode, expandedGroups, favorites.entries]);
 

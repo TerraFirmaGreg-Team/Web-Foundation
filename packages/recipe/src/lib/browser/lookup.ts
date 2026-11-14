@@ -56,7 +56,13 @@ export async function recipesForOutput(
   ]);
   const extra = io?.outputs.get(base) ?? [];
   const ids = extra.length ? [...new Set([...refs, ...extra])] : refs;
-  return resolveRecipeRows(dataset, index, ids, opts);
+  const keepTagRows = opts?.includeTagRows ?? false;
+  return (await resolveRecipeRows(dataset, index, ids, opts)).filter(
+    (row) =>
+      row.out.includes(base) ||
+      (keepTagRows &&
+        (row.cat ?? index.types[row.type]) === 'emi:tag'),
+  );
 }
 
 export async function usesForInput(
@@ -88,10 +94,12 @@ export async function usesForInput(
     ...tagKinds.map((tagKind) => loadTagSlice(dataset, tagKind, ns)),
   ]);
   const tagKeys: string[] = [];
+  const acceptedTags = new Set<string>();
   for (const [i, slice] of tagSlices.entries()) {
     const registry = `${tagKinds[i]}s`;
     for (const tag of slice[base] ?? slice[item] ?? []) {
       const raw = tag.startsWith('#') ? tag.slice(1) : tag;
+      acceptedTags.add(`#${raw}`);
       const parts = splitDumpId(raw);
       if (parts) tagKeys.push(`${parts.ns}:${registry}/${parts.path}`);
     }
@@ -111,11 +119,21 @@ export async function usesForInput(
   const allRefs = ioRefs.length
     ? [...new Set([...refs, ...ioRefs])]
     : refs;
-  return uniqueRows([
-    ...(await resolveRecipeRows(dataset, index, [...allRefs, ...tagRefs], {
+  const [refRows, tagRows] = await Promise.all([
+    resolveRecipeRows(dataset, index, allRefs, {
       includeTagRows: false,
       ...opts,
-    })),
+    }),
+    resolveRecipeRows(dataset, index, tagRefs, {
+      includeTagRows: false,
+      ...opts,
+    }),
+  ]);
+  return uniqueRows([
+    ...refRows.filter((row) => row.in.includes(base)),
+    ...tagRows.filter((row) =>
+      row.in.some((id) => acceptedTags.has(id)),
+    ),
     ...stationRows.flat(),
   ]);
 }

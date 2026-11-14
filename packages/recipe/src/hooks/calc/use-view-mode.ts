@@ -10,7 +10,7 @@ import type { CalcViewMode } from '@terrafirmagreg-team/recipe/lib/calc/flow';
 const MODES: CalcViewMode[] = ['mini', 'normal', 'detailed'];
 const useStoredMode = createStoredValue(
   'calc:view',
-  literalCodec(MODES, 'normal'),
+  literalCodec(MODES, 'detailed'),
 );
 
 export function useCalcViewMode() {
