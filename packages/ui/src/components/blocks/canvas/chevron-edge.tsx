@@ -155,12 +155,6 @@ export function createChevronEdge({
       () => (points ? pathMidpoint(points) : null),
       [points],
     );
-    if (data?.hidden === true) return null;
-    if (!points || points.length < 2 || !mid) return null;
-    const base = `M${points[0]!.x} ${points[0]!.y}${points
-      .slice(1)
-      .map((p) => `L${p.x} ${p.y}`)
-      .join('')}`;
     const move = useCallback(
       (e: ReactMouseEvent<Element>) => {
         if (!points || tz === 0) return;
@@ -175,6 +169,12 @@ export function createChevronEdge({
       },
       [points, tx, ty, tz],
     );
+    if (data?.hidden === true) return null;
+    if (!points || points.length < 2 || !mid) return null;
+    const base = `M${points[0]!.x} ${points[0]!.y}${points
+      .slice(1)
+      .map((p) => `L${p.x} ${p.y}`)
+      .join('')}`;
     const hoverTrack =
       labelVisibility === 'hover'
         ? { onMouseEnter: enter, onMouseLeave: leave, onMouseMove: move }
