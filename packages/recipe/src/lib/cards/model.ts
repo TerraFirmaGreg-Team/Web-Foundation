@@ -1,3 +1,4 @@
+import { dumpTextString } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names';
 import type {
   RecipeSlotWidget,
   RecipeTextWidget,
@@ -47,6 +48,12 @@ export function cardStripGeo(
 
 const COUNT_TEXT = /^x?(\d[\d\s.,]*)?\s*(mB|k|B|L|M)?$/i;
 
+export function widgetText(widget: RecipeTextWidget): string {
+  return widget.component
+    ? dumpTextString({}, widget.component) || widget.text
+    : widget.text;
+}
+
 export function slotOverlay(
   widget: RecipeTextWidget,
   slots: RecipeSlotWidget[],
@@ -60,7 +67,7 @@ export function countCoveredText(
   widget: RecipeTextWidget,
   slots: RecipeSlotWidget[],
 ): boolean {
-  const match = widget.text
+  const match = widgetText(widget)
     .replace(/§./g, '')
     .trim()
     .match(COUNT_TEXT);
@@ -105,7 +112,7 @@ export function slotCoveredLabel(
   widget: RecipeTextWidget,
   slots: RecipeSlotWidget[],
 ): RecipeSlotWidget | undefined {
-  if (widget.text.replace(/§./g, '').trim() !== 'NC') return undefined;
+  if (widgetText(widget).replace(/§./g, '').trim() !== 'NC') return undefined;
   return slotOverlay(widget, slots);
 }
 

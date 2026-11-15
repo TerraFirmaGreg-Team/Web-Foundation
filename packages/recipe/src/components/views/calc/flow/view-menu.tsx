@@ -10,6 +10,7 @@ import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-transl
 import { IconButton } from '@terrafirmagreg-team/ui/components/blocks/button/icon-button';
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
@@ -35,11 +36,15 @@ export function CalcViewMenu({
   onModeChange,
   farCards,
   onFarCardsChange,
+  recipeIds,
+  onRecipeIdsChange,
 }: {
   mode: CalcViewMode;
   onModeChange: (mode: CalcViewMode) => void;
   farCards: CalcFarMode;
   onFarCardsChange: (mode: CalcFarMode) => void;
+  recipeIds: boolean;
+  onRecipeIdsChange: (show: boolean) => void;
 }) {
   const t = useTranslations();
   const modeLabels: Record<CalcViewMode, string> = {
@@ -110,6 +115,14 @@ export function CalcViewMenu({
             </DropdownMenuRadioGroup>
           </>
         ) : null}
+        <DropdownMenuSeparator />
+        <DropdownMenuCheckboxItem
+          className="whitespace-nowrap"
+          checked={recipeIds}
+          onCheckedChange={(checked) => onRecipeIdsChange(checked === true)}
+        >
+          {t('Show recipe IDs', { note: 'recipe.calc.ids' })}
+        </DropdownMenuCheckboxItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

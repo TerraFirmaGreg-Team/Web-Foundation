@@ -1,4 +1,5 @@
 import type { Recipe, RecipeIngredient } from '@terrafirmagreg-team/recipe/lib/data/dto';
+import { stackIdBase } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 import type {
   CalcKind,
   CalcMaterial,
@@ -46,7 +47,7 @@ function recipeTier(recipe: Recipe): number | undefined {
 
 export function toCalcRecipe(recipe: Recipe): CalcRecipe {
   const inputs: CalcRecipeInput[] = recipe.inputs.map((slot) => ({
-    id: slot.id,
+    id: slot.kind === 'tag' ? slot.id : stackIdBase(slot.id),
     kind: slotKind(slot),
     amount: slot.count && slot.count > 0 ? slot.count : 1,
     catalyst: false,
@@ -56,7 +57,7 @@ export function toCalcRecipe(recipe: Recipe): CalcRecipe {
   for (const widget of recipe.widgets) {
     if (widget.type !== 'slot' || widget.role !== 'catalyst') continue;
     inputs.push({
-      id: widget.id,
+      id: widget.kind === 'tag' ? widget.id : stackIdBase(widget.id),
       kind: widget.kind === 'fluid' ? 'fluid' : 'item',
       amount: 1,
       catalyst: true,
@@ -76,7 +77,7 @@ export function toCalcRecipe(recipe: Recipe): CalcRecipe {
     else merged.push({ ...input });
   }
   const outputs: CalcMaterial[] = recipe.outputs.map((slot) => ({
-    id: slot.id,
+    id: slot.kind === 'tag' ? slot.id : stackIdBase(slot.id),
     kind: slotKind(slot),
     amount: slot.count && slot.count > 0 ? slot.count : 1,
     ...(slot.chance !== undefined ? { chance: slot.chance } : {}),
@@ -101,5 +102,20 @@ export function recipeDivisor(
     .filter((out) => out.id === materialId && out.kind === kind)
     .reduce((sum, out) => sum + out.amount * (out.chance ?? 1), 0);
   return amount > 0 ? amount : 1;
+}
+
+export async function resolveRecipeAmount(
+  recipeId: string,
+  materialId: string,
+  kind: CalcKind,
+  load: (id: string) => Promise<Recipe | undefined>,
+  fallback = 1,
+): Promise<number> {
+  const body = await load(recipeId);
+  if (!body) return fallback;
+  const amount = toCalcRecipe(body)
+    .outputs.filter((out) => out.id === materialId && out.kind === kind)
+    .reduce((sum, out) => sum + out.amount * (out.chance ?? 1), 0);
+  return amount > 0 ? amount : fallback;
 }
 

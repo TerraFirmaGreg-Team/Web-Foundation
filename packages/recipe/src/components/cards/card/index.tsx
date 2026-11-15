@@ -104,6 +104,7 @@ export function RecipeCard({
   return (
     <div
       ref={rootRef}
+      data-marquee-hover
       className="relative w-fit overflow-hidden rounded-sm bg-mc-panel"
     >
       {src ? (
@@ -209,6 +210,7 @@ export function RecipeCard({
                 scale={scale}
                 langMap={langMap}
                 size={micro}
+                rightGui={margin + contentGuiW}
                 {...(labelSlot
                   ? {
                       anchor: {

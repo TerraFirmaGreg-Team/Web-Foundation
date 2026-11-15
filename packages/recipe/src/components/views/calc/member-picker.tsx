@@ -13,7 +13,10 @@ import {
 } from '@terrafirmagreg-team/ui/components/ui/command';
 import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
 import { stackDisplayName } from '@terrafirmagreg-team/game/lib/entry/display';
-import type { ReferenceKind } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
+import {
+  stackIdBase,
+  type ReferenceKind,
+} from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 
 export function CalcMemberList({
   tagId,
@@ -46,7 +49,9 @@ export function CalcMemberList({
               key={id}
               value={id}
               keywords={[stackDisplayName(langMap, id), id]}
-              data-checked={id === selected}
+              data-checked={
+                selected != null && stackIdBase(id) === stackIdBase(selected)
+              }
               onSelect={() => onSelect(tagId, id)}
             >
               <Entry

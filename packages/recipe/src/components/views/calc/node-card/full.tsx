@@ -1,7 +1,7 @@
 'use client';
 
-import { memo, useEffect, useState } from 'react';
-import { Minus, Plus } from 'lucide-react';
+import { memo, useEffect, useMemo, useState } from 'react';
+import { Check, Copy, Minus, Plus } from 'lucide-react';
 import {
   useUpdateNodeInternals,
   type NodeProps,
@@ -18,14 +18,17 @@ import {
 import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
 import { StackCount } from '@terrafirmagreg-team/game/components/entry/stack-count';
 import { PagedCard } from '@terrafirmagreg-team/recipe/components/cards/paged-card';
+import { ButtonCopy } from '@terrafirmagreg-team/recipe/components/button-copy';
 import { Skeleton } from '@terrafirmagreg-team/ui/components/ui/skeleton';
 import { Hint } from '@terrafirmagreg-team/ui/components/blocks/tooltip/hint';
+import { Marquee } from '@terrafirmagreg-team/ui/components/blocks/text/marquee';
 import {
   formatCount,
   formatFluidAmount,
 } from '@terrafirmagreg-team/ui/lib/utils/format';
 import { useCalcSession } from '@terrafirmagreg-team/recipe/hooks/calc/use-calc-session';
 import { useCalcFar } from '@terrafirmagreg-team/recipe/hooks/calc/use-far-mode';
+import { useCalcRecipeIds } from '@terrafirmagreg-team/recipe/hooks/calc/use-recipe-ids';
 import { useCalcTier } from '@terrafirmagreg-team/recipe/hooks/calc/use-tier';
 import { recipeItemName } from '@terrafirmagreg-team/recipe/lib/client-index';
 import {
@@ -35,6 +38,7 @@ import {
 import { recipeTitle } from '@terrafirmagreg-team/recipe/lib/data/parse';
 import { cn } from '@terrafirmagreg-team/ui/lib/utils/cn';
 import { CALC_NODE_W } from '@terrafirmagreg-team/recipe/lib/calc/flow';
+import { pinnedRecipe } from '@terrafirmagreg-team/recipe/lib/calc/member';
 import { railSpans } from '@terrafirmagreg-team/recipe/lib/calc/ports';
 import type { CalcFlowNode } from '@terrafirmagreg-team/recipe/lib/calc/flow';
 import { NodeBadges } from './badges';
@@ -64,6 +68,7 @@ export const CalcNodeCardFull = memo(function CalcNodeCardFull({
     dataset,
     mode,
     recipeBody,
+    tagSelections,
     onRequestPicker,
     onRequestMemberPicker,
     onCrafts,
@@ -71,6 +76,7 @@ export const CalcNodeCardFull = memo(function CalcNodeCardFull({
   const t = useTranslations();
   const session = useCalcSession();
   const farCards = useCalcFar();
+  const showIds = useCalcRecipeIds();
   const lang = session?.lang ?? 'en_us';
   const names = session?.names ?? {};
   const langMap = session?.langMap;
@@ -79,7 +85,13 @@ export const CalcNodeCardFull = memo(function CalcNodeCardFull({
   const [imgFail, setImgFail] = useState(false);
   const name = recipeItemName(names, lang, node.materialId);
   const recipes = node.availableRecipes;
-  const body = node.recipe ? recipeBody(node.recipe.recipeId) : undefined;
+  const rawBody = node.recipe
+    ? recipeBody(node.recipe.recipeId)
+    : undefined;
+  const body = useMemo(
+    () => (rawBody ? pinnedRecipe(rawBody, node, tagSelections) : rawBody),
+    [rawBody, node, tagSelections],
+  );
   const src = body
     ? (recipeImageUrl(dataset, body) ??
       recipeCardImageUrl(dataset, body.id))
@@ -194,9 +206,9 @@ export const CalcNodeCardFull = memo(function CalcNodeCardFull({
               {producedBadge}
             </span>
           </span>
-          <span className="w-full truncate px-0.5 text-center text-[9px] leading-tight text-muted-foreground">
+          <Marquee className="w-full px-0.5 text-center text-[9px] leading-tight text-muted-foreground">
             {name}
-          </span>
+          </Marquee>
           <NodeChips
             node={node}
             mini
@@ -398,6 +410,23 @@ export const CalcNodeCardFull = memo(function CalcNodeCardFull({
         connectable={interactive}
       />
       {interactive ? <NodeActions data={data} nodeId={id} /> : null}
+      {showIds && body ? (
+        <span className="nodrag absolute -bottom-2 left-3 z-30 flex">
+          <span className="inline-flex max-w-full items-center gap-0.5 rounded-sm border border-border bg-background px-1 py-px shadow-sm">
+            <code className="truncate text-[8px] leading-tight text-muted-foreground">
+              {body.id}
+            </code>
+            <ButtonCopy
+              value={body.id}
+              title={t('Copy recipe id', { note: 'recipe.copy_recipe_id' })}
+              aria-label={t('Copy recipe id', { note: 'recipe.copy_recipe_id' })}
+              copy={<Copy className="size-2.5" />}
+              copied={<Check className="size-2.5" />}
+              className="size-3.5 p-0"
+            />
+          </span>
+        </span>
+      ) : null}
       <NodeBadges node={node} />
     </div>
   );

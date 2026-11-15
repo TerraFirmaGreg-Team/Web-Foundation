@@ -32,6 +32,8 @@ export type CalcFlowProps = {
   onModeChange: (mode: CalcViewMode) => void;
   farCards: CalcFarMode;
   onFarCardsChange: (mode: CalcFarMode) => void;
+  recipeIds: boolean;
+  onRecipeIdsChange: (show: boolean) => void;
   treeReady?: boolean;
   resetGen?: number;
   canvasId?: string;

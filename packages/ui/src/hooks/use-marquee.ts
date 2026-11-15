@@ -10,7 +10,7 @@ export function useMarquee<T extends HTMLElement>(): RefObject<T | null> {
     if (!outer || !(inner instanceof HTMLElement)) return;
     const target =
       outer.closest(
-        'a, button, [role="menuitem"], [role="menuitemradio"], [role="menuitemcheckbox"], [role="option"]',
+        'a, button, [role="menuitem"], [role="menuitemradio"], [role="menuitemcheckbox"], [role="option"], [data-marquee-hover]',
       ) ?? outer;
 
     const measure = () => {

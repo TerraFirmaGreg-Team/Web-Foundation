@@ -71,6 +71,10 @@
   transform: none;
 }
 
+.calc-rail .calc-port::before {
+  inset: 0;
+}
+
 .calc-port--ghost {
   opacity: 0;
   pointer-events: none;

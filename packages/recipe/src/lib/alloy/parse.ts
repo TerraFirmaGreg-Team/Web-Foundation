@@ -1,6 +1,7 @@
-import type { Recipe } from '@terrafirmagreg-team/recipe/lib/data/dto';
+import type { Recipe, RecipeTextWidget } from '@terrafirmagreg-team/recipe/lib/data/dto';
 import type { AlloyComponent, AlloyRecipe } from '@terrafirmagreg-team/recipe/types/alloy';
 import { cleanForgeText } from '@terrafirmagreg-team/recipe/lib/forge/actions';
+import { widgetText } from '@terrafirmagreg-team/recipe/lib/cards/model';
 
 export function parseAlloyPercent(
   text: string,
@@ -20,11 +21,13 @@ export function toAlloyRecipe(recipe: Recipe): AlloyRecipe {
     .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
     .map(([, slot]) => slot);
   const ranges = recipe.widgets
-    .filter((widget) => widget.type === 'text')
+    .filter(
+      (widget): widget is RecipeTextWidget => widget.type === 'text',
+    )
     .map((widget) => ({
       x: widget.x,
       y: widget.y,
-      range: parseAlloyPercent(widget.text ?? ''),
+      range: parseAlloyPercent(widgetText(widget)),
     }))
     .filter((widget) => widget.range !== undefined)
     .sort((a, b) => a.y - b.y || a.x - b.x);

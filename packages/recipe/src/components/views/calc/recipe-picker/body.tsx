@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState, type ReactNode } from 'react';
 import { Sparkles } from 'lucide-react';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
+import { useCardGrid } from '@terrafirmagreg-team/recipe/hooks/use-card-grid';
 import { useCategoriesById } from '@terrafirmagreg-team/recipe/hooks/use-categories-by-id';
 import { useFitPages } from '@terrafirmagreg-team/ui/hooks/page/use-fit-pages';
 import {
@@ -13,10 +14,8 @@ import { Button } from '@terrafirmagreg-team/ui/components/ui/button';
 import { PagerArrow } from '@terrafirmagreg-team/ui/components/blocks/page/pager';
 import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
 import { RecipeFrame } from '@terrafirmagreg-team/recipe/components/views/browser/frame';
-import {
-  RecipeCardGrid,
-  recipeCardDim,
-} from '@terrafirmagreg-team/recipe/components/views/browser/card-grid';
+import { RecipeCardGrid } from '@terrafirmagreg-team/recipe/components/views/browser/card-grid';
+import { recipeCardFitDim } from '@terrafirmagreg-team/recipe/lib/browser/card-dim';
 import { RecipeTypeTabs } from '@terrafirmagreg-team/recipe/components/views/browser/type-tabs';
 import { PlaceHeader } from '@terrafirmagreg-team/recipe/components/views/browser/place-header';
 import { WorkstationRail } from '@terrafirmagreg-team/recipe/components/views/browser/workstation-rail';
@@ -86,17 +85,16 @@ export function PickerBody({
   const focusIndex = rows.findIndex(
     (row) => row.id === node.recipe?.recipeId,
   );
+  const { grid } = useCardGrid();
   const list = useFitPages(
     boxRef,
     rows,
-    (row, box) => {
-      const d = recipeCardDim(index ?? null, categoriesById, row);
-      return d.h > box.h ? { w: d.w, h: box.h } : d;
-    },
+    (row, box) =>
+      recipeCardFitDim(index ?? null, categoriesById, row, box),
     page,
     8,
     pinned && focusIndex >= 0 ? focusIndex : undefined,
-    true,
+    !grid,
   );
   const goPage = (next: number) => {
     setPinned(false);
@@ -213,6 +211,8 @@ export function PickerBody({
           boxRef={boxRef}
           maxH={list.box.h}
           maxW={list.box.w}
+          vertical={!grid}
+          loading={!list.measured}
           empty={t('No recipes of this type.', { note: 'recipe.empty_type' })}
           onSwipe={(dir) =>
             goPage((list.page + dir + list.pages) % Math.max(list.pages, 1))

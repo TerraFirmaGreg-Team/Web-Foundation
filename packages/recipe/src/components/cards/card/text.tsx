@@ -2,8 +2,11 @@
 
 import { McText } from '@terrafirmagreg-team/game/components/entry/mc-text';
 import { dumpTextString } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names';
+import { Marquee } from '@terrafirmagreg-team/ui/components/blocks/text/marquee';
 import { widgetTextColor } from '@terrafirmagreg-team/recipe/lib/cards/model';
 import type { RecipeTextWidget } from '@terrafirmagreg-team/recipe/lib/data/dto';
+
+const LEFT_INSET = 1;
 
 export function CardText({
   widget,
@@ -13,6 +16,7 @@ export function CardText({
   langMap,
   anchor,
   size,
+  rightGui,
 }: {
   widget: RecipeTextWidget;
   offX?: number;
@@ -21,6 +25,7 @@ export function CardText({
   langMap?: Record<string, string>;
   anchor?: { x: number; y: number; w: number };
   size?: number;
+  rightGui?: number;
 }) {
   const content = widget.component
     ? dumpTextString(langMap ?? {}, widget.component) || widget.text
@@ -29,6 +34,12 @@ export function CardText({
   const wrap = widget.type === 'paragraph';
   const rgb = widgetTextColor(widget.color, widget.shadow === true);
   const shadowRgb = ((rgb & 0xfcfcfc) >> 2) & 0xffffff;
+  const relX = widget.x + offX;
+  const clamped = !anchor && !wrap && rightGui !== undefined;
+  const leftGui = clamped ? Math.max(relX, LEFT_INSET) : relX;
+  const widthGui = clamped
+    ? Math.max(rightGui - leftGui, 0)
+    : widget.w;
   return (
     <span
       className={`font-mc pointer-events-none absolute leading-none ${wrap ? 'whitespace-pre-wrap' : 'whitespace-pre'}`}
@@ -41,9 +52,9 @@ export function CardText({
               textAlign: 'right' as const,
             }
           : {
-              left: (widget.x + offX) * scale,
+              left: leftGui * scale,
               top: (widget.y + offY) * scale,
-              ...(wrap ? { width: widget.w * scale } : {}),
+              ...(wrap || clamped ? { width: widthGui * scale } : {}),
             }),
         fontSize: size ?? 8 * scale,
         fontWeight: 700,
@@ -55,8 +66,13 @@ export function CardText({
           : {}),
       }}
     >
-      <McText text={content} surface="normal" />
+      {clamped ? (
+        <Marquee>
+          <McText text={content} surface="normal" />
+        </Marquee>
+      ) : (
+        <McText text={content} surface="normal" />
+      )}
     </span>
   );
 }
-

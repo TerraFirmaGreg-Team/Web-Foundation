@@ -16,12 +16,14 @@ import type { RecipeSession } from '@terrafirmagreg-team/recipe/types';
 import { useCalcData } from '@terrafirmagreg-team/recipe/hooks/calc/use-data';
 import { useCalcViewMode } from '@terrafirmagreg-team/recipe/hooks/calc/use-view-mode';
 import { useCalcFarMode } from '@terrafirmagreg-team/recipe/hooks/calc/use-far-mode';
+import { useCalcRecipeIdsMode } from '@terrafirmagreg-team/recipe/hooks/calc/use-recipe-ids';
 
 export function Calculator({ session }: { session: RecipeSession }) {
   const t = useTranslations();
   const { dataset, lang } = session;
   const [mode, setMode] = useCalcViewMode();
   const [farCards, setFarCards] = useCalcFarMode();
+  const [recipeIds, setRecipeIds] = useCalcRecipeIdsMode();
   const {
     cards,
     wires,
@@ -151,6 +153,8 @@ export function Calculator({ session }: { session: RecipeSession }) {
         onModeChange={setMode}
         farCards={farCards}
         onFarCardsChange={setFarCards}
+        recipeIds={recipeIds}
+        onRecipeIdsChange={setRecipeIds}
         treeReady={settled}
         resetGen={resetGen}
         canvasId={activeTabId ?? undefined}

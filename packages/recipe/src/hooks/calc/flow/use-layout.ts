@@ -44,7 +44,7 @@ export function useFlowLayout({
   >;
   mode: CalcViewMode;
   onRequestPicker: (node: CalcNode) => void;
-  onRequestMemberPicker: (node: CalcNode) => void;
+  onRequestMemberPicker: (node: CalcNode, input?: number) => void;
   onRequestSupply: (node: CalcNode, input: number) => void;
   onRequestDemand: (node: CalcNode, output: number) => void;
 }) {

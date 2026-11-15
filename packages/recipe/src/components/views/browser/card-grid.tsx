@@ -6,6 +6,7 @@ import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-transl
 import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { PagedCard } from '@terrafirmagreg-team/recipe/components/cards/paged-card';
 import { RecipeDefaultMenuItem } from '@terrafirmagreg-team/recipe/components/cards/default-item';
+import { CalcAddMenuItem } from '@terrafirmagreg-team/recipe/components/cards/calc-add-item';
 import { CopyIdMenu } from '@terrafirmagreg-team/game/components/entry/copy-id-menu';
 import { EmptyState } from '@terrafirmagreg-team/ui/components/blocks/page/empty-state';
 import { Skeleton } from '@terrafirmagreg-team/ui/components/ui/skeleton';
@@ -19,34 +20,13 @@ import { pushUrlState } from '@terrafirmagreg-team/ui/lib/utils/history';
 import { useSwipe } from '@terrafirmagreg-team/ui/hooks/use-swipe';
 import { dismissOpenTooltips } from '@terrafirmagreg-team/ui/lib/dismiss-tooltips';
 import { favoriteHover } from '@terrafirmagreg-team/recipe/lib/browser/favorite-hover';
+import { FALLBACK_DIM } from '@terrafirmagreg-team/recipe/lib/browser/card-dim';
 import { recipeTitle } from '@terrafirmagreg-team/recipe/lib/data/parse';
 import { cn } from '@terrafirmagreg-team/ui/lib/utils/cn';
-import type { FitDim } from '@terrafirmagreg-team/ui/hooks/page/use-fit-pages';
 import type {
-  RecipeCategory,
-  RecipeCompactIndex,
   RecipeCompactRow,
   RecipeSession,
 } from '@terrafirmagreg-team/recipe/types';
-
-const FALLBACK_DIM: FitDim = { w: 320, h: 80 };
-
-export function recipeCardDim(
-  index: RecipeCompactIndex | null,
-  categoriesById: Map<string, RecipeCategory>,
-  row: RecipeCompactRow,
-): FitDim {
-  if (row.d) return { w: row.d.w, h: row.d.h };
-  const typeId = index?.types[row.type];
-  const layout = typeId ? categoriesById.get(typeId)?.layout : undefined;
-  if (!layout) return FALLBACK_DIM;
-  const scale = layout.scale ?? 2;
-  const margin = layout.margin ?? 0;
-  return {
-    w: (layout.w + margin * 2) * scale,
-    h: (layout.h + margin * 2) * scale,
-  };
-}
 
 function RecipeGridCard({
   row,
@@ -122,6 +102,7 @@ function RecipeGridCard({
             materialId={defaultMaterial ?? row.out[0]}
             recipeId={row.id}
           />
+          <CalcAddMenuItem session={session} row={row} />
           {menuExtra?.(row)}
         </>
       }
@@ -217,6 +198,7 @@ export function RecipeCardGrid({
   boxRef,
   maxH,
   maxW,
+  vertical,
   loading,
   empty,
   onSwipe,
@@ -229,6 +211,7 @@ export function RecipeCardGrid({
   boxRef: RefObject<HTMLDivElement | null>;
   maxH?: number;
   maxW?: number;
+  vertical?: boolean;
   loading?: boolean;
   empty?: string;
   onSwipe?: (dir: -1 | 1) => void;
@@ -276,7 +259,12 @@ export function RecipeCardGrid({
       ref={boxRef}
       {...swipe}
       onScroll={dismissOpenTooltips}
-      className="flex min-h-0 flex-1 flex-col items-center justify-start gap-2 overflow-x-auto overflow-y-clip"
+      className={cn(
+        'flex min-h-0 flex-1 items-center gap-2 overflow-x-clip overflow-y-auto',
+        vertical
+          ? 'flex-col'
+          : 'flex-row flex-wrap content-start justify-center',
+      )}
     >
       {body}
     </div>

@@ -10,6 +10,7 @@ import {
 import { AtlasSprite } from '@terrafirmagreg-team/game/components/entry/atlas-sprite';
 import { useIconSource } from '@terrafirmagreg-team/game/hooks/use-icon-source';
 import { Skeleton } from '@terrafirmagreg-team/ui/components/ui/skeleton';
+import { Marquee } from '@terrafirmagreg-team/ui/components/blocks/text/marquee';
 import type {
   DumpNbt,
   ReferenceKind,
@@ -172,9 +173,11 @@ export function EntryIcon({
       {framed}
       {labeled ? (
         caption && caption !== source.rawId ? (
-          <span className="text-xs">{caption}</span>
+          <Marquee className="text-xs">{caption}</Marquee>
         ) : (
-          <code className="text-xs">{source.rawId}</code>
+          <Marquee className="text-xs">
+            <code>{source.rawId}</code>
+          </Marquee>
         )
       ) : null}
       {children}

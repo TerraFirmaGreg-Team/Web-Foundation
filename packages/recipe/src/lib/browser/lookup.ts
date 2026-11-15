@@ -10,6 +10,7 @@ import {
   resolveRecipeRows,
 } from '@terrafirmagreg-team/recipe/lib/client-index';
 import { stackIdFromRef } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
+import { refsMatchBase } from '@terrafirmagreg-team/recipe/lib/browser/row-match';
 import { loadFluidIoIndex } from '@terrafirmagreg-team/recipe/lib/browser/fluid-outputs';
 
 export { registryId, tagPseudoId } from '@terrafirmagreg-team/dump/lib/dump/paths';
@@ -59,7 +60,7 @@ export async function recipesForOutput(
   const keepTagRows = opts?.includeTagRows ?? false;
   return (await resolveRecipeRows(dataset, index, ids, opts)).filter(
     (row) =>
-      row.out.includes(base) ||
+      refsMatchBase(row.out, base) ||
       (keepTagRows &&
         (row.cat ?? index.types[row.type]) === 'emi:tag'),
   );
@@ -130,7 +131,7 @@ export async function usesForInput(
     }),
   ]);
   return uniqueRows([
-    ...refRows.filter((row) => row.in.includes(base)),
+    ...refRows.filter((row) => refsMatchBase(row.in, base)),
     ...tagRows.filter((row) =>
       row.in.some((id) => acceptedTags.has(id)),
     ),

@@ -2,6 +2,8 @@
 import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 
 import {
+  Check,
+  Copy,
   ExternalLink,
   ListFilter,
   Mountain,
@@ -22,8 +24,10 @@ import {
 } from '@terrafirmagreg-team/ui/components/ui/context-menu';
 import { HoverCardContent } from '@terrafirmagreg-team/ui/components/ui/hover-card';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
+import { useCalcRecipeIds } from '@terrafirmagreg-team/recipe/hooks/calc/use-recipe-ids';
 import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
 import { PagedCard } from '@terrafirmagreg-team/recipe/components/cards/paged-card';
+import { ButtonCopy } from '@terrafirmagreg-team/recipe/components/button-copy';
 import { recipeTitle } from '@terrafirmagreg-team/recipe/lib/data/parse';
 import type { CalcFlowData } from '@terrafirmagreg-team/recipe/lib/calc/flow';
 import type { CalcKind } from '@terrafirmagreg-team/recipe/types/calc';
@@ -168,7 +172,9 @@ export function PortContextMenu({
     onRequestSupply,
     onRequestDemand,
     onSupplyInput,
+    onRequestMemberPicker,
   } = data;
+  const slot = input != null ? node.inputs[input] : undefined;
   const t = useTranslations();
   return (
     <ContextMenuContent>
@@ -204,6 +210,15 @@ export function PortContextMenu({
         >
           <Plus />
           {t('Supply via recipe…', { note: 'recipe.calc.supply.recipe' })}
+        </ContextMenuItem>
+      ) : null}
+      {slot?.tagId && slot.members && slot.members.length > 1 ? (
+        <ContextMenuItem
+          className="whitespace-nowrap"
+          onClick={() => onRequestMemberPicker(node, input)}
+        >
+          <ListFilter />
+          {t('Choose tag member', { note: 'recipe.calc.member.title' })}
         </ContextMenuItem>
       ) : null}
       {out != null ? (
@@ -262,6 +277,8 @@ export function NodeHoverContent({
   onFail: () => void;
 }) {
   const { node, dataset } = data;
+  const t = useTranslations();
+  const showIds = useCalcRecipeIds();
   return (
     <HoverCardContent
       side="right"
@@ -287,6 +304,21 @@ export function NodeHoverContent({
         <span className="truncate">
           {body ? recipeTitle(body, langMap ?? {}) : name}
         </span>
+        {showIds && body ? (
+          <span className="ml-auto inline-flex max-w-[60%] shrink-0 items-center gap-0.5 rounded-sm border border-border bg-background px-1 py-px pl-2">
+            <code className="truncate text-[9px] leading-tight text-muted-foreground/70">
+              {body.id}
+            </code>
+            <ButtonCopy
+              value={body.id}
+              title={t('Copy recipe id', { note: 'recipe.copy_recipe_id' })}
+              aria-label={t('Copy recipe id', { note: 'recipe.copy_recipe_id' })}
+              copy={<Copy className="size-2.5" />}
+              copied={<Check className="size-2.5" />}
+              className="size-3.5 p-0"
+            />
+          </span>
+        ) : null}
       </div>
       {body && src ? (
         <PagedCard

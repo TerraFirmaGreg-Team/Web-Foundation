@@ -3,12 +3,14 @@
 import { useCallback, useState } from 'react';
 import type { CalcNode } from '@terrafirmagreg-team/recipe/types/calc';
 
+import type { MemberRequest } from '@terrafirmagreg-team/recipe/lib/calc/member';
+
 export type SupplyRequest = { node: CalcNode; input: number };
 export type DemandRequest = { node: CalcNode; output: number };
 
 export function useFlowPickers(nodes: CalcNode[]) {
   const [pickerNode, setPickerNode] = useState<CalcNode | null>(null);
-  const [memberNode, setMemberNode] = useState<CalcNode | null>(null);
+  const [memberNode, setMemberNode] = useState<MemberRequest | null>(null);
   const [supply, setSupply] = useState<SupplyRequest | null>(null);
   const [demand, setDemand] = useState<DemandRequest | null>(null);
   const onRequestPicker = useCallback(
@@ -16,7 +18,7 @@ export function useFlowPickers(nodes: CalcNode[]) {
     [],
   );
   const onRequestMemberPicker = useCallback(
-    (node: CalcNode) => setMemberNode(node),
+    (node: CalcNode, input?: number) => setMemberNode({ node, input }),
     [],
   );
   const onRequestSupply = useCallback(
@@ -31,14 +33,16 @@ export function useFlowPickers(nodes: CalcNode[]) {
   const [prevNodes, setPrevNodes] = useState(nodes);
   if (prevNodes !== nodes) {
     setPrevNodes(nodes);
-    for (const [node, set] of [
-      [pickerNode, setPickerNode],
-      [memberNode, setMemberNode],
-    ] as const) {
-      if (!node) continue;
-      const live = nodes.find((n) => n.id === node.id);
-      if (live && live !== node) set(live);
-      else if (!live) set(null);
+    if (pickerNode) {
+      const live = nodes.find((n) => n.id === pickerNode.id);
+      if (!live) setPickerNode(null);
+      else if (live !== pickerNode) setPickerNode(live);
+    }
+    if (memberNode) {
+      const live = nodes.find((n) => n.id === memberNode.node.id);
+      if (!live) setMemberNode(null);
+      else if (live !== memberNode.node)
+        setMemberNode({ node: live, input: memberNode.input });
     }
     if (supply) {
       const live = nodes.find((n) => n.id === supply.node.id);

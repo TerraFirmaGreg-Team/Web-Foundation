@@ -31,6 +31,8 @@ export function CalcToolbar({
   onModeChange: (mode: CalcViewMode) => void;
   farCards: CalcFarMode;
   onFarCardsChange: (mode: CalcFarMode) => void;
+  recipeIds: boolean;
+  onRecipeIdsChange: (show: boolean) => void;
 }) {
   const t = useTranslations();
   return (

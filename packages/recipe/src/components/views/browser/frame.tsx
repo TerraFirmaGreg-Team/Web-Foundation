@@ -136,9 +136,7 @@ export function RecipeFrame({
       ) : null}
       <div className="relative flex min-h-0 flex-1 overflow-hidden pt-2">
         {rail ? (
-          <div className="z-10 flex flex-col sm:absolute sm:start-0 sm:top-2 sm:bottom-0">
-            {rail}
-          </div>
+          <div className="z-10 flex shrink-0 flex-col">{rail}</div>
         ) : null}
         <div
           onWheel={(event) => goPage(event.deltaY > 0 ? 1 : -1)}

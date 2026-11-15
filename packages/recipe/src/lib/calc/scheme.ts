@@ -10,6 +10,7 @@ import type {
   CalcWire,
   TagResolution,
 } from '@terrafirmagreg-team/recipe/types/calc';
+import { stackIdBase } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 import { mergeAmounts } from './tree/materials';
 import { resolveWireEnds } from './wire';
 
@@ -37,13 +38,17 @@ function inputMember(
   ctx: SchemeContext,
 ): { id?: string; kind: CalcKind; members?: string[] } {
   if (!input.tagId) return { id: input.id, kind: input.kind };
-  const picked = ctx.tagSelections[input.tagId];
+  const key = input.tagId.replace(/^#+/, '');
+  const picked = ctx.tagSelections[key] ?? ctx.tagSelections[`#${key}`];
   const resolution = ctx.tagMembers(input.tagId);
   const members = resolution?.members ?? [];
+  const pickedBase = picked ? stackIdBase(picked) : undefined;
   const memberId =
-    picked && members.includes(picked) ? picked : members[0];
+    (pickedBase
+      ? members.find((m) => stackIdBase(m) === pickedBase)
+      : undefined) ?? members[0];
   return {
-    id: memberId,
+    id: memberId ? stackIdBase(memberId) : undefined,
     kind: resolution?.kind ?? input.kind,
     members: members.length ? members : undefined,
   };

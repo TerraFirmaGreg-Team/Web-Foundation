@@ -9,6 +9,10 @@ import { CalcRecipePicker } from '@terrafirmagreg-team/recipe/components/views/c
 import { CalcMemberPicker } from '@terrafirmagreg-team/recipe/components/views/calc/member-picker';
 import { usesForInput } from '@terrafirmagreg-team/recipe/lib/browser/lookup';
 import type { CalcFlowData } from '@terrafirmagreg-team/recipe/lib/calc/flow';
+import {
+  memberTarget,
+  type MemberRequest,
+} from '@terrafirmagreg-team/recipe/lib/calc/member';
 import type {
   DemandRequest,
   SupplyRequest,
@@ -50,8 +54,8 @@ function SupplyPicker({
     kind: slot.kind,
     recipe: null,
     availableRecipes: recipes,
-    tagId: undefined,
-    members: undefined,
+    tagId: slot.tagId,
+    members: slot.members,
     inputs: [],
   };
   return (
@@ -188,7 +192,7 @@ export function CalcPickers({
   onCloseDemand,
 }: {
   pickerNode: CalcNode | null;
-  memberNode: CalcNode | null;
+  memberNode: MemberRequest | null;
   supply: SupplyRequest | null;
   demand: DemandRequest | null;
   session: RecipeSession;
@@ -207,6 +211,9 @@ export function CalcPickers({
   onCloseSupply: () => void;
   onCloseDemand: () => void;
 }) {
+  const member = memberNode
+    ? memberTarget(memberNode, data.tagSelections)
+    : undefined;
   return (
     <>
       {pickerNode ? (
@@ -225,16 +232,16 @@ export function CalcPickers({
           onSetRecipeDefault={data.onSetRecipeDefault}
         />
       ) : null}
-      {memberNode?.tagId && memberNode.members ? (
+      {member ? (
         <CalcMemberPicker
           open
           onOpenChange={(open) => {
             if (!open) onCloseMember();
           }}
-          tagId={memberNode.tagId}
-          members={memberNode.members}
-          selected={memberNode.materialId}
-          memberKind={memberNode.kind}
+          tagId={member.tagId}
+          members={member.members}
+          selected={member.selected}
+          memberKind={member.kind}
           dataset={dataset}
           lang={session.lang}
           langMap={session.langMap}

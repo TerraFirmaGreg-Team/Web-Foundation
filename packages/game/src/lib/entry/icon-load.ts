@@ -17,6 +17,7 @@ import { asTag, firstTagItem } from '@terrafirmagreg-team/dump/lib/dump/data/tag
 import type { DumpNbt } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 import type { DumpTag } from '@terrafirmagreg-team/dump/lib/dump/data/tag/dto';
 import { createDatasetCache } from '@terrafirmagreg-team/dump/lib/dump/reader';
+import { diverseTagMembers } from './tag-members';
 
 export type { AtlasBundle } from '@terrafirmagreg-team/dump/lib/dump/assets/atlas/dto';
 
@@ -65,6 +66,7 @@ export function fetchTagItem(
 }
 
 const TAG_ICON_MEMBER_LIMIT = 16;
+const TAG_ICON_MEMBER_SCAN = 512;
 
 const TAG_ICON_SPRITE_KIND: Record<TagMemberKind, 'item' | 'fluid'> = {
   item: 'item',
@@ -82,10 +84,10 @@ const fetchTagMembersList = createDatasetCache(
     const tag = await fetchTagRecord(dataset, tagId, memberKind);
     const members = (tag?.members ?? [])
       .filter((member) => member && !member.startsWith('#'))
-      .slice(0, TAG_ICON_MEMBER_LIMIT);
+      .slice(0, TAG_ICON_MEMBER_SCAN);
     if (!members.length) return [];
     if (memberKind !== 'item' && memberKind !== 'block' && memberKind !== 'fluid') {
-      return members;
+      return diverseTagMembers(members, TAG_ICON_MEMBER_LIMIT);
     }
     const spriteKind = TAG_ICON_SPRITE_KIND[memberKind];
     const found = await Promise.all(
@@ -101,7 +103,8 @@ const fetchTagMembersList = createDatasetCache(
           : null;
       }),
     );
-    const out = found.filter((member): member is string => member !== null);
+    const valid = found.filter((member): member is string => member !== null);
+    const out = diverseTagMembers(valid, TAG_ICON_MEMBER_LIMIT);
     return out.length ? out : [members[0]];
   },
 );

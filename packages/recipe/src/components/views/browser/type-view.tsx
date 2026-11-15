@@ -6,11 +6,10 @@ import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-transl
 import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { useAsyncResult } from '@terrafirmagreg-team/ui/hooks/use-async-value';
 import { RecipeFrame } from '@terrafirmagreg-team/recipe/components/views/browser/frame';
-import {
-  RecipeCardGrid,
-  recipeCardDim,
-} from '@terrafirmagreg-team/recipe/components/views/browser/card-grid';
+import { RecipeCardGrid } from '@terrafirmagreg-team/recipe/components/views/browser/card-grid';
+import { recipeCardFitDim } from '@terrafirmagreg-team/recipe/lib/browser/card-dim';
 import { PlaceHeader } from '@terrafirmagreg-team/recipe/components/views/browser/place-header';
+import { useCardGrid } from '@terrafirmagreg-team/recipe/hooks/use-card-grid';
 import { useCategoriesById } from '@terrafirmagreg-team/recipe/hooks/use-categories-by-id';
 import { useFitPages } from '@terrafirmagreg-team/ui/hooks/page/use-fit-pages';
 import {
@@ -93,17 +92,15 @@ export function TypeView({ session }: { session: RecipeSession }) {
       }),
     );
   }, [focusIndex, focusRes.pending, focusRes.value, index, nav, dataset, resolved, recipeId, rows, shown]);
+  const { grid } = useCardGrid();
   const list = useFitPages(
     boxRef,
     feedRows,
-    (row, box) => {
-      const d = recipeCardDim(index, categoriesById, row);
-      return d.h > box.h ? { w: d.w, h: box.h } : d;
-    },
+    (row, box) => recipeCardFitDim(index, categoriesById, row, box),
     rpage,
     8,
     feedFocus >= 0 ? feedFocus : undefined,
-    true,
+    !grid,
   );
 
   const goCategory = (dir: -1 | 1) => {
@@ -155,7 +152,8 @@ export function TypeView({ session }: { session: RecipeSession }) {
       boxRef={boxRef}
       maxH={list.box.h}
       maxW={list.box.w}
-      loading={indexLoading || (shown != null && rows === undefined)}
+      vertical={!grid}
+      loading={indexLoading || (shown != null && rows === undefined) || !list.measured}
       empty={t('No recipes of this type.', { note: 'recipe.empty_type' })}
       onSwipe={onSwipe}
     />

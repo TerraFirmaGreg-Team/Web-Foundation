@@ -1,3 +1,4 @@
+import { stackIdBase } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 import type {
   CalcMaterial,
   CalcNode,
@@ -10,8 +11,11 @@ export function wireEndMatches(
   out: CalcMaterial,
 ): boolean {
   if (input.kind !== out.kind || !out.id) return false;
-  if (input.id === out.id) return true;
-  return !!input.tagId && !!input.members?.includes(out.id);
+  if (input.id && stackIdBase(input.id) === stackIdBase(out.id)) return true;
+  return (
+    !!input.tagId &&
+    !!input.members?.some((m) => stackIdBase(m) === stackIdBase(out.id))
+  );
 }
 
 export function resolveWireEnds(

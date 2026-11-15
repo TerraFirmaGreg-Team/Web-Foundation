@@ -5,14 +5,13 @@ import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-transl
 import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { RecipeFrame } from '@terrafirmagreg-team/recipe/components/views/browser/frame';
 import { ItemViewHeader } from '@terrafirmagreg-team/recipe/components/views/browser/item-view-header';
-import {
-  RecipeCardGrid,
-  recipeCardDim,
-} from '@terrafirmagreg-team/recipe/components/views/browser/card-grid';
+import { RecipeCardGrid } from '@terrafirmagreg-team/recipe/components/views/browser/card-grid';
+import { recipeCardFitDim } from '@terrafirmagreg-team/recipe/lib/browser/card-dim';
 import { RecipeTypeTabs } from '@terrafirmagreg-team/recipe/components/views/browser/type-tabs';
 import { WorkstationRail } from '@terrafirmagreg-team/recipe/components/views/browser/workstation-rail';
 import { PaneTabs } from '@terrafirmagreg-team/recipe/components/views/browser/pane-tabs';
 import { useFitPages } from '@terrafirmagreg-team/ui/hooks/page/use-fit-pages';
+import { useCardGrid } from '@terrafirmagreg-team/recipe/hooks/use-card-grid';
 import { useCategoriesById } from '@terrafirmagreg-team/recipe/hooks/use-categories-by-id';
 import { useTypeFilter } from '@terrafirmagreg-team/recipe/hooks/use-type-filter';
 import { useFavorites } from '@terrafirmagreg-team/recipe/hooks/use-favorites';
@@ -93,17 +92,15 @@ export function ItemView({ session }: { session: RecipeSession }) {
   const focusIndex = recipeId
     ? typeFilter.rows.findIndex((row) => row.id === recipeId)
     : -1;
+  const { grid } = useCardGrid();
   const list = useFitPages(
     boxRef,
     typeFilter.rows,
-    (row, box) => {
-      const d = recipeCardDim(index, categoriesById, row);
-      return d.h > box.h ? { w: d.w, h: box.h } : d;
-    },
+    (row, box) => recipeCardFitDim(index, categoriesById, row, box),
     rpage,
     8,
     focusIndex >= 0 ? focusIndex : undefined,
-    true,
+    !grid,
   );
 
   const onSwipe = (dir: -1 | 1) => {
@@ -177,7 +174,8 @@ export function ItemView({ session }: { session: RecipeSession }) {
           boxRef={boxRef}
           maxH={list.box.h}
           maxW={list.box.w}
-          loading={feeds.pending}
+          vertical={!grid}
+          loading={feeds.pending || !list.measured}
           empty={t('No recipes of this type.', { note: 'recipe.empty_type' })}
           onSwipe={onSwipe}
         />

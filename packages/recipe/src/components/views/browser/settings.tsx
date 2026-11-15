@@ -2,6 +2,7 @@
 
 import { Settings2 } from 'lucide-react';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
+import { useCardGrid } from '@terrafirmagreg-team/recipe/hooks/use-card-grid';
 import { useHideUnused } from '@terrafirmagreg-team/recipe/hooks/use-hide-unused';
 import { useSidebarGroup } from '@terrafirmagreg-team/recipe/hooks/use-sidebar-group';
 import { Button } from '@terrafirmagreg-team/ui/components/ui/button';
@@ -17,6 +18,7 @@ export function RecipeSettings() {
   const t = useTranslations();
   const { hideUnused, setHideUnused } = useHideUnused();
   const { sidebarGroup, setSidebarGroup } = useSidebarGroup();
+  const { grid, setGrid } = useCardGrid();
 
   return (
     <Popover>
@@ -44,6 +46,10 @@ export function RecipeSettings() {
             onCheckedChange={(value) => setSidebarGroup(value ? 'mod' : 'flat')}
           />
           {t('Group sidebar by mod', { note: 'recipe.sidebar_group_mod' })}
+        </Label>
+        <Label className="gap-1.5 text-sm font-normal">
+          <Switch size="sm" checked={grid} onCheckedChange={setGrid} />
+          {t('Cards grid', { note: 'recipe.cards_grid' })}
         </Label>
       </PopoverContent>
     </Popover>

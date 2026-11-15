@@ -35,8 +35,9 @@ export type CalcFlowData = {
   recipeBody: (recipeId: string) => Recipe | undefined;
   onSelectRecipe: (cardId: string, recipeId: string | null) => void;
   onSelectTagMember: (tagId: string, memberId: string) => void;
+  tagSelections: Record<string, string>;
   onRequestPicker: (node: CalcNode) => void;
-  onRequestMemberPicker: (node: CalcNode) => void;
+  onRequestMemberPicker: (node: CalcNode, input?: number) => void;
   onRequestSupply: (node: CalcNode, input: number) => void;
   onRequestDemand: (node: CalcNode, output: number) => void;
   onSupplyInput: (
@@ -228,6 +229,7 @@ function sameFlowData(a: CalcFlowData, b: CalcFlowData): boolean {
     a.recipeBody === b.recipeBody &&
     a.onSelectRecipe === b.onSelectRecipe &&
     a.onSelectTagMember === b.onSelectTagMember &&
+    a.tagSelections === b.tagSelections &&
     a.onRequestPicker === b.onRequestPicker &&
     a.onRequestMemberPicker === b.onRequestMemberPicker &&
     a.onRequestSupply === b.onRequestSupply &&

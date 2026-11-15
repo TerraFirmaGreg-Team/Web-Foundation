@@ -28,6 +28,7 @@ import { EmptyState } from '@terrafirmagreg-team/ui/components/blocks/page/empty
 import { CalcEdge } from '@terrafirmagreg-team/recipe/components/views/calc/edge';
 import { CalcSessionProvider } from '@terrafirmagreg-team/recipe/hooks/calc/use-calc-session';
 import { CalcFarProvider } from '@terrafirmagreg-team/recipe/hooks/calc/use-far-mode';
+import { CalcRecipeIdsProvider } from '@terrafirmagreg-team/recipe/hooks/calc/use-recipe-ids';
 import { CalcTierProvider } from '@terrafirmagreg-team/recipe/hooks/calc/use-tier';
 import { useFlowPickers } from '@terrafirmagreg-team/recipe/hooks/calc/flow/use-pickers';
 import { useFlowLayout } from '@terrafirmagreg-team/recipe/hooks/calc/flow/use-layout';
@@ -77,6 +78,8 @@ function CalcFlowInner({
   onModeChange,
   farCards,
   onFarCardsChange,
+  recipeIds,
+  onRecipeIdsChange,
   treeReady = true,
   resetGen = 0,
   canvasId,
@@ -176,6 +179,40 @@ function CalcFlowInner({
     focusId,
   });
 
+  const boundsKey = useStore((s) => {
+    let out = '';
+    for (const node of s.nodeLookup.values()) {
+      const hb = node.internals?.handleBounds;
+      out +=
+        `${node.id}:` +
+        (hb?.source?.map((h) => h.id).join('+') ?? '') +
+        '/' +
+        (hb?.target?.map((h) => h.id).join('+') ?? '') +
+        '|';
+    }
+    return out;
+  });
+  const readyEdges = useMemo(() => {
+    const bounds = new Map<
+      string,
+      { src: Set<string | null>; tgt: Set<string | null> }
+    >();
+    for (const part of boundsKey.split('|')) {
+      if (!part) continue;
+      const [id, rest = ''] = part.split(':');
+      const [src = '', tgt = ''] = rest.split('/');
+      bounds.set(id, {
+        src: new Set(src ? src.split('+') : []),
+        tgt: new Set(tgt ? tgt.split('+') : []),
+      });
+    }
+    return edges.filter(
+      (e) =>
+        bounds.get(e.source)?.src.has(e.sourceHandle ?? null) &&
+        bounds.get(e.target)?.tgt.has(e.targetHandle ?? null),
+    );
+  }, [edges, boundsKey]);
+
   const [prevCanvasId, setPrevCanvasId] = useState(canvasId);
   if (prevCanvasId !== canvasId) {
     setPrevCanvasId(canvasId);
@@ -217,6 +254,7 @@ function CalcFlowInner({
   return (
     <CalcSessionProvider value={session}>
       <CalcFarProvider value={farCards}>
+      <CalcRecipeIdsProvider value={recipeIds}>
       <CalcTierProvider value={tier}>
       <FlowCanvas<AnyCalcFlowNode>
         shellProps={shellProps}
@@ -227,7 +265,7 @@ function CalcFlowInner({
         )}
 
         nodes={tier === 'dot' ? EMPTY_FLOW : nodes}
-        edges={tier === 'dot' ? EMPTY_EDGES : edges}
+        edges={tier === 'dot' ? EMPTY_EDGES : readyEdges}
         extraRects={extraRects}
         fitNodes={fitRecipeNodes}
         nodeTypes={nodeTypes}
@@ -271,6 +309,8 @@ function CalcFlowInner({
           onModeChange={onModeChange}
           farCards={farCards}
           onFarCardsChange={onFarCardsChange}
+          recipeIds={recipeIds}
+          onRecipeIdsChange={onRecipeIdsChange}
         />
         {schemeNodes.length ? (
           ready ? null : (
@@ -298,6 +338,7 @@ function CalcFlowInner({
         onCloseDemand={closeDemand}
       />
       </CalcTierProvider>
+      </CalcRecipeIdsProvider>
       </CalcFarProvider>
     </CalcSessionProvider>
   );

@@ -8,16 +8,11 @@ import {
   DropdownMenuTrigger,
 } from '@terrafirmagreg-team/ui/components/ui/dropdown-menu';
 import { CheckIcon, ChevronsUpDown } from 'lucide-react';
-import {
-  type HTMLAttributes,
-  type ReactNode,
-  useMemo,
-  useState,
-} from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 import { useUiComponents } from '@terrafirmagreg-team/ui/provider';
 import { cn } from '@terrafirmagreg-team/ui/lib/utils/cn';
 import { useCloseOnScroll } from '@terrafirmagreg-team/ui/hooks/use-close-on-scroll';
-import { useMarquee } from '@terrafirmagreg-team/ui/hooks/use-marquee';
+import { Marquee } from '@terrafirmagreg-team/ui/components/blocks/text/marquee';
 import type { SwitcherOption, SwitcherProps } from '@terrafirmagreg-team/ui/types/nav';
 
 function SwitcherIcon({
@@ -184,23 +179,4 @@ export function Switcher({
 }
 
 export type { SwitcherOption, SwitcherProps } from '@terrafirmagreg-team/ui/types/nav';
-
-function Marquee({
-  className,
-  children,
-  ...props
-}: HTMLAttributes<HTMLSpanElement>) {
-  const ref = useMarquee<HTMLSpanElement>();
-  return (
-    <span
-      ref={ref}
-      className={cn('block min-w-0 overflow-hidden', className)}
-      {...props}
-    >
-      <span className="marquee-inner block whitespace-nowrap">
-        {children}
-      </span>
-    </span>
-  );
-}
 

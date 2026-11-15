@@ -13,7 +13,7 @@ import type { Recipe } from '@terrafirmagreg-team/recipe/lib/data/dto';
 import { loadClientRecipe } from '@terrafirmagreg-team/recipe/lib/client/recipe';
 import { resolveClientTag } from '@terrafirmagreg-team/dump/lib/dump/client/tags';
 import {
-  recipeDivisor,
+  resolveRecipeAmount,
   toCalcRecipe,
 } from '@terrafirmagreg-team/recipe/lib/calc/tree';
 import { CALC_NODE_W } from '@terrafirmagreg-team/recipe/lib/calc/flow';
@@ -32,6 +32,17 @@ import type { CalcFlowData } from '@terrafirmagreg-team/recipe/lib/calc/flow';
 let cardSeq = 0;
 const newCardId = () =>
   `c${Date.now().toString(36)}${(cardSeq += 1).toString(36)}`;
+
+function selectTagMember(
+  prev: Record<string, string>,
+  tagId: string,
+  memberId: string,
+): Record<string, string> {
+  const base = tagId.replace(/^#+/, '');
+  const next = { ...prev, [base]: memberId };
+  delete next[`#${base}`];
+  return next;
+}
 
 async function copyText(text: string) {
   try {
@@ -144,7 +155,7 @@ export function useCalcActions({
 
   const onSelectTagMember = useCallback(
     (tagId: string, memberId: string) => {
-      write({ tagSelections: { ...tagSelections, [tagId]: memberId } });
+      write({ tagSelections: selectTagMember(tagSelections, tagId, memberId) });
     },
     [tagSelections, write],
   );
@@ -172,15 +183,9 @@ export function useCalcActions({
       const consumerCard = cards.find((row) => row.id === cardId);
       const input = consumerNode?.inputs[inputIndex];
       if (!consumerNode || !consumerCard || !input?.id) return null;
+      const materialId = input.id;
+      const kind = input.kind;
       const need = Math.max(1, input.amount - input.covered);
-      const per = outputAmount ?? (() => {
-        const body = recipeId ? recipeBody(recipeId) : undefined;
-        const calc = body ? toCalcRecipe(body) : undefined;
-        return calc ? recipeDivisor(calc, input.id!, input.kind) : 0;
-      })();
-      const crafts = recipeId && per > 0
-        ? Math.max(1, Math.ceil(need / per))
-        : need;
       const base = consumerCard.pos;
       const id = newCardId();
       const nextWires = [
@@ -189,26 +194,42 @@ export function useCalcActions({
         ),
         { from: id, to: cardId, input: inputIndex },
       ];
-      persist({
-        cards: [
-          ...flushAmounts(),
-          {
-            id,
-            materialId: input.id,
-            kind: input.kind,
-            recipeId,
-            crafts,
-            pos: base
-              ? { x: base.x - 40, y: base.y + 140 + inputIndex * 24 }
-              : undefined,
-          },
-        ],
-        wires: nextWires,
-        tagSelections,
-      });
+      void (async () => {
+        const per = recipeId
+          ? await resolveRecipeAmount(
+              recipeId,
+              materialId,
+              kind,
+              async (id) =>
+                recipeBody(id) ??
+                (await loadClientRecipe(dataset, id).catch(() => undefined)),
+              outputAmount ?? 0,
+            )
+          : 0;
+        const crafts = recipeId && per > 0
+          ? Math.max(1, Math.ceil(need / per))
+          : need;
+        persist({
+          cards: [
+            ...flushAmounts(),
+            {
+              id,
+              materialId,
+              kind,
+              recipeId,
+              crafts,
+              pos: base
+                ? { x: base.x - 40, y: base.y + 140 + inputIndex * 24 }
+                : undefined,
+            },
+          ],
+          wires: nextWires,
+          tagSelections,
+        });
+      })();
       return id;
     },
-    [nodes, cards, wires, flushAmounts, persist, tagSelections, recipeBody],
+    [nodes, cards, wires, flushAmounts, persist, tagSelections, recipeBody, dataset],
   );
 
   const onDemandOutput = useCallback(
@@ -285,7 +306,7 @@ export function useCalcActions({
                 ]
               : wires,
           tagSelections: pickedTag
-            ? { ...tagSelections, [pickedTag]: out.id }
+            ? selectTagMember(tagSelections, pickedTag, out.id)
             : tagSelections,
         });
         ensureMaterial?.(materialId);
@@ -384,7 +405,7 @@ export function useCalcActions({
         ],
         tagSelections:
           pinTag && srcOut?.id
-            ? { ...tagSelections, [pinTag]: srcOut.id }
+            ? selectTagMember(tagSelections, pinTag, srcOut.id)
             : tagSelections,
       });
     },
@@ -431,7 +452,7 @@ export function useCalcActions({
         ],
         tagSelections:
           pinTag && srcOut?.id
-            ? { ...tagSelections, [pinTag]: srcOut.id }
+            ? selectTagMember(tagSelections, pinTag, srcOut.id)
             : tagSelections,
       });
     },
@@ -491,12 +512,14 @@ export function useCalcActions({
       onWireAmount,
       recipeDefaults,
       onSetRecipeDefault: setRecipeDefault,
+      tagSelections,
     }),
     [
       dataset,
       recipeBody,
       onSelectRecipe,
       onSelectTagMember,
+      tagSelections,
       onSupplyInput,
       onDemandOutput,
       onAddCard,
