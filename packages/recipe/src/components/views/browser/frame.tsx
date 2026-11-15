@@ -62,6 +62,8 @@ export function RecipeFrame({
       }),
     );
   };
+  const onPagerWheel = (event: { deltaY: number }) =>
+    goPage(event.deltaY > 0 ? 1 : -1);
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col">
       {strip ? (
@@ -71,9 +73,9 @@ export function RecipeFrame({
       ) : null}
       <div
         className={cn(
-          'grid items-center gap-x-3 border-b border-border pb-2 pt-2',
+          'relative grid items-center gap-x-3 border-b border-border pb-2 pt-2 max-sm:pe-11',
           navPrev || navNext
-            ? 'grid-cols-[minmax(0,1fr)_minmax(0,360px)_minmax(0,1fr)]'
+            ? 'grid-cols-[auto_minmax(0,1fr)_auto] sm:grid-cols-[minmax(0,1fr)_minmax(0,360px)_minmax(0,1fr)]'
             : 'grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]',
         )}
       >
@@ -103,15 +105,12 @@ export function RecipeFrame({
         ) : (
           <div className="min-w-0 max-w-full">{header}</div>
         )}
-        <div className="flex min-w-0 items-center justify-self-end">
+        <div className="flex min-w-0 items-center justify-self-end max-sm:absolute max-sm:end-1.5 max-sm:top-1/2 max-sm:-translate-y-1/2">
           <RecipeToolbar session={session} />
         </div>
       </div>
       {list ? (
-        <div
-          onWheel={(event) => goPage(event.deltaY > 0 ? 1 : -1)}
-          className="mx-auto w-full max-w-90"
-        >
+        <div onWheel={onPagerWheel} className="mx-auto w-full sm:max-w-90">
           {onPageChange ? (
             <Pager
               layout="spread"
@@ -137,7 +136,7 @@ export function RecipeFrame({
       ) : null}
       <div className="relative flex min-h-0 flex-1 overflow-hidden pt-2">
         {rail ? (
-          <div className="absolute start-0 top-2 bottom-0 z-10 flex flex-col">
+          <div className="z-10 flex flex-col sm:absolute sm:start-0 sm:top-2 sm:bottom-0">
             {rail}
           </div>
         ) : null}

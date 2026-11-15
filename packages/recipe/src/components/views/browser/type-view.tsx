@@ -189,6 +189,7 @@ export function TypeView({ session }: { session: RecipeSession }) {
           dir={-1}
           label={t('Previous category', { note: 'recipe.axis.prev' })}
           disabled={nonEmptyIds.length < 2}
+          className="max-sm:hidden"
           onClick={() => goCategory(-1)}
         />
       }
@@ -197,6 +198,7 @@ export function TypeView({ session }: { session: RecipeSession }) {
           dir={1}
           label={t('Next category', { note: 'recipe.axis.next' })}
           disabled={nonEmptyIds.length < 2}
+          className="max-sm:hidden"
           onClick={() => goCategory(1)}
         />
       }

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { LayoutGrid } from 'lucide-react';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
-import { Button } from '@terrafirmagreg-team/ui/components/ui/button';
+import { IconButton } from '@terrafirmagreg-team/ui/components/blocks/button/icon-button';
 import {
   Sheet,
   SheetContent,
@@ -26,15 +26,15 @@ export function RecipeToolbar({ session }: { session: RecipeSession }) {
 
   return (
     <div className="flex items-center gap-2">
-      <Button
-        variant="outline"
-        size="sm"
+      <IconButton
+        variant="secondary"
+        size="icon-lg"
         className="lg:hidden"
+        label={t('Items', { note: 'recipe.items' })}
         onClick={() => setItemsOpen(true)}
       >
-        <LayoutGrid className="size-3.5" />
-        {t('Items', { note: 'recipe.items' })}
-      </Button>
+        <LayoutGrid className="size-[58%]" />
+      </IconButton>
       <Sheet open={itemsOpen} onOpenChange={setItemsOpen}>
         <SheetContent side="right" className="w-full gap-3 sm:max-w-md">
           <SheetHeader>
