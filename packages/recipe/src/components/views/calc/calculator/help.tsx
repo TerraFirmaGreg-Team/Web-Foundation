@@ -78,19 +78,19 @@ export function CalcHelp() {
               <span className="flex w-5 shrink-0 items-center justify-center">
                 <span className="size-3.5 rounded-sm border border-emerald-500" />
               </span>
-              {t('Input port: click to pick a supplier or drag a wire', { note: 'recipe.calc.help.port_in' })}
+              {t('Input port: click to pick a supplier or drag a pipe', { note: 'recipe.calc.help.port_in' })}
             </li>
             <li className="flex items-center gap-2">
               <span className="flex w-5 shrink-0 items-center justify-center">
                 <span className="size-3.5 rounded-sm border border-red-400" />
               </span>
-              {t('Output port: click to pick a recipe or drag a wire', { note: 'recipe.calc.help.port_out' })}
+              {t('Output port: click to pick a recipe or drag a pipe', { note: 'recipe.calc.help.port_out' })}
             </li>
             <li className="flex items-center gap-2">
               <span className="flex w-5 shrink-0 items-center justify-center">
                 <span className="size-3.5 rounded-sm border border-dotted border-emerald-500" />
               </span>
-              {t('Catalyst: needed but not consumed; wire it or click to pick a supplier', { note: 'recipe.calc.help.port_cat' })}
+              {t('Catalyst: needed but not consumed; pipe it or click to pick a supplier', { note: 'recipe.calc.help.port_cat' })}
             </li>
             <li className="flex items-center gap-2">
               <span className="flex w-5 shrink-0 items-center justify-center">
@@ -127,7 +127,7 @@ export function CalcHelp() {
               <span className="flex w-5 shrink-0 items-center justify-center">
                 <span className="h-0 w-4 border-t border-dashed border-primary/70" />
               </span>
-              {t('Drag port to port to link; drag a wire end to retarget', { note: 'recipe.calc.help.edge_link' })}
+              {t('Drag port to port to link; drag a pipe end to retarget', { note: 'recipe.calc.help.edge_link' })}
             </li>
             <li className="flex items-center gap-2">
               <span className="flex w-5 shrink-0 items-center justify-center">
@@ -135,13 +135,13 @@ export function CalcHelp() {
                   16
                 </span>
               </span>
-              {t('Flow on a wire - shows on hover; click to cap the amount', { note: 'recipe.calc.help.edge_flow' })}
+              {t('Flow on a pipe - shows on hover; click to cap the amount', { note: 'recipe.calc.help.edge_flow' })}
             </li>
             <li className="flex items-center gap-2">
               <span className="flex w-5 shrink-0 items-center justify-center">
                 <Scissors className="size-3.5 text-muted-foreground" />
               </span>
-              {t('Shift + hover a wire shows x - click to delete it', { note: 'recipe.calc.help.edge_cut' })}
+              {t('Shift + click a pipe to disconnect it', { note: 'recipe.calc.help.edge_cut' })}
             </li>
           </ul>
         </section>

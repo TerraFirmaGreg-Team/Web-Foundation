@@ -85,7 +85,9 @@ function writeHistoryRaw(key: string, entries: CalcTreeEntry[]): void {
 }
 
 function syncHistory(key: string, tabs: CalcTreeEntry[]): void {
-  const live = tabs.filter((tab) => tab.state.cards.length);
+  const live = tabs.filter(
+    (tab) => tab.state.cards.length || tab.state.notes.length,
+  );
   if (!live.length) return;
   const prev = readCalcHistory(key);
   const ids = new Set(live.map((tab) => tab.id));

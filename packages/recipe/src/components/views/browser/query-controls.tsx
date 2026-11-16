@@ -23,15 +23,19 @@ type QueryNav = {
 export function QuerySearch({
   dataset,
   params,
+  param = 'search',
   query,
   onQuery,
   placeholder,
   className,
+  persist = true,
 }: QueryNav & {
+  param?: 'search' | 'rsearch';
   query: string;
   onQuery: (query: string) => void;
   placeholder?: string;
   className?: string;
+  persist?: boolean;
 }) {
   const resolved = useResolvedLang();
   return (
@@ -46,10 +50,11 @@ export function QuerySearch({
         onChange={(event) => {
           const next = event.target.value;
           onQuery(next);
+          if (!persist) return;
           replaceUrlState(
             recipeHref(dataset, resolved, {
               ...params,
-              search: next || undefined,
+              [param]: next || undefined,
             }),
           );
         }}

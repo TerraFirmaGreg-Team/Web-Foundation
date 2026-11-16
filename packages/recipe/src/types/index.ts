@@ -22,6 +22,7 @@ export type RecipeHrefOpts = {
   solo?: string;
   tab?: string;
   search?: string;
+  rsearch?: string;
   rpage?: number;
   type?: string;
   relation?: RecipeRelation;
@@ -127,6 +128,8 @@ export type RecipeSession = {
   tree?: string;
   query: string;
   setQuery: (query: string) => void;
+  rquery: string;
+  setRquery: (query: string) => void;
   rpage: number;
   nav: RecipeHrefOpts;
   index: RecipeCompactIndex | null;

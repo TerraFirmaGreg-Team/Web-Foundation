@@ -46,6 +46,8 @@ export function useRecipeQuery(dataset: DatasetRef, version?: string) {
     isAlloy && params.get('unit') === 'ingot' ? ('ingot' as const) : undefined;
   const alloyMix = isAlloy ? (params.get('mix') ?? undefined) : undefined;
   const searchParam = isTool ? '' : (params.get('search') ?? '');
+  const rsearchParam =
+    isTool && !isCalc ? '' : (params.get('rsearch') ?? '');
   const rpageValue = isTool ? 0 : urlPage(params, 'rpage');
 
   const [query, setQuery] = useState(searchParam);
@@ -53,6 +55,12 @@ export function useRecipeQuery(dataset: DatasetRef, version?: string) {
   if (lastSearch !== searchParam) {
     setLastSearch(searchParam);
     setQuery(searchParam);
+  }
+  const [rquery, setRquery] = useState(rsearchParam);
+  const [lastRsearch, setLastRsearch] = useState(rsearchParam);
+  if (lastRsearch !== rsearchParam) {
+    setLastRsearch(rsearchParam);
+    setRquery(rsearchParam);
   }
 
   useEffect(() => {
@@ -73,6 +81,7 @@ export function useRecipeQuery(dataset: DatasetRef, version?: string) {
         params.get('fluid') ||
         params.get('relation') ||
         params.get('search') ||
+        params.get('rsearch') ||
         params.get('rpage') ||
         params.get('solo') ||
         params.get('tree') ||
@@ -80,7 +89,13 @@ export function useRecipeQuery(dataset: DatasetRef, version?: string) {
     if (!stray) return;
     replaceUrlState(
       isCalc
-        ? recipeCalcHref(dataset, resolved, tree || undefined, version)
+        ? recipeCalcHref(
+            dataset,
+            resolved,
+            tree || undefined,
+            version,
+            params.get('rsearch') || undefined,
+          )
         : recipeHref(dataset, resolved, {
             tool: place.kind,
             id: recipeId,
@@ -118,6 +133,7 @@ export function useRecipeQuery(dataset: DatasetRef, version?: string) {
           relation,
           tab,
           search: searchParam || undefined,
+          rsearch: rsearchParam || undefined,
           rpage: rpageValue + 1,
           version,
         }),
@@ -136,6 +152,7 @@ export function useRecipeQuery(dataset: DatasetRef, version?: string) {
     relation,
     tab,
     searchParam,
+    rsearchParam,
     rpageValue,
   ]);
 
@@ -154,6 +171,7 @@ export function useRecipeQuery(dataset: DatasetRef, version?: string) {
         relation,
         tab,
         search: searchParam || undefined,
+        rsearch: rsearchParam || undefined,
         rpage: rpageValue + 1,
         version,
       }),
@@ -171,6 +189,7 @@ export function useRecipeQuery(dataset: DatasetRef, version?: string) {
     relation,
     tab,
     searchParam,
+    rsearchParam,
     rpageValue,
   ]);
 
@@ -187,6 +206,8 @@ export function useRecipeQuery(dataset: DatasetRef, version?: string) {
     tree,
     query,
     setQuery,
+    rquery,
+    setRquery,
     rpage: rpageValue,
   };
 }

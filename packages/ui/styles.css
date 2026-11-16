@@ -310,6 +310,19 @@ html > body[data-scroll-locked] {
   );
 }
 
+.chevron-edge__case {
+  stroke-width: 7;
+  stroke: color-mix(
+    in oklab,
+    var(--color-muted-foreground) 55%,
+    var(--color-background)
+  );
+}
+
+.chevron-edge--cased .chevron-edge__base {
+  stroke-width: 2.5;
+}
+
 :root {
   --chevron-edge-outgoing: #009090;
   --chevron-edge-incoming: #8a8a00;

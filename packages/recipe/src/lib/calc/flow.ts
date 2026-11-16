@@ -2,12 +2,13 @@ import type { DatasetRef } from '@terrafirmagreg-team/sites/location';
 import type { Edge, Node } from '@terrafirmagreg-team/ui/lib/canvas/xyflow';
 import type { Recipe } from '@terrafirmagreg-team/recipe/lib/data/dto';
 import { PORT_IN } from '@terrafirmagreg-team/recipe/lib/calc/ports';
-import { resolveWireEnds } from '@terrafirmagreg-team/recipe/lib/calc/wire';
+import { resolvePipeEnds } from '@terrafirmagreg-team/recipe/lib/calc/pipe';
 import type {
   CalcKind,
   CalcNode,
+  CalcNote,
   CalcRecipeSummary,
-  CalcWire,
+  CalcPipe,
 } from '@terrafirmagreg-team/recipe/types/calc';
 import type { RecipeRelation } from '@terrafirmagreg-team/recipe/types';
 import type { FlowPoint } from '@terrafirmagreg-team/ui/types/canvas';
@@ -73,25 +74,27 @@ export type CalcFlowData = {
     crafts: number | ((current: number) => number),
   ) => void;
   pendingCrafts?: Map<string, number> | null;
-  onWire: (from: string, to: string, input: number, out?: number) => void;
-  onUnwire: (
+  onConnect: (from: string, to: string, input: number, out?: number) => void;
+  onDisconnect: (
     from: string,
     to: string,
     input: number,
     out?: number,
   ) => void;
-  onRewire: (
+  onReroute: (
     from: string,
     to: string,
     input: number,
     next: { from: string; to: string; input: number; out?: number },
   ) => void;
-  onWireAmount: (
+  onPipeLimit: (
     from: string,
     to: string,
     input: number,
     amount: number | null,
   ) => void;
+  onEditNote: (id: string, text: string) => void;
+  onNoteColor: (id: string, color: CalcNote['color']) => void;
   recipeDefaults: Record<string, string>;
   onSetRecipeDefault: (materialId: string, recipeId: string | null) => void;
 };
@@ -120,7 +123,7 @@ export function nodeSize(
 
 export function cardsToFlow(
   nodes: CalcNode[],
-  wires: readonly CalcWire[],
+  pipes: readonly CalcPipe[],
   data: Omit<CalcFlowData, 'node'>,
   flows?: readonly (number | undefined)[],
 ): { nodes: AnyCalcFlowNode[]; edges: Edge[] } {
@@ -139,34 +142,34 @@ export function cardsToFlow(
     };
   });
   const byId = new Map(nodes.map((node) => [node.id, node]));
-  const edges: Edge[] = wires.flatMap((wire, index) => {
-    const src = byId.get(wire.from);
-    const dst = byId.get(wire.to);
+  const edges: Edge[] = pipes.flatMap((pipe, index) => {
+    const src = byId.get(pipe.from);
+    const dst = byId.get(pipe.to);
     if (!src || !dst) return [];
-    const ends = resolveWireEnds(src, dst, wire);
+    const ends = resolvePipeEnds(src, dst, pipe);
     if (!ends) return [];
     const input = dst.inputs[ends.inputIndex];
-    if (!input?.wired) return [];
+    if (!input?.connected) return [];
     const outIndex = ends.outIndex;
     const mat = src.outputs[outIndex];
     return [
       {
-        id: `wire:${wire.from}->${wire.to}:${wire.input}:${index}`,
-        source: wire.from,
+        id: `pipe:${pipe.from}->${pipe.to}:${pipe.input}:${index}`,
+        source: pipe.from,
         sourceHandle: outIndex > 0 ? `out-${outIndex}` : 'out',
-        target: wire.to,
+        target: pipe.to,
         targetHandle: `in-${ends.inputIndex}`,
         type: 'calcEdge',
-        className: 'calc-edge--wire',
+        className: 'calc-edge--pipe',
         deletable: true,
         data: {
-          wire,
+          pipe,
           flow: flows?.[index],
           matId: mat?.id ?? input.id,
           matKind: mat?.kind ?? input.kind,
           dataset: data.dataset,
-          onWireAmount: data.onWireAmount,
-          onUnwire: data.onUnwire,
+          onPipeLimit: data.onPipeLimit,
+          onDisconnect: data.onDisconnect,
         },
       },
     ];
@@ -205,7 +208,7 @@ function sameCalcNode(a: CalcNode, b: CalcNode): boolean {
         inp.id === b.inputs[index]?.id &&
         inp.amount === b.inputs[index]?.amount &&
         inp.covered === b.inputs[index]?.covered &&
-        inp.wired === b.inputs[index]?.wired &&
+        inp.connected === b.inputs[index]?.connected &&
         inp.catalyst === b.inputs[index]?.catalyst &&
         (inp.members?.join() ?? '') ===
           (b.inputs[index]?.members?.join() ?? ''),
@@ -244,10 +247,12 @@ function sameFlowData(a: CalcFlowData, b: CalcFlowData): boolean {
     a.onMoveCard === b.onMoveCard &&
     a.onCrafts === b.onCrafts &&
     a.pendingCrafts === b.pendingCrafts &&
-    a.onWire === b.onWire &&
-    a.onUnwire === b.onUnwire &&
-    a.onRewire === b.onRewire &&
-    a.onWireAmount === b.onWireAmount &&
+    a.onConnect === b.onConnect &&
+    a.onDisconnect === b.onDisconnect &&
+    a.onReroute === b.onReroute &&
+    a.onPipeLimit === b.onPipeLimit &&
+    a.onEditNote === b.onEditNote &&
+    a.onNoteColor === b.onNoteColor &&
     a.recipeDefaults === b.recipeDefaults &&
     a.onSetRecipeDefault === b.onSetRecipeDefault
   );
@@ -318,8 +323,8 @@ export function reconcileCalcEdges(
       kept.targetHandle === edge.targetHandle &&
       kept.className === edge.className &&
       kept.data?.flow === edge.data?.flow &&
-      (kept.data?.wire as CalcWire | undefined)?.amount ===
-        (edge.data?.wire as CalcWire | undefined)?.amount &&
+      (kept.data?.pipe as CalcPipe | undefined)?.amount ===
+        (edge.data?.pipe as CalcPipe | undefined)?.amount &&
       ((kept.data?.points as FlowPoint[] | undefined)?.length ?? 0) ===
         ((edge.data?.points as FlowPoint[] | undefined)?.length ?? 0) &&
       (kept.data?.points as FlowPoint[] | undefined)?.every(

@@ -55,11 +55,12 @@ export function useCalcData(session: RecipeSession) {
   } = data;
 
   const cards = useMemo(() => calcState?.cards ?? [], [calcState]);
-  const wires = useMemo(() => calcState?.wires ?? [], [calcState]);
+  const pipes = useMemo(() => calcState?.pipes ?? [], [calcState]);
   const tagSelections = useMemo(
     () => calcState?.tagSelections ?? {},
     [calcState],
   );
+  const notes = useMemo(() => calcState?.notes ?? [], [calcState]);
 
   const getRecipesForItem = useCallback(
     (materialId: string, kind: CalcKind): CalcRecipeSummary[] => {
@@ -85,7 +86,7 @@ export function useCalcData(session: RecipeSession) {
     () =>
       buildScheme({
         cards,
-        wires,
+        pipes,
         ctx: {
           recipeMap: dataRecipeMap,
           getRecipesForItem,
@@ -97,7 +98,7 @@ export function useCalcData(session: RecipeSession) {
       }),
     [
       cards,
-      wires,
+      pipes,
       dataRecipeMap,
       getRecipesForItem,
       tagMembers,
@@ -110,8 +111,8 @@ export function useCalcData(session: RecipeSession) {
   const summary = useMemo(() => schemeSummary(nodes), [nodes]);
 
   const inputKey = useMemo(
-    () => JSON.stringify([cards, wires, tagSelections]),
-    [cards, wires, tagSelections],
+    () => JSON.stringify([cards, pipes, tagSelections]),
+    [cards, pipes, tagSelections],
   );
 
   const worker = useCalcWorker({
@@ -149,10 +150,11 @@ export function useCalcData(session: RecipeSession) {
     () =>
       encodeCalcState({
         cards,
-        wires,
+        pipes,
         tagSelections,
+        notes,
       }),
-    [cards, wires, tagSelections],
+    [cards, pipes, tagSelections, notes],
   );
 
   const recipeBody = useCallback(
@@ -172,8 +174,9 @@ export function useCalcData(session: RecipeSession) {
 
   return {
     cards,
-    wires,
+    pipes,
     tagSelections,
+    notes,
     tabs,
     activeTabId,
     history,

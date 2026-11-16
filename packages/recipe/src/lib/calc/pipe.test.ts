@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { wireEndMatches } from './wire';
+import { pipeEndMatches } from './pipe';
 import type { CalcNodeInput } from '@terrafirmagreg-team/recipe/types/calc';
 
 const NBT = '{"Damage":0,"GT.Tool":{}}';
@@ -13,7 +13,7 @@ test('NBT input id matches a base output id', () => {
     catalyst: false,
   } as CalcNodeInput;
   assert.equal(
-    wireEndMatches(input, {
+    pipeEndMatches(input, {
       id: 'gtceu:duranium_hammer',
       kind: 'item',
       amount: 1,
@@ -35,7 +35,7 @@ test('tag members carrying NBT match a base output id', () => {
     ],
   } as CalcNodeInput;
   assert.equal(
-    wireEndMatches(input, {
+    pipeEndMatches(input, {
       id: 'gtceu:duranium_hammer',
       kind: 'item',
       amount: 1,
@@ -52,7 +52,7 @@ test('kind mismatch and unrelated ids still fail', () => {
     catalyst: false,
   } as CalcNodeInput;
   assert.equal(
-    wireEndMatches(input, {
+    pipeEndMatches(input, {
       id: 'gtceu:duranium_hammer',
       kind: 'fluid',
       amount: 1,
@@ -60,7 +60,7 @@ test('kind mismatch and unrelated ids still fail', () => {
     false,
   );
   assert.equal(
-    wireEndMatches(input, {
+    pipeEndMatches(input, {
       id: 'gtceu:copper_hammer',
       kind: 'item',
       amount: 1,

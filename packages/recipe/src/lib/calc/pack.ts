@@ -1,7 +1,7 @@
 import type { Recipe } from '@terrafirmagreg-team/recipe/lib/data/dto';
 import type {
   CalcNode,
-  CalcWire,
+  CalcPipe,
 } from '@terrafirmagreg-team/recipe/types/calc';
 import {
   nodeSize,
@@ -16,7 +16,7 @@ export type CalcPackOptions = {
 
 export function layoutCards(
   nodes: CalcNode[],
-  wires: readonly CalcWire[],
+  pipes: readonly CalcPipe[],
   options: CalcPackOptions,
 ): Map<string, { x: number; y: number }> {
   const { gaps } = options;
@@ -28,10 +28,10 @@ export function layoutCards(
   const byId = new Map(nodes.map((node) => [node.id, node]));
   const consumers = new Map<string, string[]>();
   const suppliers = new Map<string, string[]>();
-  for (const wire of wires) {
-    if (!byId.has(wire.from) || !byId.has(wire.to)) continue;
-    consumers.set(wire.from, [...(consumers.get(wire.from) ?? []), wire.to]);
-    suppliers.set(wire.to, [...(suppliers.get(wire.to) ?? []), wire.from]);
+  for (const pipe of pipes) {
+    if (!byId.has(pipe.from) || !byId.has(pipe.to)) continue;
+    consumers.set(pipe.from, [...(consumers.get(pipe.from) ?? []), pipe.to]);
+    suppliers.set(pipe.to, [...(suppliers.get(pipe.to) ?? []), pipe.from]);
   }
 
   const depth = new Map<string, number>();

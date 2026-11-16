@@ -17,6 +17,8 @@ import { useCalcData } from '@terrafirmagreg-team/recipe/hooks/calc/use-data';
 import { useCalcViewMode } from '@terrafirmagreg-team/recipe/hooks/calc/use-view-mode';
 import { useCalcFarMode } from '@terrafirmagreg-team/recipe/hooks/calc/use-far-mode';
 import { useCalcRecipeIdsMode } from '@terrafirmagreg-team/recipe/hooks/calc/use-recipe-ids';
+import { useCalcSnap } from '@terrafirmagreg-team/recipe/hooks/calc/use-snap';
+import { useCalcHistory } from '@terrafirmagreg-team/recipe/hooks/calc/use-history';
 
 export function Calculator({ session }: { session: RecipeSession }) {
   const t = useTranslations();
@@ -24,10 +26,12 @@ export function Calculator({ session }: { session: RecipeSession }) {
   const [mode, setMode] = useCalcViewMode();
   const [farCards, setFarCards] = useCalcFarMode();
   const [recipeIds, setRecipeIds] = useCalcRecipeIdsMode();
+  const [snap, setSnap] = useCalcSnap();
   const {
     cards,
-    wires,
+    pipes,
     tagSelections,
+    notes,
     tabs,
     activeTabId,
     history,
@@ -52,6 +56,17 @@ export function Calculator({ session }: { session: RecipeSession }) {
     settled,
     shareFailed,
   } = useCalcData(session);
+  const {
+    write: persistTracked,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+  } = useCalcHistory(
+    { cards, pipes, tagSelections, notes },
+    persist,
+    activeTabId ?? undefined,
+  );
   const deferredNodes = useDeferredValue(nodes);
   const deferredFlows = useDeferredValue(flows);
   const deferredLangMap = useDeferredValue(session.langMap);
@@ -61,10 +76,11 @@ export function Calculator({ session }: { session: RecipeSession }) {
   const { displayCards, pendingCrafts, flushAmounts, onCrafts } =
     useCalcAmounts({
       cards,
-      wires,
+      pipes,
       tagSelections,
+      notes,
       resolved: deferredNodes,
-      persist,
+      persist: persistTracked,
     });
   const {
     shared,
@@ -73,15 +89,17 @@ export function Calculator({ session }: { session: RecipeSession }) {
     onShare,
     flowData,
     onMoveCards,
+    onAddNote,
     onClear,
   } = useCalcActions({
     dataset,
     lang,
     linkVersion: session.nav.version,
     cards: displayCards,
-    wires,
+    pipes,
     tagSelections,
-    persist,
+    notes,
+    persist: persistTracked,
     recipeDefaults,
     setRecipeDefault,
     recipeBody,
@@ -143,7 +161,7 @@ export function Calculator({ session }: { session: RecipeSession }) {
       </LeftSidebarPortal>
       <CalcFlow
         nodes={deferredNodes}
-        wires={wires}
+        pipes={pipes}
         flows={deferredFlows}
         cards={displayCards}
         dataset={dataset}
@@ -155,6 +173,11 @@ export function Calculator({ session }: { session: RecipeSession }) {
         onFarCardsChange={setFarCards}
         recipeIds={recipeIds}
         onRecipeIdsChange={setRecipeIds}
+        snap={snap}
+        onSnapChange={setSnap}
+        notes={notes}
+        onAddNote={onAddNote}
+        history={{ canUndo, canRedo, onUndo: undo, onRedo: redo }}
         treeReady={settled}
         resetGen={resetGen}
         canvasId={activeTabId ?? undefined}

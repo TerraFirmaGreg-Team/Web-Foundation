@@ -46,10 +46,10 @@ export function NodeBadges({
       node.kind === 'fluid'
         ? formatFluidAmount
         : (n: number) => formatCount(n, 1_000);
-    const overTip = t('Shortage: {wired} wired, only {produced} produced', {
+    const overTip = t('Shortage: {connected} connected, only {produced} produced', {
       note: 'recipe.calc.overdrawn',
     })
-      .replaceAll('{wired}', fmtAmount(node.allocated))
+      .replaceAll('{connected}', fmtAmount(node.allocated))
       .replaceAll('{produced}', fmtAmount(node.produced));
     chips.push(
       <Hint key="over" label={overTip} side="top">

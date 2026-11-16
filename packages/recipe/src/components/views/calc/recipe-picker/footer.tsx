@@ -6,8 +6,6 @@ import { ListFilter } from 'lucide-react';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
 import { Button } from '@terrafirmagreg-team/ui/components/ui/button';
 import { Hint } from '@terrafirmagreg-team/ui/components/blocks/tooltip/hint';
-import { Checkbox } from '@terrafirmagreg-team/ui/components/ui/checkbox';
-import { cn } from '@terrafirmagreg-team/ui/lib/utils/cn';
 import { formatCount } from '@terrafirmagreg-team/ui/lib/utils/format';
 import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
 import { CalcMemberList } from '@terrafirmagreg-team/recipe/components/views/calc/member-picker';
@@ -20,8 +18,6 @@ export function PickerFooter({
   dataset,
   lang,
   langMap,
-  recipeDefaults,
-  onSetRecipeDefault,
   onSelectTagMember,
 }: {
   node: CalcFlowData['node'];
@@ -29,15 +25,13 @@ export function PickerFooter({
   dataset: DatasetRef;
   lang: Lang;
   langMap?: Record<string, string>;
-  recipeDefaults: CalcFlowData['recipeDefaults'];
-  onSetRecipeDefault: CalcFlowData['onSetRecipeDefault'];
   onSelectTagMember: CalcFlowData['onSelectTagMember'];
 }) {
   const t = useTranslations();
   const [memberPickerOpen, setMemberPickerOpen] = useState(false);
   return (
     <>
-      {members || node.recipe ? (
+      {members ? (
         <div className="flex shrink-0 items-center gap-2 rounded-md border border-border bg-card px-2 py-1.5">
           {members ? (
             <>
@@ -71,27 +65,6 @@ export function PickerFooter({
                 {t('Choose tag member', { note: 'recipe.calc.member.title' })}
               </Button>
             </>
-          ) : null}
-          {node.recipe ? (
-            <label
-              className={cn(
-                'flex shrink-0 cursor-pointer select-none items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground',
-                members ? 'ms-auto' : 'w-full',
-              )}
-            >
-              <Checkbox
-                checked={
-                  recipeDefaults[node.materialId] === node.recipe.recipeId
-                }
-                onCheckedChange={(checked) =>
-                  onSetRecipeDefault(
-                    node.materialId,
-                    checked ? node.recipe!.recipeId : null,
-                  )
-                }
-              />
-              {t('Pin as default recipe', { note: 'recipe.calc.set_default' })}
-            </label>
           ) : null}
         </div>
       ) : null}

@@ -27,6 +27,8 @@ export function useFlowHandlers({
   applyEngaged,
   centerOnNode,
   setPickerNode,
+  openPipeEdit,
+  closePipeEdit,
 }: {
   data: Omit<
     CalcFlowData,
@@ -36,6 +38,8 @@ export function useFlowHandlers({
   applyEngaged: (id: string | null) => void;
   centerOnNode: (node: AnyCalcFlowNode) => void;
   setPickerNode: (node: CalcNode | null) => void;
+  openPipeEdit: (edgeId: string) => void;
+  closePipeEdit: () => void;
 }) {
   const { screenToFlowPosition, getNode } = useReactFlow();
   const slotAccepts = useCallback(
@@ -81,10 +85,10 @@ export function useFlowHandlers({
     },
     [setPickerNode],
   );
-  const handlePaneClick = useCallback(
-    () => applyFocus(null),
-    [applyFocus],
-  );
+  const handlePaneClick = useCallback(() => {
+    applyFocus(null);
+    closePipeEdit();
+  }, [applyFocus, closePipeEdit]);
   const handleDragOver = useCallback((event: DragEvent) => {
     if (event.dataTransfer.types.includes('application/x-tfg-calc')) {
       event.preventDefault();
@@ -128,19 +132,19 @@ export function useFlowHandlers({
       const slot = tNode?.inputs[input];
       const srcOut = sNode?.outputs[out];
       if (!sNode || !tNode || !slotAccepts(slot, srcOut)) return;
-      data.onWire(source, target, input, out);
+      data.onConnect(source, target, input, out);
     },
     [data, getNode, slotAccepts],
   );
 
   const handleReconnect = useCallback(
     (oldEdge: Edge, conn: Connection) => {
-      const wire = oldEdge.data?.wire as
+      const pipe = oldEdge.data?.pipe as
         | { from: string; to: string; input: number; out?: number }
         | undefined;
       const input = Number(/^in-(\d+)$/.exec(conn.targetHandle ?? '')?.[1] ?? -1);
       const outMatch = /^out(?:-(\d+))?$/.exec(conn.sourceHandle ?? '');
-      if (!wire || !conn.source || !conn.target || input < 0 || !outMatch)
+      if (!pipe || !conn.source || !conn.target || input < 0 || !outMatch)
         return;
       const out = Number(outMatch[1] ?? 0);
       if (conn.source === conn.target) return;
@@ -149,7 +153,7 @@ export function useFlowHandlers({
       const slot = tNode?.inputs[input];
       const srcOut = sNode?.outputs[out];
       if (!sNode || !tNode || !slotAccepts(slot, srcOut)) return;
-      data.onRewire(wire.from, wire.to, wire.input, {
+      data.onReroute(pipe.from, pipe.to, pipe.input, {
         from: conn.source,
         to: conn.target,
         input,
@@ -162,10 +166,10 @@ export function useFlowHandlers({
   const handleEdgesDelete = useCallback(
     (edges: Edge[]) => {
       for (const edge of edges) {
-        const wire = edge.data?.wire as
+        const pipe = edge.data?.pipe as
           | { from: string; to: string; input: number; out?: number }
           | undefined;
-        if (wire) data.onUnwire(wire.from, wire.to, wire.input, wire.out);
+        if (pipe) data.onDisconnect(pipe.from, pipe.to, pipe.input, pipe.out);
       }
     },
     [data],
@@ -173,13 +177,16 @@ export function useFlowHandlers({
 
   const handleEdgeClick = useCallback(
     (event: MouseEvent, edge: Edge) => {
-      if (!event.shiftKey) return;
-      const wire = edge.data?.wire as
+      const pipe = edge.data?.pipe as
         | { from: string; to: string; input: number; out?: number }
         | undefined;
-      if (wire) data.onUnwire(wire.from, wire.to, wire.input, wire.out);
+      if (event.shiftKey) {
+        if (pipe) data.onDisconnect(pipe.from, pipe.to, pipe.input, pipe.out);
+        return;
+      }
+      if (pipe) openPipeEdit(edge.id);
     },
-    [data],
+    [data, openPipeEdit],
   );
 
   return {

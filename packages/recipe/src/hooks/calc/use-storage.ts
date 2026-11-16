@@ -23,8 +23,9 @@ import { stripMcFormat } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/na
 const EMPTY_TABS: CalcTreeEntry[] = [];
 const EMPTY_CALC: CalculatorState = {
   cards: [],
-  wires: [],
+  pipes: [],
   tagSelections: {},
+  notes: [],
 };
 
 export function useCalcStorage(storageKey: string) {

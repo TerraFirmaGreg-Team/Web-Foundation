@@ -18,11 +18,16 @@ export function formatPortCount(value: number, kind: CalcKind): string {
   return formatCount(value, 1_000);
 }
 
-export function portAmountLine(value: number, kind: CalcKind): ReactNode {
+export function portAmountLine(
+  value: number,
+  kind: CalcKind,
+  chance?: number,
+): ReactNode {
   return (
     <p className="text-muted-foreground">
       {value.toLocaleString('en-US')}
       {kind === 'fluid' ? ' mB' : ''}
+      {chance != null ? ` · ${Math.round(chance * 100)}%` : ''}
     </p>
   );
 }

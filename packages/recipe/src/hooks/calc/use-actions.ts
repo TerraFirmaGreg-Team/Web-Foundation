@@ -22,8 +22,9 @@ import type {
   CalcCard,
   CalcKind,
   CalcNode,
+  CalcNote,
   CalculatorState,
-  CalcWire,
+  CalcPipe,
   TagResolution,
 } from '@terrafirmagreg-team/recipe/types/calc';
 import type { RecipeRelation } from '@terrafirmagreg-team/recipe/types';
@@ -32,6 +33,10 @@ import type { CalcFlowData } from '@terrafirmagreg-team/recipe/lib/calc/flow';
 let cardSeq = 0;
 const newCardId = () =>
   `c${Date.now().toString(36)}${(cardSeq += 1).toString(36)}`;
+
+export const NOTE_ID_PREFIX = 'n_';
+const newNoteId = () =>
+  `${NOTE_ID_PREFIX}${Date.now().toString(36)}${(cardSeq += 1).toString(36)}`;
 
 function selectTagMember(
   prev: Record<string, string>,
@@ -65,8 +70,9 @@ export function useCalcActions({
   lang,
   linkVersion,
   cards,
-  wires,
+  pipes,
   tagSelections,
+  notes,
   persist,
   recipeDefaults,
   setRecipeDefault,
@@ -82,8 +88,9 @@ export function useCalcActions({
   lang: Lang;
   linkVersion?: string;
   cards: CalcCard[];
-  wires: CalcWire[];
+  pipes: CalcPipe[];
   tagSelections: Record<string, string>;
+  notes: CalcNote[];
   persist: (next: CalculatorState) => void;
   recipeDefaults: Record<string, string>;
   setRecipeDefault: (materialId: string, recipeId: string | null) => void;
@@ -129,14 +136,19 @@ export function useCalcActions({
   });
 
   const write = useCallback(
-    (next: Partial<Pick<CalculatorState, 'cards' | 'wires' | 'tagSelections'>>) => {
+    (
+      next: Partial<
+        Pick<CalculatorState, 'cards' | 'pipes' | 'tagSelections' | 'notes'>
+      >,
+    ) => {
       persist({
         cards: next.cards ?? flushAmounts(),
-        wires: next.wires ?? wires,
+        pipes: next.pipes ?? pipes,
         tagSelections: next.tagSelections ?? tagSelections,
+        notes: next.notes ?? notes,
       });
     },
-    [flushAmounts, persist, wires, tagSelections],
+    [flushAmounts, persist, pipes, tagSelections, notes],
   );
 
   const onSelectRecipe = useCallback(
@@ -145,12 +157,12 @@ export function useCalcActions({
       const nextCards = cards.map((row) =>
         row.id === cardId ? { ...row, recipeId } : row,
       );
-      const nextWires = recipeId
-        ? wires
-        : wires.filter((wire) => wire.to !== cardId);
-      write({ cards: nextCards, wires: nextWires });
+      const nextPipes = recipeId
+        ? pipes
+        : pipes.filter((pipe) => pipe.to !== cardId);
+      write({ cards: nextCards, pipes: nextPipes });
     },
-    [cards, wires, write],
+    [cards, pipes, write],
   );
 
   const onSelectTagMember = useCallback(
@@ -168,13 +180,14 @@ export function useCalcActions({
           ...flushAmounts(),
           { id, materialId, kind, recipeId: null, crafts: 1, pos },
         ],
-        wires,
+        pipes,
         tagSelections,
+        notes,
       });
       setFocusNodeId(id);
       return id;
     },
-    [flushAmounts, persist, wires, tagSelections, setFocusNodeId],
+    [flushAmounts, persist, pipes, tagSelections, notes, setFocusNodeId],
   );
 
   const onSupplyInput = useCallback(
@@ -188,9 +201,9 @@ export function useCalcActions({
       const need = Math.max(1, input.amount - input.covered);
       const base = consumerCard.pos;
       const id = newCardId();
-      const nextWires = [
-        ...wires.filter(
-          (wire) => !(wire.to === cardId && wire.input === inputIndex),
+      const nextPipes = [
+        ...pipes.filter(
+          (pipe) => !(pipe.to === cardId && pipe.input === inputIndex),
         ),
         { from: id, to: cardId, input: inputIndex },
       ];
@@ -223,13 +236,14 @@ export function useCalcActions({
                 : undefined,
             },
           ],
-          wires: nextWires,
+          pipes: nextPipes,
           tagSelections,
+          notes,
         });
       })();
       return id;
     },
-    [nodes, cards, wires, flushAmounts, persist, tagSelections, recipeBody, dataset],
+    [nodes, cards, pipes, flushAmounts, persist, tagSelections, notes, recipeBody, dataset],
   );
 
   const onDemandOutput = useCallback(
@@ -293,10 +307,10 @@ export function useCalcActions({
         };
         persist({
           cards: [...flushAmounts(), card],
-          wires:
+          pipes:
             inputIndex >= 0
               ? [
-                  ...wires,
+                  ...pipes,
                   {
                     from: cardId,
                     to: id,
@@ -304,10 +318,11 @@ export function useCalcActions({
                     out: outputIndex,
                   },
                 ]
-              : wires,
+              : pipes,
           tagSelections: pickedTag
             ? selectTagMember(tagSelections, pickedTag, out.id)
             : tagSelections,
+          notes,
         });
         ensureMaterial?.(materialId);
         setFocusNodeId(id);
@@ -316,10 +331,11 @@ export function useCalcActions({
     [
       nodes,
       cards,
-      wires,
+      pipes,
       flushAmounts,
       persist,
       tagSelections,
+      notes,
       dataset,
       tagMembers,
       ensureMaterial,
@@ -340,25 +356,37 @@ export function useCalcActions({
 
   const onRemoveCard = useCallback(
     (cardId: string) => {
+      if (cardId.startsWith(NOTE_ID_PREFIX)) {
+        write({ notes: notes.filter((note) => note.id !== cardId) });
+        return;
+      }
       write({
         cards: flushAmounts().filter((row) => row.id !== cardId),
-        wires: wires.filter(
-          (wire) => wire.from !== cardId && wire.to !== cardId,
+        pipes: pipes.filter(
+          (pipe) => pipe.from !== cardId && pipe.to !== cardId,
         ),
       });
     },
-    [flushAmounts, write, wires],
+    [flushAmounts, write, pipes, notes],
   );
 
   const onMoveCard = useCallback(
     (cardId: string, pos: { x: number; y: number }) => {
+      if (cardId.startsWith(NOTE_ID_PREFIX)) {
+        write({
+          notes: notes.map((note) =>
+            note.id === cardId ? { ...note, pos } : note,
+          ),
+        });
+        return;
+      }
       write({
         cards: flushAmounts().map((row) =>
           row.id === cardId ? { ...row, pos } : row,
         ),
       });
     },
-    [flushAmounts, write],
+    [flushAmounts, write, notes],
   );
 
   const onMoveCards = useCallback(
@@ -389,7 +417,7 @@ export function useCalcActions({
     [nodes],
   );
 
-  const onWire = useCallback(
+  const onConnect = useCallback(
     (from: string, to: string, input: number, out?: number) => {
       if (from === to) return;
       const pinTag = tagPinFor(to, input, from, out);
@@ -397,9 +425,9 @@ export function useCalcActions({
         .find((n) => n.id === from)
         ?.outputs[out ?? 0];
       write({
-        wires: [
-          ...wires.filter(
-            (wire) => !(wire.to === to && wire.input === input),
+        pipes: [
+          ...pipes.filter(
+            (pipe) => !(pipe.to === to && pipe.input === input),
           ),
           { from, to, input, out: out || undefined },
         ],
@@ -409,27 +437,27 @@ export function useCalcActions({
             : tagSelections,
       });
     },
-    [wires, write, nodes, tagSelections, tagPinFor],
+    [pipes, write, nodes, tagSelections, tagPinFor],
   );
 
-  const onUnwire = useCallback(
+  const onDisconnect = useCallback(
     (from: string, to: string, input: number, out?: number) => {
       write({
-        wires: wires.filter(
-          (wire) =>
+        pipes: pipes.filter(
+          (pipe) =>
             !(
-              wire.from === from &&
-              wire.to === to &&
-              wire.input === input &&
-              (wire.out ?? 0) === (out ?? 0)
+              pipe.from === from &&
+              pipe.to === to &&
+              pipe.input === input &&
+              (pipe.out ?? 0) === (out ?? 0)
             ),
         ),
       });
     },
-    [wires, write],
+    [pipes, write],
   );
 
-  const onRewire = useCallback(
+  const onReroute = useCallback(
     (
       from: string,
       to: string,
@@ -442,11 +470,11 @@ export function useCalcActions({
         .find((n) => n.id === next.from)
         ?.outputs[next.out ?? 0];
       write({
-        wires: [
-          ...wires.filter(
-            (wire) =>
-              !(wire.from === from && wire.to === to && wire.input === input) &&
-              !(wire.to === next.to && wire.input === next.input),
+        pipes: [
+          ...pipes.filter(
+            (pipe) =>
+              !(pipe.from === from && pipe.to === to && pipe.input === input) &&
+              !(pipe.to === next.to && pipe.input === next.input),
           ),
           next,
         ],
@@ -456,29 +484,61 @@ export function useCalcActions({
             : tagSelections,
       });
     },
-    [wires, write, nodes, tagSelections, tagPinFor],
+    [pipes, write, nodes, tagSelections, tagPinFor],
   );
 
-  const onWireAmount = useCallback(
+  const onPipeLimit = useCallback(
     (from: string, to: string, input: number, amount: number | null) => {
       write({
-        wires: wires.map((wire) =>
-          wire.from === from && wire.to === to && wire.input === input
-            ? { ...wire, amount: amount ?? undefined }
-            : wire,
+        pipes: pipes.map((pipe) =>
+          pipe.from === from && pipe.to === to && pipe.input === input
+            ? { ...pipe, amount: amount ?? undefined }
+            : pipe,
         ),
       });
     },
-    [wires, write],
+    [pipes, write],
   );
 
   const onClear = useCallback(() => {
     persist({
       cards: [],
-      wires: [],
+      pipes: [],
       tagSelections: {},
+      notes: [],
     });
   }, [persist]);
+
+  const onAddNote = useCallback(
+    (pos: { x: number; y: number }) => {
+      const id = newNoteId();
+      write({ notes: [...notes, { id, text: '', pos }] });
+      return id;
+    },
+    [write, notes],
+  );
+
+  const onEditNote = useCallback(
+    (id: string, text: string) => {
+      write({
+        notes: notes.map((note) =>
+          note.id === id ? { ...note, text } : note,
+        ),
+      });
+    },
+    [write, notes],
+  );
+
+  const onNoteColor = useCallback(
+    (id: string, color: CalcNote['color']) => {
+      write({
+        notes: notes.map((note) =>
+          note.id === id ? { ...note, color } : note,
+        ),
+      });
+    },
+    [write, notes],
+  );
 
   const flowData = useMemo<
     Omit<
@@ -506,10 +566,12 @@ export function useCalcActions({
       onOpenItem,
       onRemoveCard,
       onMoveCard,
-      onWire,
-      onUnwire,
-      onRewire,
-      onWireAmount,
+      onConnect,
+      onDisconnect,
+      onReroute,
+      onPipeLimit,
+      onEditNote,
+      onNoteColor,
       recipeDefaults,
       onSetRecipeDefault: setRecipeDefault,
       tagSelections,
@@ -526,10 +588,12 @@ export function useCalcActions({
       onOpenItem,
       onRemoveCard,
       onMoveCard,
-      onWire,
-      onUnwire,
-      onRewire,
-      onWireAmount,
+      onConnect,
+      onDisconnect,
+      onReroute,
+      onPipeLimit,
+      onEditNote,
+      onNoteColor,
       recipeDefaults,
       setRecipeDefault,
     ],
@@ -545,6 +609,7 @@ export function useCalcActions({
     onRemoveCard,
     onMoveCards,
     onSupplyInput,
+    onAddNote,
     onClear,
   };
 }

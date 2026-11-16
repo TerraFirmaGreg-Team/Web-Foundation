@@ -8,13 +8,14 @@ import type {
 import type {
   CalcCard,
   CalcNode,
-  CalcWire,
+  CalcNote,
+  CalcPipe,
 } from '@terrafirmagreg-team/recipe/types/calc';
 import type { RecipeSession } from '@terrafirmagreg-team/recipe/types';
 
 export type CalcFlowProps = {
   nodes: CalcNode[];
-  wires: CalcWire[];
+  pipes: CalcPipe[];
   flows?: readonly (number | undefined)[];
   cards: CalcCard[];
   dataset: DatasetRef;
@@ -34,6 +35,16 @@ export type CalcFlowProps = {
   onFarCardsChange: (mode: CalcFarMode) => void;
   recipeIds: boolean;
   onRecipeIdsChange: (show: boolean) => void;
+  snap: boolean;
+  onSnapChange: (snap: boolean) => void;
+  notes: CalcNote[];
+  onAddNote?: (pos: { x: number; y: number }) => void;
+  history?: {
+    canUndo: boolean;
+    canRedo: boolean;
+    onUndo: () => void;
+    onRedo: () => void;
+  };
   treeReady?: boolean;
   resetGen?: number;
   canvasId?: string;

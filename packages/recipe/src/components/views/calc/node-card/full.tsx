@@ -145,7 +145,7 @@ export const CalcNodeCardFull = memo(function CalcNodeCardFull({
     node.kind === 'fluid'
       ? formatFluidAmount
       : (n: number) => formatCount(n, 1_000);
-  const producedTip = t('Surplus: {produced} produced, {allocated} wired, {remaining} left', {
+  const producedTip = t('Surplus: {produced} produced, {allocated} connected, {remaining} left', {
     note: 'recipe.calc.hint.produced',
   })
     .replaceAll('{produced}', fmtAmount(node.produced))
@@ -297,6 +297,14 @@ export const CalcNodeCardFull = memo(function CalcNodeCardFull({
                   aria-label={t('Crafts', { note: 'recipe.calc.crafts.title' })}
                   className="w-auto min-w-9 rounded border border-border bg-transparent text-center tabular-nums focus:outline-none"
                   onClick={(e) => e.stopPropagation()}
+                  onWheel={(e) => {
+                    e.stopPropagation();
+                    if (document.activeElement !== e.currentTarget) return;
+                    const step = e.shiftKey ? 10 : 1;
+                    onCrafts(id, (crafts) =>
+                      Math.max(1, crafts + (e.deltaY < 0 ? step : -step)),
+                    );
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') e.currentTarget.blur();
                   }}
@@ -434,7 +442,10 @@ export const CalcNodeCardFull = memo(function CalcNodeCardFull({
   return (
     <HoverCard>
       <ContextMenu>
-        <ContextMenuTrigger render={cardBody} />
+        <ContextMenuTrigger
+          render={cardBody}
+          onContextMenu={(e) => e.stopPropagation()}
+        />
         <NodeContextMenu data={data} lang={lang} langMap={langMap} />
       </ContextMenu>
       {hoverCard ? (

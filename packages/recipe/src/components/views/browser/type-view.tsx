@@ -14,8 +14,13 @@ import { useFitPages } from '@terrafirmagreg-team/ui/hooks/page/use-fit-pages';
 import {
   loadTypeRows,
   nonEmptyCategoryIds,
+  recipeItemName,
   resolveRecipeRows,
 } from '@terrafirmagreg-team/recipe/lib/client-index';
+import {
+  rowMatchesTerms,
+  rowSearchTerms,
+} from '@terrafirmagreg-team/recipe/lib/browser/row-search';
 import { RECIPE_ALL_TYPE, recipeHref } from '@terrafirmagreg-team/recipe/lib/links';
 import { RecipeTypeTabs } from '@terrafirmagreg-team/recipe/components/views/browser/type-tabs';
 import { WorkstationRail } from '@terrafirmagreg-team/recipe/components/views/browser/workstation-rail';
@@ -71,12 +76,25 @@ export function TypeView({ session }: { session: RecipeSession }) {
     [dataset, index, recipeId, rows, focusIndex],
   );
   const solo = recipeId != null && session.solo === '1';
+  const terms = rowSearchTerms(session.rquery);
+  const filteredRows = terms.length
+    ? allRows.filter((row) =>
+        rowMatchesTerms(row, terms, (id) =>
+          recipeItemName(session.names, session.lang, id),
+        ),
+      )
+    : allRows;
   const feedRows = solo
     ? focusIndex >= 0
       ? [allRows[focusIndex]]
       : (focusRes.value ?? EMPTY_ROWS)
-    : allRows;
-  const feedFocus = solo && focusIndex >= 0 ? 0 : focusIndex;
+    : filteredRows;
+  const feedFocus =
+    solo && focusIndex >= 0
+      ? 0
+      : recipeId
+        ? filteredRows.findIndex((row) => row.id === recipeId)
+        : -1;
   useEffect(() => {
     if (!recipeId || !index || rows === undefined || focusIndex >= 0) return;
     if (focusRes.pending) return;
@@ -146,6 +164,7 @@ export function TypeView({ session }: { session: RecipeSession }) {
     <RecipeFrame
       session={session}
       list={list}
+      search
       strip={
         <RecipeTypeTabs
           session={session}

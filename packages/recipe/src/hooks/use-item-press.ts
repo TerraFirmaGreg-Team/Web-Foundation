@@ -33,8 +33,9 @@ export function useItemPress({
           const key = calcStorageKey('recipe', dataset);
           const parsed = readCalcStorage(key) ?? {
             cards: [],
-            wires: [],
+            pipes: [],
             tagSelections: {},
+            notes: [],
           };
           const kind = ref === 'fluid' ? ('fluid' as const) : ('item' as const);
           const same = parsed.cards.findIndex(
@@ -57,8 +58,9 @@ export function useItemPress({
                 ];
           writeCalcStorage(key, {
             cards,
-            wires: parsed.wires,
+            pipes: parsed.pipes,
             tagSelections: parsed.tagSelections,
+            notes: parsed.notes,
           });
           requestCalcFocus(id);
           return;

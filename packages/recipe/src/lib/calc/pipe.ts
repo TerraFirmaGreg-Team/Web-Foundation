@@ -3,10 +3,10 @@ import type {
   CalcMaterial,
   CalcNode,
   CalcNodeInput,
-  CalcWire,
+  CalcPipe,
 } from '@terrafirmagreg-team/recipe/types/calc';
 
-export function wireEndMatches(
+export function pipeEndMatches(
   input: CalcNodeInput,
   out: CalcMaterial,
 ): boolean {
@@ -18,24 +18,24 @@ export function wireEndMatches(
   );
 }
 
-export function resolveWireEnds(
+export function resolvePipeEnds(
   src: CalcNode,
   dst: CalcNode,
-  wire: CalcWire,
+  pipe: CalcPipe,
 ): { inputIndex: number; outIndex: number } | null {
-  const hinted = dst.inputs[wire.input];
+  const hinted = dst.inputs[pipe.input];
   if (hinted?.id) {
     const outIndex = src.outputs.findIndex((out) =>
-      wireEndMatches(hinted, out),
+      pipeEndMatches(hinted, out),
     );
-    if (outIndex >= 0) return { inputIndex: wire.input, outIndex };
+    if (outIndex >= 0) return { inputIndex: pipe.input, outIndex };
   }
   for (let i = 0; i < dst.inputs.length; i += 1) {
-    if (i === wire.input) continue;
+    if (i === pipe.input) continue;
     const input = dst.inputs[i];
     if (!input?.id) continue;
     const outIndex = src.outputs.findIndex((out) =>
-      wireEndMatches(input, out),
+      pipeEndMatches(input, out),
     );
     if (outIndex >= 0) return { inputIndex: i, outIndex };
   }

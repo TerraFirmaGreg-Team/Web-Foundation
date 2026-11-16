@@ -1,4 +1,7 @@
-import type { CalculatorState } from '@terrafirmagreg-team/recipe/types/calc';
+import {
+  CALC_NOTE_COLORS,
+  type CalculatorState,
+} from '@terrafirmagreg-team/recipe/types/calc';
 
 const MAX_HISTORY = 5;
 
@@ -31,35 +34,54 @@ const isCardRow = (row: unknown): boolean =>
   ((row as { kind?: unknown }).kind === 'item' ||
     (row as { kind?: unknown }).kind === 'fluid');
 
-const isWireRow = (row: unknown): boolean =>
+const isPipeRow = (row: unknown): boolean =>
   !!row &&
   typeof row === 'object' &&
   typeof (row as { from?: unknown }).from === 'string' &&
   typeof (row as { to?: unknown }).to === 'string' &&
   typeof (row as { input?: unknown }).input === 'number';
 
+const pipeRows = (row: Record<string, unknown>): unknown =>
+  Array.isArray(row.pipes) ? row.pipes : row.wires;
+
+const isNoteRow = (row: unknown): boolean =>
+  !!row &&
+  typeof row === 'object' &&
+  typeof (row as { id?: unknown }).id === 'string' &&
+  typeof (row as { text?: unknown }).text === 'string' &&
+  typeof (row as { pos?: unknown }).pos === 'object' &&
+  ((row as { color?: unknown }).color === undefined ||
+    (CALC_NOTE_COLORS as readonly unknown[]).includes(
+      (row as { color?: unknown }).color,
+    ));
+
 export function isCalcState(value: unknown): value is CalculatorState {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const row = value as Record<string, unknown>;
+  const pipes = pipeRows(row);
   return (
     Array.isArray(row.cards) &&
     row.cards.every(isCardRow) &&
-    Array.isArray(row.wires) &&
-    row.wires.every(isWireRow) &&
+    Array.isArray(pipes) &&
+    pipes.every(isPipeRow) &&
     !!row.tagSelections &&
-    typeof row.tagSelections === 'object'
+    typeof row.tagSelections === 'object' &&
+    (row.notes === undefined ||
+      (Array.isArray(row.notes) && row.notes.every(isNoteRow)))
   );
 }
 
 export function migrateCalcState(state: CalculatorState): CalculatorState {
   const cards = Array.isArray(state.cards) ? state.cards.filter(isCardRow) : [];
   const ids = new Set(cards.map((card) => card.id));
+  const stored = state.pipes ?? (state as { wires?: unknown }).wires;
   return {
     cards,
-    wires: (Array.isArray(state.wires) ? state.wires.filter(isWireRow) : []).filter(
-      (wire) => ids.has(wire.from) && ids.has(wire.to),
+    pipes: (Array.isArray(stored) ? stored.filter(isPipeRow) : []).filter(
+      (pipe) => ids.has(pipe.from) && ids.has(pipe.to),
     ),
     tagSelections: state.tagSelections,
+    notes: Array.isArray(state.notes) ? state.notes.filter(isNoteRow) : [],
   };
 }
 

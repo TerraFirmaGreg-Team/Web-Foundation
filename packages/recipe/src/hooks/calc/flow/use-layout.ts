@@ -13,12 +13,12 @@ import { layoutCards } from '@terrafirmagreg-team/recipe/lib/calc/pack';
 import type {
   CalcCard,
   CalcNode,
-  CalcWire,
+  CalcPipe,
 } from '@terrafirmagreg-team/recipe/types/calc';
 
 export function useFlowLayout({
   nodes,
-  wires,
+  pipes,
   flows,
   cards,
   data,
@@ -29,7 +29,7 @@ export function useFlowLayout({
   onRequestDemand,
 }: {
   nodes: CalcNode[];
-  wires: CalcWire[];
+  pipes: CalcPipe[];
   flows?: readonly (number | undefined)[];
   cards: CalcCard[];
   data: Omit<
@@ -68,8 +68,8 @@ export function useFlowLayout({
     ],
   );
   const rawFlow = useMemo(
-    () => cardsToFlow(nodes, wires, flowData, flows),
-    [nodes, wires, flowData, flows],
+    () => cardsToFlow(nodes, pipes, flowData, flows),
+    [nodes, pipes, flowData, flows],
   );
 
   const storedPos = useMemo(() => {
@@ -97,12 +97,12 @@ export function useFlowLayout({
   }, [rawFlow, storedPos]);
 
   const relayout = useCallback(
-    () => layoutCards(nodes, wires, {
+    () => layoutCards(nodes, pipes, {
       mode,
       gaps: GRID_GAPS,
       recipeBody: data.recipeBody,
     }),
-    [nodes, wires, mode, data.recipeBody],
+    [nodes, pipes, mode, data.recipeBody],
   );
 
   return { rawFlow, positioned, relayout };

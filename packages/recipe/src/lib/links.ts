@@ -68,6 +68,7 @@ export function recipeHref(
     ['mix', opts?.tool === 'alloy' ? opts?.mix : undefined],
     ['tab', opts?.tab],
     ['search', opts?.search],
+    ['rsearch', opts?.rsearch],
     [
       'rpage',
       opts?.rpage && opts.rpage > 1 ? Math.floor(opts.rpage) : undefined,
@@ -84,10 +85,12 @@ export function recipeCalcHref(
   lang: Lang | undefined,
   tree?: string,
   version?: string,
+  rsearch?: string,
 ): string {
   const query = recipeQuery([
     ['tool', 'calc'],
     ['tree', tree],
+    ['rsearch', rsearch],
     ['version', version ?? hrefVersion(dataset)],
   ]);
   const href = `${recipeBasePath(dataset)}?${query}`;

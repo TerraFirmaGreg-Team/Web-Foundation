@@ -5,7 +5,10 @@ import { useRef, type ReactNode } from 'react';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
 import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { useElementSize } from '@terrafirmagreg-team/ui/hooks/use-element-size';
-import { QueryPager } from '@terrafirmagreg-team/recipe/components/views/browser/query-controls';
+import {
+  QueryPager,
+  QuerySearch,
+} from '@terrafirmagreg-team/recipe/components/views/browser/query-controls';
 import { Pager } from '@terrafirmagreg-team/ui/components/blocks/page/pager';
 import { RecipeToolbar } from '@terrafirmagreg-team/recipe/components/views/browser/toolbar';
 import { recipeHref } from '@terrafirmagreg-team/recipe/lib/links';
@@ -27,6 +30,8 @@ export function RecipeFrame({
   strip,
   rail,
   back,
+  search,
+  searchPersist = true,
   onPageChange,
   children,
 }: {
@@ -36,6 +41,8 @@ export function RecipeFrame({
   strip?: ReactNode;
   rail?: ReactNode;
   back?: { href: string; label: string };
+  search?: boolean;
+  searchPersist?: boolean;
   onPageChange?: (page: number) => void;
   children: ReactNode;
 }) {
@@ -43,20 +50,25 @@ export function RecipeFrame({
   const resolved = useResolvedLang();
   const railBoxRef = useRef<HTMLDivElement | null>(null);
   const railSize = useElementSize(railBoxRef);
-  const goPage = (dir: number) => {
-    if (!list || list.pages <= 1) return;
-    const next = (list.page + dir + list.pages) % list.pages;
+  const setPage = (next: number) => {
+    if (!list) return;
+    const clamped = Math.min(list.pages - 1, Math.max(0, next));
+    if (clamped === list.page) return;
     if (onPageChange) {
-      onPageChange(next);
+      onPageChange(clamped);
       return;
     }
     replaceUrlState(
       recipeHref(session.dataset, resolved, {
         ...session.nav,
         id: undefined,
-        rpage: next > 0 ? next + 1 : undefined,
+        rpage: clamped > 0 ? clamped + 1 : undefined,
       }),
     );
+  };
+  const goPage = (dir: number) => {
+    if (!list || list.pages <= 1) return;
+    setPage((list.page + dir + list.pages) % list.pages);
   };
   const onPagerWheel = (event: { deltaY: number }) =>
     goPage(event.deltaY > 0 ? 1 : -1);
@@ -84,7 +96,7 @@ export function RecipeFrame({
         </div>
       </div>
       {list ? (
-        <div onWheel={onPagerWheel} className="mx-auto w-full sm:max-w-90">
+        <div onWheel={onPagerWheel} className="mx-auto w-full pt-2 sm:max-w-90">
           {onPageChange ? (
             <Pager
               layout="spread"
@@ -93,7 +105,6 @@ export function RecipeFrame({
               to={list.to}
               total={list.total}
               label={t('{page}/{pages}', { note: 'recipe.page_of' })}
-              className="pt-2"
               onPage={onPageChange}
             />
           ) : (
@@ -103,7 +114,6 @@ export function RecipeFrame({
               query={session.query}
               list={list}
               label={t('{page}/{pages}', { note: 'recipe.page_of' })}
-              className="pt-2"
             />
           )}
         </div>
@@ -122,6 +132,23 @@ export function RecipeFrame({
           {children}
         </div>
       </div>
+      {search ? (
+        <div className="flex shrink-0 justify-center pb-1 pt-1.5">
+          <div className="w-56 sm:w-72">
+            <QuerySearch
+              dataset={session.dataset}
+              param="rsearch"
+              params={{ ...session.nav, id: undefined, rpage: undefined }}
+              query={session.rquery}
+              onQuery={session.setRquery}
+              persist={searchPersist}
+              placeholder={t('Search materials', {
+                note: 'recipe.search_materials',
+              })}
+            />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

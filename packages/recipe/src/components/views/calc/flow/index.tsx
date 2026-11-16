@@ -3,11 +3,11 @@
 import {
   memo,
   useCallback,
-  useEffect,
   useMemo,
   useRef,
   useState,
 } from 'react';
+import { createPortal } from 'react-dom';
 import {
   ReactFlowProvider,
   useReactFlow,
@@ -16,6 +16,12 @@ import {
 } from '@terrafirmagreg-team/ui/lib/canvas/xyflow';
 import { cn } from '@terrafirmagreg-team/ui/lib/utils/cn';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from '@terrafirmagreg-team/ui/components/ui/context-menu';
 import { FlowCanvas } from '@terrafirmagreg-team/ui/components/blocks/canvas/flow-canvas';
 import {
   CALC_LOD_DOT,
@@ -27,6 +33,9 @@ import { CalcDotOverlay } from '@terrafirmagreg-team/recipe/components/views/cal
 import { EmptyState } from '@terrafirmagreg-team/ui/components/blocks/page/empty-state';
 import { CalcEdge } from '@terrafirmagreg-team/recipe/components/views/calc/edge';
 import { CalcSessionProvider } from '@terrafirmagreg-team/recipe/hooks/calc/use-calc-session';
+import { CalcPipeEditProvider } from '@terrafirmagreg-team/recipe/hooks/calc/use-pipe-edit';
+import { CalcMaterialPicker } from '@terrafirmagreg-team/recipe/components/views/calc/material-picker';
+import { FlaskConical, Target } from 'lucide-react';
 import { CalcFarProvider } from '@terrafirmagreg-team/recipe/hooks/calc/use-far-mode';
 import { CalcRecipeIdsProvider } from '@terrafirmagreg-team/recipe/hooks/calc/use-recipe-ids';
 import { CalcTierProvider } from '@terrafirmagreg-team/recipe/hooks/calc/use-tier';
@@ -34,9 +43,11 @@ import { useFlowPickers } from '@terrafirmagreg-team/recipe/hooks/calc/flow/use-
 import { useFlowLayout } from '@terrafirmagreg-team/recipe/hooks/calc/flow/use-layout';
 import { useFlowNodes } from '@terrafirmagreg-team/recipe/hooks/calc/flow/use-nodes';
 import { useFlowViewport } from '@terrafirmagreg-team/recipe/hooks/calc/flow/use-viewport';
+import { CalcNotes } from '@terrafirmagreg-team/recipe/components/views/calc/flow/notes';
 import { CalcToolbar } from '@terrafirmagreg-team/recipe/components/views/calc/flow/toolbar';
 import { CalcPickers } from '@terrafirmagreg-team/recipe/components/views/calc/flow/picker-dialogs';
 import { useFlowHandlers } from '@terrafirmagreg-team/recipe/hooks/calc/flow/use-handlers';
+import { useShiftHeld } from '@terrafirmagreg-team/recipe/hooks/calc/flow/use-shift-held';
 import type { CalcFlowProps } from '@terrafirmagreg-team/recipe/types/calc-flow-props';
 
 const nodeTypes = { calcMaterial: CalcNodeCard };
@@ -44,31 +55,9 @@ const edgeTypes = { calcEdge: CalcEdge };
 const EMPTY_FLOW: AnyCalcFlowNode[] = [];
 const EMPTY_EDGES: Edge[] = [];
 
-function useShiftHeld() {
-  const [held, setHeld] = useState(false);
-  useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === 'Shift') setHeld(true);
-    };
-    const up = (e: KeyboardEvent) => {
-      if (e.key === 'Shift') setHeld(false);
-    };
-    const blur = () => setHeld(false);
-    window.addEventListener('keydown', down);
-    window.addEventListener('keyup', up);
-    window.addEventListener('blur', blur);
-    return () => {
-      window.removeEventListener('keydown', down);
-      window.removeEventListener('keyup', up);
-      window.removeEventListener('blur', blur);
-    };
-  }, []);
-  return held;
-}
-
 function CalcFlowInner({
   nodes: schemeNodes,
-  wires,
+  pipes,
   flows,
   cards,
   dataset,
@@ -80,6 +69,11 @@ function CalcFlowInner({
   onFarCardsChange,
   recipeIds,
   onRecipeIdsChange,
+  snap,
+  onSnapChange,
+  notes,
+  onAddNote,
+  history,
   treeReady = true,
   resetGen = 0,
   canvasId,
@@ -91,8 +85,34 @@ function CalcFlowInner({
   onRelayout,
 }: CalcFlowProps) {
   const t = useTranslations();
-  const { zoomIn, zoomOut } = useReactFlow();
+  const { zoomIn, zoomOut, screenToFlowPosition } = useReactFlow();
+  const domNode = useStore((s) => s.domNode);
+  const shell = domNode?.parentElement ?? null;
+  const addNoteCenter = useCallback(() => {
+    if (!onAddNote) return;
+    const rect = domNode?.getBoundingClientRect();
+    onAddNote(
+      screenToFlowPosition({
+        x: rect ? rect.left + rect.width / 2 : window.innerWidth / 2,
+        y: rect ? rect.top + rect.height / 2 : window.innerHeight / 2,
+      }),
+    );
+  }, [onAddNote, domNode, screenToFlowPosition]);
   const shiftHeld = useShiftHeld();
+  const [pipeEditId, setPipeEditId] = useState<string | null>(null);
+  const pipeEdit = useMemo(
+    () => ({
+      edgeId: pipeEditId,
+      open: setPipeEditId,
+      close: () => setPipeEditId(null),
+    }),
+    [pipeEditId],
+  );
+  const addPosRef = useRef<{ x: number; y: number } | null>(null);
+  const [matPick, setMatPick] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const {
     pickerNode,
     setPickerNode,
@@ -122,7 +142,7 @@ function CalcFlowInner({
   );
   const { rawFlow, positioned, relayout } = useFlowLayout({
     nodes: schemeNodes,
-    wires,
+    pipes,
     flows,
     cards,
     data,
@@ -221,6 +241,8 @@ function CalcFlowInner({
     setMemberNode(null);
     setSupply(null);
     setDemand(null);
+    setPipeEditId(null);
+    setMatPick(null);
   }
 
   const {
@@ -242,6 +264,8 @@ function CalcFlowInner({
     applyEngaged,
     centerOnNode,
     setPickerNode,
+    openPipeEdit: pipeEdit.open,
+    closePipeEdit: pipeEdit.close,
   });
   const closePicker = useCallback(() => setPickerNode(null), [setPickerNode]);
   const closeMember = useCallback(() => setMemberNode(null), [setMemberNode]);
@@ -256,6 +280,14 @@ function CalcFlowInner({
       <CalcFarProvider value={farCards}>
       <CalcRecipeIdsProvider value={recipeIds}>
       <CalcTierProvider value={tier}>
+      <ContextMenu>
+      <ContextMenuTrigger
+        className="contents"
+        onContextMenu={(e) => {
+          addPosRef.current = { x: e.clientX, y: e.clientY };
+        }}
+      >
+      <CalcPipeEditProvider value={pipeEdit}>
       <FlowCanvas<AnyCalcFlowNode>
         shellProps={shellProps}
         className={cn(
@@ -286,6 +318,8 @@ function CalcFlowInner({
         onEdgeClick={handleEdgeClick}
         onEdgesDelete={handleEdgesDelete}
         deleteKeyCode={['Backspace', 'Delete']}
+        snapToGrid={snap}
+        snapGrid={[16, 16]}
         nodesDraggable={tier !== 'dot'}
         nodesConnectable={tier === 'near'}
         selectionKeyCode="Shift"
@@ -299,19 +333,35 @@ function CalcFlowInner({
         {tier === 'dot' ? (
           <CalcDotOverlay nodes={mergedFlow.nodes} focusId={focusId} />
         ) : null}
-        <CalcToolbar
-          onFit={onFit}
-          onRelayout={runRelayout}
-          onZoomIn={() => void zoomIn({ duration: 150 })}
-          onZoomOut={() => void zoomOut({ duration: 150 })}
-          actions={actions}
-          mode={mode}
-          onModeChange={onModeChange}
-          farCards={farCards}
-          onFarCardsChange={onFarCardsChange}
-          recipeIds={recipeIds}
-          onRecipeIdsChange={onRecipeIdsChange}
-        />
+        <CalcNotes notes={notes} snap={snap} data={flowData} />
+        {shell
+          ? createPortal(
+              <>
+                <CalcToolbar
+                  onFit={onFit}
+                  onRelayout={runRelayout}
+                  onZoomIn={() => void zoomIn({ duration: 150 })}
+                  onZoomOut={() => void zoomOut({ duration: 150 })}
+                  onAddNote={onAddNote ? addNoteCenter : undefined}
+                  actions={actions}
+                  mode={mode}
+                  onModeChange={onModeChange}
+                  farCards={farCards}
+                  onFarCardsChange={onFarCardsChange}
+                  recipeIds={recipeIds}
+                  onRecipeIdsChange={onRecipeIdsChange}
+                  snap={snap}
+                  onSnapChange={onSnapChange}
+                  history={history}
+                />
+                <div className="pointer-events-auto absolute left-2 top-2 z-10 flex items-center gap-1 rounded-md border border-border bg-background/80 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground shadow-sm backdrop-blur-sm">
+                  <FlaskConical className="size-3" />
+                  {t('Experimental', { note: 'recipe.calc.experimental' })}
+                </div>
+              </>,
+              shell,
+            )
+          : null}
         {schemeNodes.length ? (
           ready ? null : (
             <div className="pointer-events-none absolute inset-x-0 bottom-4 z-10 flex justify-center">
@@ -324,6 +374,37 @@ function CalcFlowInner({
         </>
         )}
       </FlowCanvas>
+      </CalcPipeEditProvider>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuItem
+          className="whitespace-nowrap"
+          onClick={() => {
+            const pos = addPosRef.current;
+            setMatPick(pos ? screenToFlowPosition(pos) : null);
+          }}
+        >
+          <Target />
+          {t('Add card', { note: 'recipe.calc.add.goal' })}
+        </ContextMenuItem>
+      </ContextMenuContent>
+      </ContextMenu>
+      {matPick ? (
+        <CalcMaterialPicker
+          open
+          onOpenChange={(open) => {
+            if (!open) setMatPick(null);
+          }}
+          index={session.index}
+          dataset={dataset}
+          lang={session.lang}
+          langMap={session.langMap}
+          onSelect={(id, kind) => {
+            data.onAddCard(id, kind, matPick);
+            setMatPick(null);
+          }}
+        />
+      ) : null}
       <CalcPickers
         pickerNode={pickerNode}
         memberNode={memberNode}

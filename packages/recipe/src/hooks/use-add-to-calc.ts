@@ -17,8 +17,9 @@ export function useAddToCalc(session: RecipeSession) {
     (item: string, kind: 'item' | 'fluid') => {
       const state = decodeCalcState(tree ?? '') ?? {
         cards: [],
-        wires: [],
+        pipes: [],
         tagSelections: {},
+        notes: [],
       };
       const existing = state.cards.find(
         (card) => card.materialId === item && card.kind === kind,

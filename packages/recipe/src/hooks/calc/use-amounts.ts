@@ -4,20 +4,23 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   CalcCard,
   CalcNode,
-  CalcWire,
+  CalcNote,
+  CalcPipe,
   CalculatorState,
 } from '@terrafirmagreg-team/recipe/types/calc';
 
 export function useCalcAmounts({
   cards,
-  wires,
+  pipes,
   tagSelections,
+  notes,
   resolved,
   persist,
 }: {
   cards: CalcCard[];
-  wires: CalcWire[];
+  pipes: CalcPipe[];
   tagSelections: Record<string, string>;
+  notes: CalcNote[];
   resolved: CalcNode[];
   persist: (next: CalculatorState) => void;
 }) {
@@ -67,10 +70,10 @@ export function useCalcAmounts({
       if (amountTimer.current) clearTimeout(amountTimer.current);
       amountTimer.current = setTimeout(() => {
         amountTimer.current = undefined;
-        persist({ cards: next, wires, tagSelections });
+        persist({ cards: next, pipes, tagSelections, notes });
       }, 300);
     },
-    [pending, cards, persist, wires, tagSelections],
+    [pending, cards, persist, pipes, tagSelections, notes],
   );
 
   const pendingCrafts = useMemo(

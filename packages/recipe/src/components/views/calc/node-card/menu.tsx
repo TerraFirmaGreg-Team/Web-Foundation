@@ -12,7 +12,6 @@ import {
   PinOff,
   Plus,
   Shapes,
-  Target,
   Undo2,
 } from 'lucide-react';
 import {
@@ -46,7 +45,6 @@ export function NodeContextMenu({
   const {
     node,
     dataset,
-    onAddCard,
     onOpenItem,
     onSelectRecipe,
     onRequestPicker,
@@ -74,13 +72,6 @@ export function NodeContextMenu({
         </ContextMenuLabel>
       </ContextMenuGroup>
       <ContextMenuSeparator />
-      <ContextMenuItem
-        className="whitespace-nowrap"
-        onClick={() => onAddCard(node.materialId, node.kind)}
-      >
-        <Target />
-        {t('Add card', { note: 'recipe.calc.add.goal' })}
-      </ContextMenuItem>
       <ContextMenuItem
         className="whitespace-nowrap"
         onClick={() => onOpenItem(node.materialId, node.kind)}
@@ -166,7 +157,6 @@ export function PortContextMenu({
   langMap?: Record<string, string>;
 }) {
   const {
-    onAddCard,
     onOpenItem,
     onRequestPicker,
     onRequestSupply,
@@ -239,13 +229,6 @@ export function PortContextMenu({
           {t('Pick a recipe', { note: 'recipe.calc.pick.title' })}
         </ContextMenuItem>
       ) : null}
-      <ContextMenuItem
-        className="whitespace-nowrap"
-        onClick={() => onAddCard(id, kind)}
-      >
-        <Target />
-        {t('Add card', { note: 'recipe.calc.add.goal' })}
-      </ContextMenuItem>
       <ContextMenuItem
         className="whitespace-nowrap"
         onClick={() => onOpenItem(id, kind)}

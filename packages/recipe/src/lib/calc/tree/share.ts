@@ -1,8 +1,10 @@
 import { deflateSync, inflateSync, strFromU8, strToU8 } from 'fflate';
-import type {
-  CalcCard,
-  CalculatorState,
-  CalcWire,
+import {
+  CALC_NOTE_COLORS,
+  type CalcCard,
+  type CalcNote,
+  type CalculatorState,
+  type CalcPipe,
 } from '@terrafirmagreg-team/recipe/types/calc';
 
 function encodeUrlSafe(base64: string): string {
@@ -47,12 +49,12 @@ export function encodeCalcState(state: CalculatorState): string {
     ];
     return row;
   });
-  const wires = state.wires.flatMap((wire) => {
-    const from = indexOf.get(wire.from);
-    const to = indexOf.get(wire.to);
+  const pipes = state.pipes.flatMap((pipe) => {
+    const from = indexOf.get(pipe.from);
+    const to = indexOf.get(pipe.to);
     return from === undefined || to === undefined
       ? []
-      : [[from, to, wire.input, wire.out ?? 0, wire.amount ?? 0]];
+      : [[from, to, pipe.input, pipe.out ?? 0, pipe.amount ?? 0]];
   });
   const tagSelections: Record<string, number> = {};
   for (const [tagId, memberId] of Object.entries(state.tagSelections)) {
@@ -62,8 +64,17 @@ export function encodeCalcState(state: CalculatorState): string {
     v: 2,
     d: [...dict.keys()],
     c: cards,
-    w: wires,
+    p: pipes,
     g: tagSelections,
+    n: (state.notes ?? []).map((note) => [
+      note.id,
+      note.text,
+      Math.round(note.pos.x),
+      Math.round(note.pos.y),
+      ...(note.color && note.color !== 'amber'
+        ? [CALC_NOTE_COLORS.indexOf(note.color)]
+        : []),
+    ]),
   };
   const packed = deflateSync(strToU8(JSON.stringify(payload)));
   return `x${encodeUrlSafe(btoa(u8ToBinary(packed)))}`;
@@ -79,8 +90,10 @@ export function decodeCalcState(encoded: string): CalculatorState | null {
       v?: number;
       d?: string[];
       c?: number[][];
+      p?: number[][];
       w?: number[][];
       g?: Record<string, number>;
+      n?: unknown[][];
     };
     if (payload.v !== 2 || !Array.isArray(payload.d)) return null;
     const dict = payload.d;
@@ -107,13 +120,13 @@ export function decodeCalcState(encoded: string): CalculatorState | null {
             : undefined,
       });
     }
-    const wires: CalcWire[] = [];
-    for (const row of payload.w ?? []) {
+    const pipes: CalcPipe[] = [];
+    for (const row of payload.p ?? payload.w ?? []) {
       if (!Array.isArray(row)) continue;
       const from = cards[row[0]!];
       const to = cards[row[1]!];
       if (!from || !to) continue;
-      wires.push({
+      pipes.push({
         from: from.id,
         to: to.id,
         input: Number(row[2]) || 0,
@@ -127,7 +140,24 @@ export function decodeCalcState(encoded: string): CalculatorState | null {
       const memberId = id(memberIdx);
       if (tagId && memberId) tagSelections[tagId] = memberId;
     }
-    return { cards, wires, tagSelections };
+    const notes: CalcNote[] = [];
+    for (const row of payload.n ?? []) {
+      if (!Array.isArray(row)) continue;
+      const noteId = row[0];
+      const text = row[1];
+      if (typeof noteId !== 'string' || typeof text !== 'string') continue;
+      const colorIdx = Number(row[4]);
+      notes.push({
+        id: noteId,
+        text,
+        pos: { x: Number(row[2]) || 0, y: Number(row[3]) || 0 },
+        color:
+          colorIdx > 0 && colorIdx < CALC_NOTE_COLORS.length
+            ? CALC_NOTE_COLORS[colorIdx]
+            : undefined,
+      });
+    }
+    return { cards, pipes, tagSelections, notes };
   } catch {
     return null;
   }

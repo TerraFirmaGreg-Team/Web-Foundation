@@ -16,6 +16,11 @@ import { RecipeFrame } from '@terrafirmagreg-team/recipe/components/views/browse
 import { RecipeCardGrid } from '@terrafirmagreg-team/recipe/components/views/browser/card-grid';
 import { recipeCardFitDim } from '@terrafirmagreg-team/recipe/lib/browser/card-dim';
 import { RecipeTypeTabs } from '@terrafirmagreg-team/recipe/components/views/browser/type-tabs';
+import {
+  rowMatchesTerms,
+  rowSearchTerms,
+} from '@terrafirmagreg-team/recipe/lib/browser/row-search';
+import { recipeItemName } from '@terrafirmagreg-team/recipe/lib/client-index';
 import { PlaceHeader } from '@terrafirmagreg-team/recipe/components/views/browser/place-header';
 import { WorkstationRail } from '@terrafirmagreg-team/recipe/components/views/browser/workstation-rail';
 import type { CalcFlowData } from '@terrafirmagreg-team/recipe/lib/calc/flow';
@@ -28,7 +33,6 @@ export function PickerBody({
   onSelectRecipe,
   onSelectTagMember,
   recipeDefaults,
-  onSetRecipeDefault,
   actions,
   close,
 }: {
@@ -52,6 +56,7 @@ export function PickerBody({
   const [tab, setTab] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [pinned, setPinned] = useState(true);
+  const [query, setQuery] = useState('');
   const recipeKey = `${node.materialId}${node.recipe?.recipeId ?? ''}`;
   const [seenRecipeKey, setSeenRecipeKey] = useState(recipeKey);
   if (seenRecipeKey !== recipeKey) {
@@ -59,6 +64,7 @@ export function PickerBody({
     setTab(null);
     setPinned(true);
     setPage(0);
+    setQuery('');
   }
   const defaultRecipeId = recipeDefaults[node.materialId];
   const active =
@@ -69,16 +75,24 @@ export function PickerBody({
         recipes.find((row) => row.recipeId === defaultRecipeId)?.category ??
         categories[0]);
   const categoriesById = useCategoriesById(index);
+  const terms = useMemo(() => rowSearchTerms(query), [query]);
   const rows = useMemo(
     () =>
       recipes
-        .filter((row) => row.category === active)
+        .filter(
+          (row) =>
+            row.category === active &&
+            (!terms.length ||
+              rowMatchesTerms(row.row, terms, (id) =>
+                recipeItemName(session.names, lang, id),
+              )),
+        )
         .sort((a, b) =>
           (b.recipeId === defaultRecipeId ? 1 : 0) -
           (a.recipeId === defaultRecipeId ? 1 : 0),
         )
         .map((row) => row.row),
-    [recipes, active, defaultRecipeId],
+    [recipes, active, terms, defaultRecipeId, session.names, lang],
   );
   const boxRef = useRef<HTMLDivElement | null>(null);
   const focusIndex = rows.findIndex(
@@ -109,6 +123,8 @@ export function PickerBody({
   const frameSession = {
     ...session,
     place: active ? { kind: 'type' as const, id: active } : session.place,
+    rquery: query,
+    setRquery: setQuery,
   };
   const gridSession = { ...frameSession, recipeId: node.recipe?.recipeId };
 
@@ -178,6 +194,8 @@ export function PickerBody({
           />
         }
         onPageChange={goPage}
+        search
+        searchPersist={false}
       >
         <RecipeCardGrid
           session={gridSession}
@@ -204,8 +222,6 @@ export function PickerBody({
         dataset={dataset}
         lang={lang}
         langMap={langMap}
-        recipeDefaults={recipeDefaults}
-        onSetRecipeDefault={onSetRecipeDefault}
         onSelectTagMember={onSelectTagMember}
       />
     </>

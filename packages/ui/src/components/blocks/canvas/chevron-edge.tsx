@@ -42,6 +42,7 @@ type ChevronEdgeResolvers = {
   renderLabel?: (ctx: ChevronEdgePathContext) => ReactNode;
   labelVisibility?: 'always' | 'hover';
   className?: string;
+  casing?: boolean;
 };
 
 function pathMidpoint(points: readonly FlowPoint[]): FlowPoint {
@@ -76,6 +77,7 @@ export function createChevronEdge({
   renderLabel,
   labelVisibility = 'always',
   className,
+  casing = false,
 }: ChevronEdgeResolvers): FC<EdgeProps> {
   return memo(function ChevronEdge(props: EdgeProps) {
     const { source, target, data } = props;
@@ -184,10 +186,9 @@ export function createChevronEdge({
             .map((p) => `L${p.x} ${p.y}`)
             .join('')}`
         : base;
-    const hoverTrack =
-      labelVisibility === 'hover'
-        ? { onMouseEnter: enter, onMouseLeave: leave, onMouseMove: move }
-        : {};
+    const hoverTrack = { onMouseEnter: enter, onMouseLeave: leave };
+    const hoverMove =
+      labelVisibility === 'hover' ? { onMouseMove: move } : {};
     const labelOn =
       labelVisibility !== 'hover' || hover || props.selected === true;
     const labelAt = hoverPt ?? mid;
@@ -198,6 +199,8 @@ export function createChevronEdge({
           'chevron-edge',
           className,
           chevronHighlightClass(highlight),
+          casing && 'chevron-edge--cased',
+          hover && 'chevron-edge--hover',
         )}
       >
         <path
@@ -207,7 +210,15 @@ export function createChevronEdge({
           stroke="transparent"
           strokeWidth={props.interactionWidth ?? 20}
           {...hoverTrack}
+          {...hoverMove}
         />
+        {casing ? (
+          <path
+            className="chevron-edge__stroke chevron-edge__case"
+            d={base}
+            aria-hidden="true"
+          />
+        ) : null}
         <path
           className="chevron-edge__stroke chevron-edge__base"
           d={base}
@@ -230,8 +241,12 @@ export function createChevronEdge({
       {renderLabel && labelOn ? (
         <EdgeLabelRenderer>
           <div
-            className="chevron-edge__label nodrag nopan"
+            className={cn(
+              'chevron-edge__label nodrag nopan',
+              hover && 'chevron-edge--hover',
+            )}
             {...hoverTrack}
+            {...hoverMove}
             style={{
               transform: `translate(-50%, -50%) translate(${labelAt.x}px, ${labelAt.y}px)`,
             }}

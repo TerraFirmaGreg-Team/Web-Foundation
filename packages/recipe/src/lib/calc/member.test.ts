@@ -63,7 +63,7 @@ test('pinnedRecipe pins a tag slot to the selected member', () => {
       catalyst: false,
       tagId: 'forge:rods/amethyst',
       members: ['minecraft:amethyst_shard', 'gtceu:amethyst_rod'],
-      wired: false,
+      connected: false,
       covered: 0,
     },
   ]);
@@ -83,7 +83,7 @@ test('pinnedRecipe matches hash-prefixed selections and widget ids', () => {
       amount: 1,
       catalyst: false,
       tagId: '#forge:rods/amethyst',
-      wired: false,
+      connected: false,
       covered: 0,
     },
   ]);
@@ -104,7 +104,7 @@ test('pinnedRecipe keeps cycling when no selection exists', () => {
       catalyst: false,
       tagId: 'forge:rods/amethyst',
       members: ['minecraft:amethyst_shard', 'gtceu:amethyst_rod'],
-      wired: false,
+      connected: false,
       covered: 0,
     },
   ]);
@@ -129,7 +129,7 @@ test('pinnedRecipe matches members by base id against NBT alternatives', () => {
       amount: 1,
       catalyst: false,
       tagId: '#forge:tools/hammers',
-      wired: false,
+      connected: false,
       covered: 0,
     },
   ]);
@@ -163,7 +163,7 @@ test('pinnedRecipe pins the picked member outside alternatives and skips non-tag
       amount: 1,
       catalyst: false,
       tagId: 'forge:rods/amethyst',
-      wired: false,
+      connected: false,
       covered: 0,
     },
   ]);

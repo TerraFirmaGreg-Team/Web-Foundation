@@ -50,7 +50,7 @@ function ctx(tagSelections: Record<string, string>): SchemeContext {
 }
 
 function tagInput(tagSelections: Record<string, string>) {
-  const { nodes } = buildScheme({ cards: [CARD], wires: [], ctx: ctx(tagSelections) });
+  const { nodes } = buildScheme({ cards: [CARD], pipes: [], ctx: ctx(tagSelections) });
   const node = nodes[0];
   return node?.inputs[1];
 }
@@ -96,7 +96,7 @@ function nbtCtx(tagSelections: Record<string, string>): SchemeContext {
 function nbtTagInput(tagSelections: Record<string, string>) {
   const { nodes } = buildScheme({
     cards: [CARD],
-    wires: [],
+    pipes: [],
     ctx: nbtCtx(tagSelections),
   });
   return nodes[0]?.inputs[1];
@@ -115,7 +115,7 @@ test('tag input normalizes an NBT selection to its base id', () => {
 test('memberTarget marks the picked member on a tag card', () => {
   const { nodes } = buildScheme({
     cards: [{ ...CARD, id: 't1', materialId: `#${TAG}`, recipeId: null }],
-    wires: [],
+    pipes: [],
     ctx: ctx({}),
   });
   const target = memberTarget(
@@ -128,7 +128,7 @@ test('memberTarget marks the picked member on a tag card', () => {
 test('memberTarget resolves node-level tag cards', () => {
   const { nodes } = buildScheme({
     cards: [{ ...CARD, id: 't1', materialId: `#${TAG}`, recipeId: null }],
-    wires: [],
+    pipes: [],
     ctx: ctx({}),
   });
   const target = memberTarget({ node: nodes[0]! });
@@ -139,7 +139,7 @@ test('memberTarget resolves node-level tag cards', () => {
 });
 
 test('memberTarget resolves a tag input on a recipe node', () => {
-  const { nodes } = buildScheme({ cards: [CARD], wires: [], ctx: ctx({}) });
+  const { nodes } = buildScheme({ cards: [CARD], pipes: [], ctx: ctx({}) });
   const target = memberTarget({ node: nodes[0]!, input: 1 });
   assert.equal(target?.tagId, TAG);
   assert.deepEqual(target?.members, RODS);
@@ -148,7 +148,7 @@ test('memberTarget resolves a tag input on a recipe node', () => {
 });
 
 test('memberTarget is empty for plain inputs and missing slots', () => {
-  const { nodes } = buildScheme({ cards: [CARD], wires: [], ctx: ctx({}) });
+  const { nodes } = buildScheme({ cards: [CARD], pipes: [], ctx: ctx({}) });
   assert.equal(memberTarget({ node: nodes[0]!, input: 0 }), undefined);
   assert.equal(memberTarget({ node: nodes[0]!, input: 9 }), undefined);
 });
@@ -198,7 +198,7 @@ test('fluid-only recipe produces its fluid output and feeds a consumer', () => {
         crafts: 1,
       },
     ],
-    wires: [{ from: 'src', to: 'dst', input: 0 }],
+    pipes: [{ from: 'src', to: 'dst', input: 0 }],
     ctx: fluidCtx([FLUID_RECIPE, CONSUME_RECIPE]),
   });
   const [src, dst] = nodes;

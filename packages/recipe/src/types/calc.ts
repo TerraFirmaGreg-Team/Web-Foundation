@@ -42,7 +42,7 @@ export type CalcCard = {
   pos?: { x: number; y: number };
 };
 
-export type CalcWire = {
+export type CalcPipe = {
   from: string;
   to: string;
   input: number;
@@ -50,10 +50,29 @@ export type CalcWire = {
   amount?: number;
 };
 
+export const CALC_NOTE_COLORS = [
+  'amber',
+  'slate',
+  'sky',
+  'emerald',
+  'rose',
+  'violet',
+] as const;
+
+export type CalcNoteColor = (typeof CALC_NOTE_COLORS)[number];
+
+export type CalcNote = {
+  id: string;
+  text: string;
+  pos: { x: number; y: number };
+  color?: CalcNoteColor;
+};
+
 export type CalculatorState = {
   cards: CalcCard[];
-  wires: CalcWire[];
+  pipes: CalcPipe[];
   tagSelections: Record<string, string>;
+  notes: CalcNote[];
 };
 
 export type CalcNodeInput = {
@@ -61,9 +80,10 @@ export type CalcNodeInput = {
   kind: CalcKind;
   amount: number;
   catalyst: boolean;
+  chance?: number;
   tagId?: string;
   members?: string[];
-  wired: boolean;
+  connected: boolean;
   covered: number;
 };
 

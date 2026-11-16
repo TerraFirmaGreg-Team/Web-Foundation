@@ -83,7 +83,7 @@ export function OutputCell({
                 lang={lang}
                 langMap={langMap}
                 name={name}
-                subheader={portAmountLine(count, out.kind)}
+                subheader={portAmountLine(count, out.kind, out.chance)}
                 size="sm"
                 href={false}
                 tooltip="adaptive"
@@ -123,7 +123,7 @@ export function InputCell({
   const id = inp.id;
   const name = id ? recipeItemName(names, lang, id) : (inp.tagId ?? '?');
   const uncovered = Math.max(0, inp.amount - inp.covered);
-  const state = inp.wired
+  const state = inp.connected
     ? uncovered <= 0
       ? 'full'
       : 'partial'
@@ -160,7 +160,7 @@ export function InputCell({
                   lang={lang}
                   langMap={langMap}
                   name={name}
-                  subheader={portAmountLine(uncovered, inp.kind)}
+                  subheader={portAmountLine(uncovered, inp.kind, inp.chance)}
                   size="sm"
                   href={false}
                   tooltip="adaptive"
@@ -173,7 +173,7 @@ export function InputCell({
                   lang={lang}
                   langMap={langMap}
                   name={name}
-                  subheader={portAmountLine(uncovered, inp.kind)}
+                  subheader={portAmountLine(uncovered, inp.kind, inp.chance)}
                   size="sm"
                   href={false}
                   tooltip="adaptive"

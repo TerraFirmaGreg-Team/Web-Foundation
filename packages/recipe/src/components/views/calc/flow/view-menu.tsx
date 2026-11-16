@@ -38,6 +38,8 @@ export function CalcViewMenu({
   onFarCardsChange,
   recipeIds,
   onRecipeIdsChange,
+  snap,
+  onSnapChange,
 }: {
   mode: CalcViewMode;
   onModeChange: (mode: CalcViewMode) => void;
@@ -45,6 +47,8 @@ export function CalcViewMenu({
   onFarCardsChange: (mode: CalcFarMode) => void;
   recipeIds: boolean;
   onRecipeIdsChange: (show: boolean) => void;
+  snap: boolean;
+  onSnapChange: (snap: boolean) => void;
 }) {
   const t = useTranslations();
   const modeLabels: Record<CalcViewMode, string> = {
@@ -116,6 +120,13 @@ export function CalcViewMenu({
           </>
         ) : null}
         <DropdownMenuSeparator />
+        <DropdownMenuCheckboxItem
+          className="whitespace-nowrap"
+          checked={snap}
+          onCheckedChange={(checked) => onSnapChange(checked === true)}
+        >
+          {t('Snap to grid', { note: 'recipe.calc.snap' })}
+        </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
           className="whitespace-nowrap"
           checked={recipeIds}

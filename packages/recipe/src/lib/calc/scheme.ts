@@ -7,12 +7,12 @@ import type {
   CalcOutput,
   CalcRecipe,
   CalcRecipeSummary,
-  CalcWire,
+  CalcPipe,
   TagResolution,
 } from '@terrafirmagreg-team/recipe/types/calc';
 import { stackIdBase } from '@terrafirmagreg-team/dump/lib/dump/contract/ref';
 import { mergeAmounts } from './tree/materials';
-import { resolveWireEnds } from './wire';
+import { resolvePipeEnds } from './pipe';
 
 export type SchemeContext = {
   recipeMap: Map<string, CalcRecipe>;
@@ -56,11 +56,11 @@ function inputMember(
 
 export function buildScheme({
   cards,
-  wires,
+  pipes,
   ctx,
 }: {
   cards: readonly CalcCard[];
-  wires: readonly CalcWire[];
+  pipes: readonly CalcPipe[];
   ctx: SchemeContext;
 }): { nodes: CalcNode[]; flows: (number | undefined)[] } {
   const byId = new Map<string, CalcNode>();
@@ -128,9 +128,10 @@ export function buildScheme({
             ? entry.amount
             : entry.amount * card.crafts,
           catalyst: entry.catalyst,
+          ...(entry.chance !== undefined ? { chance: entry.chance } : {}),
           tagId: entry.tagId,
           ...(member.members ? { members: member.members } : {}),
-          wired: false,
+          connected: false,
           covered: 0,
         } satisfies CalcNodeInput;
       }),
@@ -151,23 +152,23 @@ export function buildScheme({
     return node;
   });
 
-  const flows: (number | undefined)[] = new Array(wires.length);
+  const flows: (number | undefined)[] = new Array(pipes.length);
   const deg = new Map<string, number>();
   const adj = new Map<string, string[]>();
-  wires.forEach((wire, wireIndex) => {
-    const src = byId.get(wire.from);
-    const dst = byId.get(wire.to);
+  pipes.forEach((pipe, pipeIndex) => {
+    const src = byId.get(pipe.from);
+    const dst = byId.get(pipe.to);
     if (!src || !dst || src === dst) return;
-    const ends = resolveWireEnds(src, dst, wire);
+    const ends = resolvePipeEnds(src, dst, pipe);
     if (!ends) return;
     const input = dst.inputs[ends.inputIndex];
     const srcOut = src.outputs[ends.outIndex];
     if (!input?.id || !srcOut) return;
-    input.wired = true;
+    input.connected = true;
     const covered = Math.min(
       Math.max(srcOut.remaining, 0),
       input.amount - input.covered,
-      wire.amount ?? Infinity,
+      pipe.amount ?? Infinity,
     );
     input.covered += covered;
     srcOut.allocated += covered;
@@ -176,9 +177,9 @@ export function buildScheme({
       src.allocated += covered;
       src.remaining -= covered;
     }
-    flows[wireIndex] = covered;
-    adj.set(wire.from, [...(adj.get(wire.from) ?? []), wire.to]);
-    deg.set(wire.to, (deg.get(wire.to) ?? 0) + 1);
+    flows[pipeIndex] = covered;
+    adj.set(pipe.from, [...(adj.get(pipe.from) ?? []), pipe.to]);
+    deg.set(pipe.to, (deg.get(pipe.to) ?? 0) + 1);
   });
 
   const cyclic = (start: string): boolean => {
