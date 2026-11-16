@@ -29,7 +29,7 @@ export function NodeActions({
   const canPick = node.recipe != null || node.availableRecipes.length > 0;
 
   return (
-    <span className="pointer-events-auto absolute -top-2 right-3 z-30 flex gap-0.5">
+    <span className="pointer-events-auto absolute -top-2.5 right-3 z-30 flex gap-0.5">
       {canPick ? (
         <Hint label={t('Pick a recipe', { note: 'recipe.calc.pick.title' })} side="top">
           <button

@@ -1,15 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import type { ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
 import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
+import { useElementSize } from '@terrafirmagreg-team/ui/hooks/use-element-size';
 import { QueryPager } from '@terrafirmagreg-team/recipe/components/views/browser/query-controls';
 import { Pager } from '@terrafirmagreg-team/ui/components/blocks/page/pager';
 import { RecipeToolbar } from '@terrafirmagreg-team/recipe/components/views/browser/toolbar';
 import { recipeHref } from '@terrafirmagreg-team/recipe/lib/links';
 import { replaceUrlState } from '@terrafirmagreg-team/ui/lib/utils/history';
-import { cn } from '@terrafirmagreg-team/ui/lib/utils/cn';
 import type { RecipeSession } from '@terrafirmagreg-team/recipe/types';
 
 type FeedList = {
@@ -27,9 +27,6 @@ export function RecipeFrame({
   strip,
   rail,
   back,
-  navPrev,
-  navNext,
-  onNavWheel,
   onPageChange,
   children,
 }: {
@@ -39,14 +36,13 @@ export function RecipeFrame({
   strip?: ReactNode;
   rail?: ReactNode;
   back?: { href: string; label: string };
-  navPrev?: ReactNode;
-  navNext?: ReactNode;
-  onNavWheel?: (dir: -1 | 1) => void;
   onPageChange?: (page: number) => void;
   children: ReactNode;
 }) {
   const t = useTranslations();
   const resolved = useResolvedLang();
+  const railBoxRef = useRef<HTMLDivElement | null>(null);
+  const railSize = useElementSize(railBoxRef);
   const goPage = (dir: number) => {
     if (!list || list.pages <= 1) return;
     const next = (list.page + dir + list.pages) % list.pages;
@@ -71,14 +67,7 @@ export function RecipeFrame({
           <div className="min-w-0 flex-1">{strip}</div>
         </div>
       ) : null}
-      <div
-        className={cn(
-          'relative grid items-center gap-x-3 border-b border-border pb-2 pt-2 max-sm:pe-11',
-          navPrev || navNext
-            ? 'grid-cols-[auto_minmax(0,1fr)_auto] sm:grid-cols-[minmax(0,1fr)_minmax(0,360px)_minmax(0,1fr)]'
-            : 'grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]',
-        )}
-      >
+      <div className="relative grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-3 border-b border-border pb-2 pt-2 max-sm:pe-11">
         <div className="flex min-w-0 justify-start">
           {back ? (
             <Link
@@ -89,22 +78,7 @@ export function RecipeFrame({
             </Link>
           ) : null}
         </div>
-        {navPrev || navNext ? (
-          <div
-            onWheel={
-              onNavWheel
-                ? (event) => onNavWheel(event.deltaY > 0 ? 1 : -1)
-                : undefined
-            }
-            className="flex w-full max-w-90 min-w-0 items-center gap-2"
-          >
-            {navPrev}
-            <div className="min-w-0 flex-1">{header}</div>
-            {navNext}
-          </div>
-        ) : (
-          <div className="min-w-0 max-w-full">{header}</div>
-        )}
+        <div className="min-w-0 max-w-full">{header}</div>
         <div className="flex min-w-0 items-center justify-self-end max-sm:absolute max-sm:end-1.5 max-sm:top-1/2 max-sm:-translate-y-1/2">
           <RecipeToolbar session={session} />
         </div>
@@ -136,11 +110,14 @@ export function RecipeFrame({
       ) : null}
       <div className="relative flex min-h-0 flex-1 overflow-hidden pt-2">
         {rail ? (
-          <div className="z-10 flex shrink-0 flex-col">{rail}</div>
+          <div ref={railBoxRef} className="z-10 flex shrink-0 flex-col">
+            {rail}
+          </div>
         ) : null}
         <div
           onWheel={(event) => goPage(event.deltaY > 0 ? 1 : -1)}
           className="flex min-w-0 flex-1 flex-col"
+          style={rail ? { paddingInlineEnd: railSize.w } : undefined}
         >
           {children}
         </div>

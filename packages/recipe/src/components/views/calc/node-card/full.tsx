@@ -411,7 +411,7 @@ export const CalcNodeCardFull = memo(function CalcNodeCardFull({
       />
       {interactive ? <NodeActions data={data} nodeId={id} /> : null}
       {showIds && body ? (
-        <span className="nodrag absolute -bottom-2 left-3 z-30 flex">
+        <span className="nodrag absolute -bottom-2.5 left-3 z-30 flex">
           <span className="inline-flex max-w-full items-center gap-0.5 rounded-sm border border-border bg-background px-1 py-px shadow-sm">
             <code className="truncate text-[8px] leading-tight text-muted-foreground">
               {body.id}

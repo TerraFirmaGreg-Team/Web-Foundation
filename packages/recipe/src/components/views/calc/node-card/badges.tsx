@@ -65,7 +65,7 @@ export function NodeBadges({
   }
   if (!chips.length) return null;
   return (
-    <span className="pointer-events-auto absolute right-3 -bottom-1.5 z-30 flex flex-col-reverse items-end gap-0.5">
+    <span className="pointer-events-auto absolute right-3 -bottom-2 z-30 flex flex-col-reverse items-end gap-0.5">
       {chips}
     </span>
   );

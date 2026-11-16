@@ -7,6 +7,7 @@ import { Entry } from '@terrafirmagreg-team/game/components/entry/entry';
 import { creativeTabName } from '@terrafirmagreg-team/dump/lib/dump/assets/lang/names';
 import { recipeItemName } from '@terrafirmagreg-team/recipe/lib/client-index';
 import { IconPager } from '@terrafirmagreg-team/ui/components/blocks/page/pager';
+import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
 import type { RecipeCategory, RecipeSession } from '@terrafirmagreg-team/recipe/types';
 
 function CategoryGlyph({
@@ -48,6 +49,7 @@ export function RecipeTypeTabs({
   className?: string;
 }) {
   const { lang, names, index, dataset, langMap } = session;
+  const t = useTranslations();
 
   const options = useMemo(() => {
     const byId = new Map(
@@ -72,6 +74,9 @@ export function RecipeTypeTabs({
       value={value}
       options={options}
       onChange={onChange ?? (() => {})}
+      step="option"
+      prevLabel={t('Previous category', { note: 'recipe.axis.prev' })}
+      nextLabel={t('Next category', { note: 'recipe.axis.next' })}
       className={className}
     />
   );

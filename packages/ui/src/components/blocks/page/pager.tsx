@@ -1,7 +1,13 @@
 'use client';
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useRef, useState, type MouseEvent, type ReactNode } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent,
+  type ReactNode,
+} from 'react';
 import { IconButton } from '@terrafirmagreg-team/ui/components/blocks/button/icon-button';
 import { SPRITE_CHIP_CLASS } from '@terrafirmagreg-team/ui/components/blocks/sprite';
 import {
@@ -182,15 +188,23 @@ export function IconPager<T extends string>({
   value,
   options,
   onChange,
+  step = 'page',
+  prevLabel,
+  nextLabel,
   className,
 }: {
   value?: T;
   options: IconPagerOption<T>[];
   onChange: (id: T) => void;
+  step?: 'page' | 'option';
+  prevLabel?: string;
+  nextLabel?: string;
   className?: string;
 }) {
   const stripRef = useRef<HTMLDivElement | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
   const { w } = useElementSize(stripRef);
+  const optionMode = step === 'option';
   const per = Math.max(
     1,
     Math.floor((w - 2 * (PAGER_ARROW + PAGER_GAP) + PAGER_GAP) / PAGER_CELL),
@@ -205,10 +219,26 @@ export function IconPager<T extends string>({
     setManual(null);
   }
   const page = Math.min(manual ?? autoPage, pages - 1);
-  const shown = options.slice(page * per, (page + 1) * per);
+  const shown = optionMode
+    ? options
+    : options.slice(page * per, (page + 1) * per);
 
   const go = (dir: number) => setManual((page + dir + pages) % pages);
+  const stepOption = (dir: -1 | 1) => {
+    if (options.length < 2) return;
+    const next =
+      valueIndex < 0
+        ? dir > 0
+          ? 0
+          : options.length - 1
+        : (valueIndex + dir + options.length) % options.length;
+    onChange(options[next]!.id);
+  };
   const swipe = useSwipe((dir) => {
+    if (optionMode) {
+      stepOption(dir);
+      return;
+    }
     const next = valueIndex + dir;
     if (next >= 0 && next < options.length) {
       onChange(options[next]!.id);
@@ -217,59 +247,93 @@ export function IconPager<T extends string>({
     }
   });
 
+  useEffect(() => {
+    if (!optionMode) return;
+    scrollRef.current
+      ?.querySelector('[aria-pressed="true"]')
+      ?.scrollIntoView({ block: 'nearest', inline: 'center' });
+  }, [optionMode, value, options]);
+
+  const renderOption = (option: IconPagerOption<T>) => (
+    <Tooltip key={option.id}>
+      <TooltipTrigger
+        render={
+          <button
+            type="button"
+            onClick={() => onChange(option.id)}
+            aria-label={option.help ?? option.id}
+            aria-pressed={option.id === value}
+            className={cn(
+              SPRITE_CHIP_CLASS,
+              'size-9 rounded-sm p-0 text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring aria-pressed:border-primary aria-pressed:bg-accent aria-pressed:text-foreground',
+            )}
+          />
+        }
+      >
+        {option.icon}
+      </TooltipTrigger>
+      {option.help ? (
+        <TooltipContent>
+          <span className="block">
+            <span className="block">{option.help}</span>
+            {option.helpMod ? (
+              <span
+                className="block italic"
+                style={{ color: 'var(--color-mc-enchant)' }}
+              >
+                {option.helpMod}
+              </span>
+            ) : null}
+          </span>
+        </TooltipContent>
+      ) : null}
+    </Tooltip>
+  );
+
   return (
     <div
       ref={stripRef}
       {...swipe}
       onWheel={(event) => {
-        if (pages > 1) go(event.deltaY > 0 ? 1 : -1);
+        if (optionMode) {
+          stepOption(event.deltaY > 0 ? 1 : -1);
+        } else if (pages > 1) {
+          go(event.deltaY > 0 ? 1 : -1);
+        }
       }}
-      className={cn('flex min-h-9 items-center gap-1', className)}
+      className={cn('flex min-h-9 items-start gap-1', className)}
     >
-      <PagerArrow dir={-1} disabled={pages <= 1} onClick={() => go(-1)} />
-      <div
-        className={cn(
-          'flex min-w-0 flex-1 items-center justify-center gap-1',
-          w === 0 && 'invisible',
-        )}
-      >
-        {shown.map((option) => (
-          <Tooltip key={option.id}>
-            <TooltipTrigger
-              render={
-                <button
-                  type="button"
-                  onClick={() => onChange(option.id)}
-                  aria-label={option.help ?? option.id}
-                  aria-pressed={option.id === value}
-                  className={cn(
-                    SPRITE_CHIP_CLASS,
-                    'size-9 rounded-sm p-0 text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring aria-pressed:border-primary aria-pressed:bg-accent aria-pressed:text-foreground',
-                  )}
-                />
-              }
-            >
-              {option.icon}
-            </TooltipTrigger>
-            {option.help ? (
-              <TooltipContent>
-                <span className="block">
-                  <span className="block">{option.help}</span>
-                  {option.helpMod ? (
-                    <span
-                      className="block italic"
-                      style={{ color: 'var(--color-mc-enchant)' }}
-                    >
-                      {option.helpMod}
-                    </span>
-                  ) : null}
-                </span>
-              </TooltipContent>
-            ) : null}
-          </Tooltip>
-        ))}
-      </div>
-      <PagerArrow dir={1} disabled={pages <= 1} onClick={() => go(1)} />
+      <PagerArrow
+        dir={-1}
+        disabled={optionMode ? options.length < 2 : pages <= 1}
+        label={optionMode ? prevLabel : undefined}
+        onClick={() => (optionMode ? stepOption(-1) : go(-1))}
+      />
+      {optionMode ? (
+        <div
+          ref={scrollRef}
+          className="flex min-w-0 flex-1 items-center overflow-x-auto"
+        >
+          <div className="flex w-max min-w-full items-center justify-center gap-1">
+            {options.map(renderOption)}
+          </div>
+        </div>
+      ) : (
+        <div
+          className={cn(
+            'flex min-w-0 flex-1 items-center justify-center gap-1',
+            w === 0 && 'invisible',
+          )}
+        >
+          {shown.map(renderOption)}
+        </div>
+      )}
+      <PagerArrow
+        dir={1}
+        disabled={optionMode ? options.length < 2 : pages <= 1}
+        label={optionMode ? nextLabel : undefined}
+        onClick={() => (optionMode ? stepOption(1) : go(1))}
+      />
     </div>
   );
 }

@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { PagerArrow } from '@terrafirmagreg-team/ui/components/blocks/page/pager';
 import { useTranslations } from '@terrafirmagreg-team/translate/hooks/use-translations';
 import { useResolvedLang } from '@terrafirmagreg-team/translate/hooks/use-resolved-lang';
 import { useAsyncResult } from '@terrafirmagreg-team/ui/hooks/use-async-value';
@@ -103,22 +102,6 @@ export function TypeView({ session }: { session: RecipeSession }) {
     !grid,
   );
 
-  const goCategory = (dir: -1 | 1) => {
-    const cur = nonEmptyIds.indexOf(shown ?? '');
-    const next =
-      nonEmptyIds[(cur + dir + nonEmptyIds.length) % nonEmptyIds.length];
-    if (!next || next === shown) return;
-    replaceUrlState(
-      recipeHref(dataset, resolved, {
-        ...nav,
-        type: next,
-        id: undefined,
-        solo: undefined,
-        rpage: undefined,
-      }),
-    );
-  };
-
   const onSwipe = (dir: -1 | 1) => {
     if (recipeId) {
       const next = focusIndex + dir;
@@ -182,27 +165,8 @@ export function TypeView({ session }: { session: RecipeSession }) {
           }}
         />
       }
-      navPrev={
-        <PagerArrow
-          dir={-1}
-          label={t('Previous category', { note: 'recipe.axis.prev' })}
-          disabled={nonEmptyIds.length < 2}
-          className="max-sm:hidden"
-          onClick={() => goCategory(-1)}
-        />
-      }
-      navNext={
-        <PagerArrow
-          dir={1}
-          label={t('Next category', { note: 'recipe.axis.next' })}
-          disabled={nonEmptyIds.length < 2}
-          className="max-sm:hidden"
-          onClick={() => goCategory(1)}
-        />
-      }
-      onNavWheel={goCategory}
       header={
-        <div className="flex min-w-0 justify-center">
+        <div className="mx-auto w-full max-w-90">
           <PlaceHeader
             session={session}
             overline={t('Categories', { note: 'recipe.axis_type' })}

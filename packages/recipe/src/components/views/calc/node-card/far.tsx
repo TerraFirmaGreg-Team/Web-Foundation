@@ -91,7 +91,7 @@ export function CalcFarCard({ data, selected }: NodeProps<CalcFlowNode>) {
             event.stopPropagation();
             onRequestPicker(node);
           }}
-          className={cn(CORNER_BUTTON, 'absolute -top-2 right-1')}
+          className={cn(CORNER_BUTTON, 'absolute -top-2.5 right-1')}
         >
           <ListFilter className="size-2.5" />
         </button>
